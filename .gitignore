@@ -1,0 +1,36 @@
+# Build ciktilari
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+publish/
+
+# Kullanici ayarlari
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+
+# Ortam ve sirlar
+.env
+*.env.local
+appsettings.Development.local.json
+
+# Test ciktilari
+TestResults/
+coverage/
+*.coverage
+*.trx
+
+# Blazor / istemci
+wwwroot/dist/
+node_modules/
+
+# Isletim sistemi
+.DS_Store
+Thumbs.db
+
+# Dokuman onizleme ciktisi (kaynak .md dosyalari takip edilir)
+docs/onizleme.html

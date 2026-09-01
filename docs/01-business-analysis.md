@@ -1,0 +1,150 @@
+# FleetOps — Business Analysis
+
+**AGV Fleet & Task Management System**
+
+## 1. Problem Tanımı
+
+Fabrika ve depolarda malzeme taşıma işini AGV (Automated Guided Vehicle) filoları yapıyor.
+Bu filonun yönetimi — hangi aracın hangi görevi alacağı, dar koridorlardan geçiş sırası,
+taşınan malzemenin stok kaydına işlenmesi — merkezi bir sistem gerektiriyor.
+
+Bu merkezi sistem olmadığında ya da yetersiz olduğunda üç şey oluyor:
+görevler çakışıyor, araçlar birbirini bekletiyor, malzeme hareketi kayıt dışı kalıyor.
+
+### Mevcut Durum (As-Is)
+
+```mermaid
+flowchart LR
+    A["Operator gorevi<br/>elle atar"] --> B["AGV gorevi yapar"]
+    B --> C["Koridor/kapi gecisi<br/>telsizle koordine edilir"]
+    C --> D["Malzeme hareketi<br/>kagit/Excel'e yazilir"]
+    D --> E["Gecmis kaydi<br/>dagilir"]
+
+    style C fill:#f8cecc,stroke:#b85450
+    style D fill:#f8cecc,stroke:#b85450
+    style E fill:#f8cecc,stroke:#b85450
+```
+
+Kırmızı üç adım problemin kaynağı: koordinasyon insana bağlı, kayıt manuel, geçmiş takip edilemiyor.
+
+### Hedeflenen Durum (To-Be)
+
+```mermaid
+flowchart LR
+    A["AGV musait<br/>gorev ister"] --> B["Sistem gorevi atar<br/><i>tek AGV'ye</i>"]
+    B --> C["Kaynak kilidi<br/><i>koridor/kapi</i>"]
+    C --> D["Gorev tamamlanir"]
+    D --> E["Stok hareketi<br/>otomatik islenir"]
+
+    style B fill:#d5e8d4,stroke:#82b366
+    style C fill:#d5e8d4,stroke:#82b366
+    style E fill:#d5e8d4,stroke:#82b366
+```
+
+### Acı Noktaları
+
+| # | Acı | Sonucu |
+|---|---|---|
+| P1 | Görev ataması elle yapılıyor | Aynı görev iki araca verilebiliyor, operatör darboğaz |
+| P2 | Dar koridor / kapı geçişi koordine edilmiyor | Araçlar karşı karşıya kalıyor, filo duruyor |
+| P3 | Malzeme hareketi kayıt dışı | Stok gerçekle uyuşmuyor |
+| P4 | Filo durumu anlık görünmüyor | Arıza ve düşük batarya geç fark ediliyor |
+| P5 | Görev geçmişi tutulmuyor | Verimlilik ölçülemiyor |
+
+## 2. Sistem Sınırı (Context)
+
+```mermaid
+flowchart TB
+    subgraph d1[" "]
+        OP(["Operator"])
+        SV(["Supervisor"])
+    end
+
+    subgraph sistem["FleetOps"]
+        API["Web API + Blazor UI"]
+        DB[("PostgreSQL")]
+        API <--> DB
+    end
+
+    subgraph d2[" "]
+        AGV["AGV<br/><i>arac uzerindeki yazilim</i>"]
+    end
+
+    OP -->|"gorev olusturur, filoyu izler"| API
+    SV -->|"raporlar, politika ayari"| API
+    AGV -->|"gorev ister, durum bildirir<br/>HTTP"| API
+    API -->|"gorev atamasi, kilit yaniti"| AGV
+
+    style sistem fill:#dae8fc,stroke:#6c8ebf
+    style d1 fill:none,stroke:none
+    style d2 fill:none,stroke:none
+```
+
+**Sistemin sorumluluğunda olan:** görev havuzu, atama kararı, kaynak kilidi, stok hareketi,
+filo durumu, geçmiş kaydı.
+
+**Sorumluluğunda olmayan:** navigasyon, rota planlama, engelden kaçınma, motor kontrolü.
+Bunlar aracın kendi yazılımında kalır. Sistem "nereye gideceğini" söyler, "nasıl gideceğini" değil.
+
+Bu sınır kritik: çizilmezse proje bir fleet management sisteminden bir navigasyon
+sistemine kayar ve kapsam kontrolden çıkar.
+
+## 3. Paydaşlar
+
+| Paydaş | İlgisi | Beklentisi |
+|---|---|---|
+| Operator | Günlük kullanım | Görev oluşturmak, filoyu anlık görmek |
+| Supervisor | Verimlilik | Görev geçmişi, araç kullanım oranı, atama politikası |
+| AGV (sistem aktörü) | Otomatik | Görev almak, kilit istemek, durum bildirmek |
+| Bakım ekibi | Arıza takibi | Düşük batarya ve arıza alarmları |
+| Staj mentoru | Değerlendirme | Mimari kararlar, pattern gerekçeleri, kod kalitesi |
+
+## 4. İş Hedefleri
+
+| # | Hedef | Ölçüt |
+|---|---|---|
+| H1 | Görev çakışmasını sıfırlamak | Bir görev aynı anda en fazla bir AGV'ye atanır |
+| H2 | Koridor/kapı çakışmasını önlemek | Bir kaynağı aynı anda tek AGV kullanır |
+| H3 | Stok kaydını otomatikleştirmek | Tamamlanan her görev stok hareketi üretir |
+| H4 | Filo durumunu görünür kılmak | Araç durumu arayüzde canlı görünür |
+| H5 | Görev geçmişini kalıcı tutmak | Her görev ve atama kayıt altında |
+
+## 5. Kapsam
+
+Teslim edilecek: AGV kayıt ve durum takibi, görev havuzu ve atama, kaynak kilidi
+(koridor/kapı) ve zaman aşımı, tamamlanan görevin stok hareketine dönüşmesi, canlı filo
+görünümü, rol bazlı erişim, örnek veriyle çalışan kurulum.
+
+> Navigasyon, rota planlama ve araç içi kontrol kapsam dışıdır.
+> Alarms ayrı bir modül olarak değil, ileride eklenebilecek bir genişleme olarak bırakılmıştır.
+
+## 6. Kısıtlar ve Varsayımlar
+
+| Tür | Kısıt |
+|---|---|
+| Süre | 9 iş günü |
+| İnsan kaynağı | Tek geliştirici |
+| Donanım | Gerçek AGV yok; tek laptop |
+| Teknoloji | .NET tarafında yeni; öğrenme süresi işin içinde |
+
+**Varsayımlar:** AGV tarafı HTTP konuşabilir. Görev alma ve kilit isteme AGV'nin
+inisiyatifindedir (pull model). Tek fabrika, tek vardiya; çok tesisli senaryo yok.
+
+**Veri kaynağı:** Gerçek AGV yerine, mevcut PLC simülatörü temel alınarak yazılan bir
+AGV simülatörü kullanılır. Simülatör HTTP üzerinden gerçek AGV gibi davranır; sistem
+tarafında hiçbir fark yoktur.
+
+## 7. Riskler
+
+| # | Risk | Etki | Önlem |
+|---|---|---|---|
+| R1 | Kapsam navigasyona kayar | Yüksek | Sistem sınırı yukarıda net çizildi |
+| R2 | 4 modül 9 güne sığmaz | Yüksek | 3 modülde karar kılındı |
+| R3 | Blazor öğrenme süresi taşar | Orta | Arayüz sade tutulur; taşarsa canlı görünüm düşer |
+| R4 | Concurrency testleri kırılgan olur | Orta | Testcontainers ile gerçek PostgreSQL kullanılır |
+| R5 | Disk yetersizliği | Orta | Kullanılmayan Docker image'ları temizlenir |
+
+## 8. Başarı Kriteri
+
+> İki AGV aynı anda aynı görevi istediğinde biri görevi alır, diğeri reddedilir;
+> ve bu, gerçek bir veritabanına karşı çalışan bir testle kanıtlanabilir.
