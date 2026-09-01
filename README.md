@@ -10,59 +10,28 @@ hareketine donusmesi ve filo durumunun canli izlenmesi.
 > Bunlar aracin kendi yaziliminda kalir. Sistem "nereye gidilecegini" soyler,
 > "nasil gidilecegini" degil.
 
-## Durum
 
-Analiz asamasi. Kod henuz yok.
-
-- [x] Business Analysis
-- [x] Functional Analysis
-- [x] Mimari ve teknoloji kurgusu
-- [ ] Cozum iskeleti
-- [ ] Modul implementasyonlari
-
-## Dokumanlar
-
-| Dokuman | Icerik |
-|---|---|
-| [Business Analysis](docs/01-business-analysis.md) | Problem, as-is/to-be, sistem siniri, hedefler, riskler |
-| [Functional Analysis](docs/02-functional-analysis.md) | Moduller, use case'ler, veri modeli, pattern envanteri |
-| [Mimari diyagramlar](docs/architecture.drawio) | Cozum yapisi, modul ic mimarisi, teknoloji haritasi, calisma ani akislari |
-
-Diyagramlar Mermaid ile yazilmistir; GitHub uzerinde dogrudan goruntulenir.
-Yerel onizleme icin:
-
-```bash
-python3 docs/onizle.py     # docs/onizleme.html uretir
-```
 
 ## Mimari
 
-### Modular monolith nedir
 
-![Modular monolith](docs/img/modular-monolith.png)
+![Modular monolith](img/modular-monolith.png)
 
 ### Cozum yapisi
 
-![Cozum yapisi](docs/img/cozum-yapisi.png)
+![Cozum yapisi](img/cozum-yapisi.png)
 
 ### Modul ic mimarisi
 
-![Modul ic mimarisi](docs/img/modul-ic-mimarisi.png)
+![Modul ic mimarisi](img/modul-ic-mimarisi.png)
 
 ### Teknoloji haritasi
 
-![Teknoloji haritasi](docs/img/teknoloji-haritasi.png)
+![Teknoloji haritasi](img/teknoloji-haritasi.png)
 
 ### Calisma ani akislari
 
-![Calisma ani akislari](docs/img/calisma-ani-akislari.png)
-
-Diyagramlarin kaynagi `docs/architecture.drawio` (draw.io ile duzenlenebilir).
-Duzenledikten sonra PNG'leri yenilemek icin:
-
-```bash
-python3 docs/tools/drawio2png.py docs/architecture.drawio docs/img
-```
+![Calisma ani akislari](img/calisma-ani-akislari.png)
 
 ---
 
@@ -108,11 +77,4 @@ birbirlerinin handler'larini cagirmazlar. Iletisim yalnizca integration event il
 | Test | xUnit + NSubstitute + Testcontainers |
 | Dagitim | Docker + Docker Compose |
 
-## Kurulum
 
-Henuz kod yok. Kod eklendiginde:
-
-```bash
-cp .env.example .env      # icine sifre ve JWT anahtari yazin
-docker compose up --build
-```

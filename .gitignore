@@ -34,3 +34,6 @@ Thumbs.db
 
 # Dokuman onizleme ciktisi (kaynak .md dosyalari takip edilir)
 docs/onizleme.html
+
+# Analiz dokumanlari ve diyagram kaynaklari yerelde tutulur
+docs/
