@@ -2,7 +2,7 @@
 
 ## 1. Modül Haritası
 
-![02-01-1-modul-haritas](img/02-01-1-modul-haritas.png)
+<img src="img/02-01-1-modul-haritas.png" alt="02-01-1-modul-haritas" width="616">
 
 <sub>Diyagram kaynagi: `docs/diagrams/02-01-1-modul-haritas.mmd`</sub>
 
@@ -20,7 +20,7 @@ kaynak kilidi ve outbox hep bu modülde.
 
 ## 2. Modül İçi Katmanlar
 
-![02-02-2-modul-ici-katmanlar](img/02-02-2-modul-ici-katmanlar.png)
+<img src="img/02-02-2-modul-ici-katmanlar.png" alt="02-02-2-modul-ici-katmanlar" width="496">
 
 <sub>Diyagram kaynagi: `docs/diagrams/02-02-2-modul-ici-katmanlar.mmd`</sub>
 
@@ -29,7 +29,7 @@ Her modül kendi içinde bu dört katmanı taşır. Bağımlılık yönü GameSt
 
 ## 3. Aktörler ve Use Case'ler
 
-![02-03-3-aktorler-ve-use-case-ler](img/02-03-3-aktorler-ve-use-case-ler.png)
+<img src="img/02-03-3-aktorler-ve-use-case-ler.png" alt="02-03-3-aktorler-ve-use-case-ler" width="430">
 
 <sub>Diyagram kaynagi: `docs/diagrams/02-03-3-aktorler-ve-use-case-ler.mmd`</sub>
 
@@ -90,7 +90,7 @@ Bir görev reddedilip yeniden atanabilir. Atama geçmişi verimlilik raporunun k
 
 ## 6. TransportTask Yaşam Döngüsü
 
-![02-05-6-transporttask-yasam-dongusu](img/02-05-6-transporttask-yasam-dongusu.png)
+<img src="img/02-05-6-transporttask-yasam-dongusu.png" alt="02-05-6-transporttask-yasam-dongusu" width="540">
 
 <sub>Diyagram kaynagi: `docs/diagrams/02-05-6-transporttask-yasam-dongusu.mmd`</sub>
 
@@ -99,7 +99,7 @@ Durum geçişleri `TransportTask` aggregate'inin içinde uygulanır. Property'le
 
 ## 7. UC-2 — Görev Talebi ve Concurrency
 
-![02-06-7-uc-2-gorev-talebi-ve-concurrency](img/02-06-7-uc-2-gorev-talebi-ve-concurrency.png)
+<img src="img/02-06-7-uc-2-gorev-talebi-ve-concurrency.png" alt="02-06-7-uc-2-gorev-talebi-ve-concurrency" width="700">
 
 <sub>Diyagram kaynagi: `docs/diagrams/02-06-7-uc-2-gorev-talebi-ve-concurrency.mmd`</sub>
 
@@ -108,7 +108,7 @@ satırı bulunur. Bu, Testcontainers ile gerçek PostgreSQL'e karşı test edili
 
 ## 8. UC-4 — Görev Tamamlama ve Outbox
 
-![02-07-8-uc-4-gorev-tamamlama-ve-outbox](img/02-07-8-uc-4-gorev-tamamlama-ve-outbox.png)
+<img src="img/02-07-8-uc-4-gorev-tamamlama-ve-outbox.png" alt="02-07-8-uc-4-gorev-tamamlama-ve-outbox" width="700">
 
 <sub>Diyagram kaynagi: `docs/diagrams/02-07-8-uc-4-gorev-tamamlama-ve-outbox.mmd`</sub>
 
@@ -117,7 +117,7 @@ yazılır. Uygulama arada çökerse outbox kaydı durur ve işlem tekrar denenir
 
 ## 9. Kaynak Kilidi
 
-![02-08-9-kaynak-kilidi](img/02-08-9-kaynak-kilidi.png)
+<img src="img/02-08-9-kaynak-kilidi.png" alt="02-08-9-kaynak-kilidi" width="700">
 
 <sub>Diyagram kaynagi: `docs/diagrams/02-08-9-kaynak-kilidi.mmd`</sub>
 
@@ -175,7 +175,7 @@ Zaman aşımı olmasaydı arızalanan bir AGV koridoru kalıcı olarak bloke ede
 
 ## 13. Ekranlar
 
-![02-09-13-ekranlar](img/02-09-13-ekranlar.png)
+<img src="img/02-09-13-ekranlar.png" alt="02-09-13-ekranlar" width="564">
 
 <sub>Diyagram kaynagi: `docs/diagrams/02-09-13-ekranlar.mmd`</sub>
 

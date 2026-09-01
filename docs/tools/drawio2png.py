@@ -245,13 +245,14 @@ def sayfayi_cevir(dosya, indeks, cikti_svg):
             sahte = {"stil": dict(s, align="center", verticalAlign="middle"), "deger": c["deger"]}
             metin(sahte, mx - 110, my - 12, 220, 24, arka=True)
 
+    # draw.io z-sirasi dosyadaki siradir; kenarlari topluca one almak
+    # opak kutularin altinda kalmalarina yol acar
     for c in hucreler.values():
         if c["edge"]:
             kenar(c)
-    for c in hucreler.values():
-        if c["vertex"]:
-            s = c["stil"]
-            if "text" in s and "rounded" not in s and "ellipse" not in s:
+        elif c["vertex"]:
+            st = c["stil"]
+            if "text" in st and "rounded" not in st and "ellipse" not in st:
                 metin(c, c["x"], c["y"], c["w"], c["h"])
             else:
                 kutu(c)

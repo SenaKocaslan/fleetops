@@ -39,7 +39,7 @@ python3 docs/onizle.py     # docs/onizleme.html uretir
 
 ### Modular monolith nedir
 
-![Modular monolith](docs/img/modular-monolith-nedir.png)
+![Modular monolith](docs/img/modular-monolith.png)
 
 ### Cozum yapisi
 

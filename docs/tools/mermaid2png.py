@@ -35,6 +35,39 @@ def slug(metin):
     return re.sub(r"-+", "-", metin)[:45] or "diyagram"
 
 
+# Bu genislikteki diyagramlar dokumanda tam boy gosterilir (ornek: ER semasi)
+TAM_BOY_ESIGI = 3000
+
+# Ekranda hedeflenen olculer (CSS pikseli)
+HEDEF_GENISLIK = 700
+HEDEF_YUKSEKLIK = 560
+
+# Bu genisligin altina inilmez; aksi halde yazilar okunmaz olur
+ASGARI_GENISLIK = 430
+
+
+def gorsel_etiketi(ad, png):
+    """Diyagrami dokumana makul bir olcude yerlestiren isaretleme uretir."""
+    kaynak_notu = f"<sub>Diyagram kaynagi: `docs/diagrams/{ad}.mmd`</sub>"
+    try:
+        from PIL import Image
+        g, y = Image.open(png).size
+    except ImportError:
+        return f"![{ad}](img/{ad}.png)\n\n{kaynak_notu}"
+
+    if g >= TAM_BOY_ESIGI:
+        return f"![{ad}](img/{ad}.png)\n\n{kaynak_notu}"
+
+    # PNG'ler 2x uretiliyor; dogal CSS olcusu yarisi
+    dg, dy = g / 2, y / 2
+    genislik = min(HEDEF_GENISLIK, dg)
+    if dy * (genislik / dg) > HEDEF_YUKSEKLIK:
+        genislik = HEDEF_YUKSEKLIK * dg / dy
+    genislik = max(genislik, min(dg, ASGARI_GENISLIK))
+    return (f'<img src="img/{ad}.png" alt="{ad}" width="{round(genislik)}">\n\n'
+            f"{kaynak_notu}")
+
+
 def dosyayi_isle(md_yolu, chrome):
     md = pathlib.Path(md_yolu)
     kok = md.parent
@@ -103,8 +136,7 @@ def dosyayi_isle(md_yolu, chrome):
         except ImportError:
             print(f"  {png.name}")
 
-        sonuc.append(f"![{ad}](img/{ad}.png)\n\n"
-                     f"<sub>Diyagram kaynagi: `docs/diagrams/{ad}.mmd`</sub>")
+        sonuc.append(gorsel_etiketi(ad, png))
 
     md.write_text("".join(sonuc))
     print(f"{md.name}: {sayac} diyagram donusturuldu")

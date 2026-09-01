@@ -13,7 +13,7 @@ görevler çakışıyor, araçlar birbirini bekletiyor, malzeme hareketi kayıt 
 
 ### Mevcut Durum (As-Is)
 
-![01-01-mevcut-durum-as-is](img/01-01-mevcut-durum-as-is.png)
+<img src="img/01-01-mevcut-durum-as-is.png" alt="01-01-mevcut-durum-as-is" width="700">
 
 <sub>Diyagram kaynagi: `docs/diagrams/01-01-mevcut-durum-as-is.mmd`</sub>
 
@@ -21,7 +21,7 @@ Kırmızı üç adım problemin kaynağı: koordinasyon insana bağlı, kayıt m
 
 ### Hedeflenen Durum (To-Be)
 
-![01-02-hedeflenen-durum-to-be](img/01-02-hedeflenen-durum-to-be.png)
+<img src="img/01-02-hedeflenen-durum-to-be.png" alt="01-02-hedeflenen-durum-to-be" width="700">
 
 <sub>Diyagram kaynagi: `docs/diagrams/01-02-hedeflenen-durum-to-be.mmd`</sub>
 
@@ -37,7 +37,7 @@ Kırmızı üç adım problemin kaynağı: koordinasyon insana bağlı, kayıt m
 
 ## 2. Sistem Sınırı (Context)
 
-![01-03-2-sistem-snr-context](img/01-03-2-sistem-snr-context.png)
+<img src="img/01-03-2-sistem-snr-context.png" alt="01-03-2-sistem-snr-context" width="700">
 
 <sub>Diyagram kaynagi: `docs/diagrams/01-03-2-sistem-snr-context.mmd`</sub>
 
