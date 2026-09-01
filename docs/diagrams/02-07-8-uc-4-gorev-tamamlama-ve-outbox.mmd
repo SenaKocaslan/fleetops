@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant AGV
+    participant T as Tasks modulu
+    participant DB as PostgreSQL
+    participant W as OutboxProcessor
+    participant S as Stock modulu
+
+    AGV->>T: POST /tasks/{id}/complete
+    rect rgb(230, 245, 233)
+        Note over T,DB: Tek transaction
+        T->>DB: TransportTask durumunu Completed yap
+        T->>DB: OutboxMessage ekle - TaskCompleted
+    end
+    T-->>AGV: 200 OK
+
+    W->>DB: islenmemis outbox kayitlarini oku
+    W->>S: TaskCompleted olayini ilet
+    S->>DB: StockMovement ekle
+    W->>DB: outbox kaydini islendi isaretle

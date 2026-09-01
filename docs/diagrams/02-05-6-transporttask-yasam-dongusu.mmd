@@ -1,0 +1,19 @@
+stateDiagram-v2
+    [*] --> Pending: "Operator gorev olusturur"
+    Pending --> Assigned: "AGV gorev talep eder"
+    Assigned --> InProgress: "AGV yuku aldi"
+    InProgress --> Completed: "AGV yuku birakti"
+
+    Assigned --> Pending: "AGV reddetti veya zaman asimi"
+    InProgress --> Failed: "AGV ariza bildirdi"
+    Pending --> Cancelled: "Operator iptal etti"
+
+    Completed --> [*]
+    Failed --> [*]
+    Cancelled --> [*]
+
+    note right of Assigned
+        Gecersiz gecisler aggregate
+        icinde reddedilir.
+        Ornek: Completed -> Assigned yok.
+    end note

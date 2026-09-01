@@ -1,0 +1,26 @@
+flowchart LR
+    OP["Operator"]
+    SV["Supervisor"]
+    AGV["AGV"]
+
+    subgraph sistem["FleetOps"]
+        UC1["UC-1<br/>Gorev olustur"]
+        UC2["UC-2<br/>Gorev talep et"]
+        UC3["UC-3<br/>Kaynak kilidi al"]
+        UC4["UC-4<br/>Gorev tamamla"]
+        UC5["UC-5<br/>Filoyu izle"]
+        UC6["UC-6<br/>AGV kaydet"]
+        UC7["UC-7<br/>Gecmisi raporla"]
+    end
+
+    OP --> UC1
+    OP --> UC5
+    SV --> UC6
+    SV --> UC7
+    AGV --> UC2
+    AGV --> UC3
+    AGV --> UC4
+
+    style sistem fill:#f5f5f5,stroke:#999999
+    style UC2 fill:#d5e8d4,stroke:#82b366
+    style UC3 fill:#d5e8d4,stroke:#82b366

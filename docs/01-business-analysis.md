@@ -13,33 +13,17 @@ görevler çakışıyor, araçlar birbirini bekletiyor, malzeme hareketi kayıt 
 
 ### Mevcut Durum (As-Is)
 
-```mermaid
-flowchart LR
-    A["Operator gorevi<br/>elle atar"] --> B["AGV gorevi yapar"]
-    B --> C["Koridor/kapi gecisi<br/>telsizle koordine edilir"]
-    C --> D["Malzeme hareketi<br/>kagit/Excel'e yazilir"]
-    D --> E["Gecmis kaydi<br/>dagilir"]
+![01-01-mevcut-durum-as-is](img/01-01-mevcut-durum-as-is.png)
 
-    style C fill:#f8cecc,stroke:#b85450
-    style D fill:#f8cecc,stroke:#b85450
-    style E fill:#f8cecc,stroke:#b85450
-```
+<sub>Diyagram kaynagi: `docs/diagrams/01-01-mevcut-durum-as-is.mmd`</sub>
 
 Kırmızı üç adım problemin kaynağı: koordinasyon insana bağlı, kayıt manuel, geçmiş takip edilemiyor.
 
 ### Hedeflenen Durum (To-Be)
 
-```mermaid
-flowchart LR
-    A["AGV musait<br/>gorev ister"] --> B["Sistem gorevi atar<br/>tek AGV icin"]
-    B --> C["Kaynak kilidi<br/>koridor veya kapi"]
-    C --> D["Gorev tamamlanir"]
-    D --> E["Stok hareketi<br/>otomatik islenir"]
+![01-02-hedeflenen-durum-to-be](img/01-02-hedeflenen-durum-to-be.png)
 
-    style B fill:#d5e8d4,stroke:#82b366
-    style C fill:#d5e8d4,stroke:#82b366
-    style E fill:#d5e8d4,stroke:#82b366
-```
+<sub>Diyagram kaynagi: `docs/diagrams/01-02-hedeflenen-durum-to-be.mmd`</sub>
 
 ### Acı Noktaları
 
@@ -53,25 +37,9 @@ flowchart LR
 
 ## 2. Sistem Sınırı (Context)
 
-```mermaid
-flowchart TB
-    OP["Operator"]
-    SV["Supervisor"]
-    AGV["AGV<br/>arac uzerindeki yazilim"]
+![01-03-2-sistem-snr-context](img/01-03-2-sistem-snr-context.png)
 
-    subgraph sistem["FleetOps"]
-        API["Web API + Blazor UI"]
-        DB[("PostgreSQL")]
-        API <--> DB
-    end
-
-    OP -->|"gorev olusturur, filoyu izler"| API
-    SV -->|"raporlar, politika ayari"| API
-    AGV -->|"gorev ister, durum bildirir"| API
-    API -->|"gorev atamasi, kilit yaniti"| AGV
-
-    style sistem fill:#dae8fc,stroke:#6c8ebf
-```
+<sub>Diyagram kaynagi: `docs/diagrams/01-03-2-sistem-snr-context.mmd`</sub>
 
 **Sistemin sorumluluğunda olan:** görev havuzu, atama kararı, kaynak kilidi, stok hareketi,
 filo durumu, geçmiş kaydı.

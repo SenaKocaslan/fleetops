@@ -1,0 +1,15 @@
+flowchart TB
+    T["Tasks<br/>gorev havuzu, atama, kaynak kilidi"]
+    F["Fleet<br/>AGV kayit, durum, batarya"]
+    S["Stock<br/>lokasyon, malzeme hareketi"]
+    SK["SharedKernel<br/>ICommand, IQuery, Result<br/>IntegrationEvent, Outbox"]
+
+    T -.->|"TaskCompleted"| S
+    T -.->|"AgvAssigned"| F
+
+    T --> SK
+    F --> SK
+    S --> SK
+
+    style T fill:#d5e8d4,stroke:#82b366
+    style SK fill:#fff2cc,stroke:#d6b656

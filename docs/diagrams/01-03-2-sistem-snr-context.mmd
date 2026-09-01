@@ -1,0 +1,17 @@
+flowchart TB
+    OP["Operator"]
+    SV["Supervisor"]
+    AGV["AGV<br/>arac uzerindeki yazilim"]
+
+    subgraph sistem["FleetOps"]
+        API["Web API + Blazor UI"]
+        DB[("PostgreSQL")]
+        API <--> DB
+    end
+
+    OP -->|"gorev olusturur, filoyu izler"| API
+    SV -->|"raporlar, politika ayari"| API
+    AGV -->|"gorev ister, durum bildirir"| API
+    API -->|"gorev atamasi, kilit yaniti"| AGV
+
+    style sistem fill:#dae8fc,stroke:#6c8ebf

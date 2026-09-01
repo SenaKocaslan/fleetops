@@ -2,23 +2,9 @@
 
 ## 1. Modül Haritası
 
-```mermaid
-flowchart TB
-    T["Tasks<br/>gorev havuzu, atama, kaynak kilidi"]
-    F["Fleet<br/>AGV kayit, durum, batarya"]
-    S["Stock<br/>lokasyon, malzeme hareketi"]
-    SK["SharedKernel<br/>ICommand, IQuery, Result<br/>IntegrationEvent, Outbox"]
+![02-01-1-modul-haritas](img/02-01-1-modul-haritas.png)
 
-    T -.->|"TaskCompleted"| S
-    T -.->|"AgvAssigned"| F
-
-    T --> SK
-    F --> SK
-    S --> SK
-
-    style T fill:#d5e8d4,stroke:#82b366
-    style SK fill:#fff2cc,stroke:#d6b656
-```
+<sub>Diyagram kaynagi: `docs/diagrams/02-01-1-modul-haritas.mmd`</sub>
 
 ### Modül kuralları
 
@@ -34,55 +20,18 @@ kaynak kilidi ve outbox hep bu modülde.
 
 ## 2. Modül İçi Katmanlar
 
-```mermaid
-flowchart TB
-    E["Endpoints<br/>minimal API"]
-    A["Application<br/>command/query handler, DTO"]
-    D["Domain<br/>aggregate, kurallar, domain event"]
-    I["Infrastructure<br/>DbContext, repository, EF konfigurasyon"]
+![02-02-2-modul-ici-katmanlar](img/02-02-2-modul-ici-katmanlar.png)
 
-    E --> A
-    A --> D
-    I -.->|"arayuzleri uygular"| A
-    I --> D
-
-    style D fill:#ffe6cc,stroke:#d79b00
-    style I fill:#f8cecc,stroke:#b85450
-```
+<sub>Diyagram kaynagi: `docs/diagrams/02-02-2-modul-ici-katmanlar.mmd`</sub>
 
 Her modül kendi içinde bu dört katmanı taşır. Bağımlılık yönü GameStore'daki ile aynı:
 `Infrastructure` yukarı bakar, `Domain` hiçbir şeye bakmaz.
 
 ## 3. Aktörler ve Use Case'ler
 
-```mermaid
-flowchart LR
-    OP["Operator"]
-    SV["Supervisor"]
-    AGV["AGV"]
+![02-03-3-aktorler-ve-use-case-ler](img/02-03-3-aktorler-ve-use-case-ler.png)
 
-    subgraph sistem["FleetOps"]
-        UC1["UC-1<br/>Gorev olustur"]
-        UC2["UC-2<br/>Gorev talep et"]
-        UC3["UC-3<br/>Kaynak kilidi al"]
-        UC4["UC-4<br/>Gorev tamamla"]
-        UC5["UC-5<br/>Filoyu izle"]
-        UC6["UC-6<br/>AGV kaydet"]
-        UC7["UC-7<br/>Gecmisi raporla"]
-    end
-
-    OP --> UC1
-    OP --> UC5
-    SV --> UC6
-    SV --> UC7
-    AGV --> UC2
-    AGV --> UC3
-    AGV --> UC4
-
-    style sistem fill:#f5f5f5,stroke:#999999
-    style UC2 fill:#d5e8d4,stroke:#82b366
-    style UC3 fill:#d5e8d4,stroke:#82b366
-```
+<sub>Diyagram kaynagi: `docs/diagrams/02-03-3-aktorler-ve-use-case-ler.mmd`</sub>
 
 Yeşil iki use case sistemin zor kısmıdır — ikisi de concurrency içerir.
 
@@ -107,75 +56,9 @@ Yeşil iki use case sistemin zor kısmıdır — ikisi de concurrency içerir.
 
 ## 5. Veri Modeli
 
-```mermaid
-erDiagram
-    AGV {
-        guid id PK
-        string code
-        string status
-        int battery_level
-        guid current_location_id "FK yok - modul disi"
-        bytea row_version
-    }
+![02-04-5-veri-modeli](img/02-04-5-veri-modeli.png)
 
-    TRANSPORT_TASK {
-        guid id PK
-        string status
-        guid from_location_id "FK yok - modul disi"
-        guid to_location_id "FK yok - modul disi"
-        string material_code
-        int quantity
-        int priority
-        timestamp created_at
-        bytea row_version
-    }
-    TASK_ASSIGNMENT {
-        guid id PK
-        guid task_id FK
-        guid agv_id "FK yok - modul disi"
-        timestamp assigned_at
-        timestamp completed_at
-    }
-    RESOURCE {
-        guid id PK
-        string code
-        string kind
-    }
-    RESOURCE_LOCK {
-        guid id PK
-        guid resource_id FK
-        guid agv_id "FK yok - modul disi"
-        timestamp acquired_at
-        timestamp expires_at
-        bytea row_version
-    }
-    OUTBOX_MESSAGE {
-        guid id PK
-        string type
-        jsonb payload
-        timestamp occurred_at
-        timestamp processed_at
-    }
-
-    LOCATION {
-        guid id PK
-        string code
-        string zone
-    }
-    STOCK_MOVEMENT {
-        guid id PK
-        string material_code
-        int quantity
-        guid from_location_id FK
-        guid to_location_id FK
-        guid source_task_id "FK yok - modul disi"
-        timestamp moved_at
-    }
-
-    TRANSPORT_TASK ||--o{ TASK_ASSIGNMENT : "atanir"
-    RESOURCE ||--o{ RESOURCE_LOCK : "kilitlenir"
-    LOCATION ||--o{ STOCK_MOVEMENT : "kaynak/hedef"
-```
+<sub>Diyagram kaynagi: `docs/diagrams/02-04-5-veri-modeli.mmd`</sub>
 
 ### Modül sahipliği
 
@@ -207,116 +90,36 @@ Bir görev reddedilip yeniden atanabilir. Atama geçmişi verimlilik raporunun k
 
 ## 6. TransportTask Yaşam Döngüsü
 
-```mermaid
-stateDiagram-v2
-    [*] --> Pending: "Operator gorev olusturur"
-    Pending --> Assigned: "AGV gorev talep eder"
-    Assigned --> InProgress: "AGV yuku aldi"
-    InProgress --> Completed: "AGV yuku birakti"
+![02-05-6-transporttask-yasam-dongusu](img/02-05-6-transporttask-yasam-dongusu.png)
 
-    Assigned --> Pending: "AGV reddetti veya zaman asimi"
-    InProgress --> Failed: "AGV ariza bildirdi"
-    Pending --> Cancelled: "Operator iptal etti"
-
-    Completed --> [*]
-    Failed --> [*]
-    Cancelled --> [*]
-
-    note right of Assigned
-        Gecersiz gecisler aggregate
-        icinde reddedilir.
-        Ornek: Completed -> Assigned yok.
-    end note
-```
+<sub>Diyagram kaynagi: `docs/diagrams/02-05-6-transporttask-yasam-dongusu.mmd`</sub>
 
 Durum geçişleri `TransportTask` aggregate'inin içinde uygulanır. Property'ler
 `private set`'tir; durum yalnızca metotlarla değişir.
 
 ## 7. UC-2 — Görev Talebi ve Concurrency
 
-```mermaid
-sequenceDiagram
-    participant A1 as AGV-1
-    participant A2 as AGV-2
-    participant API as Tasks API
-    participant H as CommandHandler
-    participant R as Repository
-    participant DB as PostgreSQL
+![02-06-7-uc-2-gorev-talebi-ve-concurrency](img/02-06-7-uc-2-gorev-talebi-ve-concurrency.png)
 
-    A1->>API: POST /tasks/claim
-    A2->>API: POST /tasks/claim
-
-    API->>H: ClaimTaskCommand
-    H->>R: uygun gorevi yukle
-    R->>DB: SELECT (row_version dahil)
-    DB-->>R: TransportTask
-
-    Note over H: AssignmentPolicy<br/>hangi AGV uygun
-
-    H->>R: task.Assign(agv1) sonra kaydet
-    R->>DB: UPDATE WHERE row_version esit
-    DB-->>R: 1 satir guncellendi
-    API-->>A1: 200 gorev atandi
-
-    H->>R: ayni gorev icin ikinci kayit
-    R->>DB: UPDATE WHERE row_version esit
-    DB-->>R: 0 satir - CONCURRENCY CONFLICT
-    API-->>A2: 409 gorev artik musait degil
-```
+<sub>Diyagram kaynagi: `docs/diagrams/02-06-7-uc-2-gorev-talebi-ve-concurrency.mmd`</sub>
 
 **Kabul kriteri:** iki eşzamanlı istek sonrası veritabanında **tek** `TASK_ASSIGNMENT`
 satırı bulunur. Bu, Testcontainers ile gerçek PostgreSQL'e karşı test edilir.
 
 ## 8. UC-4 — Görev Tamamlama ve Outbox
 
-```mermaid
-sequenceDiagram
-    participant AGV
-    participant T as Tasks modulu
-    participant DB as PostgreSQL
-    participant W as OutboxProcessor
-    participant S as Stock modulu
+![02-07-8-uc-4-gorev-tamamlama-ve-outbox](img/02-07-8-uc-4-gorev-tamamlama-ve-outbox.png)
 
-    AGV->>T: POST /tasks/{id}/complete
-    rect rgb(230, 245, 233)
-        Note over T,DB: Tek transaction
-        T->>DB: TransportTask durumunu Completed yap
-        T->>DB: OutboxMessage ekle - TaskCompleted
-    end
-    T-->>AGV: 200 OK
-
-    W->>DB: islenmemis outbox kayitlarini oku
-    W->>S: TaskCompleted olayini ilet
-    S->>DB: StockMovement ekle
-    W->>DB: outbox kaydini islendi isaretle
-```
+<sub>Diyagram kaynagi: `docs/diagrams/02-07-8-uc-4-gorev-tamamlama-ve-outbox.mmd`</sub>
 
 Yeşil kutu meselenin özü: durum değişikliği ile "bunu duyur" niyeti **aynı transaction**'da
 yazılır. Uygulama arada çökerse outbox kaydı durur ve işlem tekrar denenir.
 
 ## 9. Kaynak Kilidi
 
-```mermaid
-sequenceDiagram
-    participant A1 as AGV-1
-    participant A2 as AGV-2
-    participant API as Tasks API
-    participant BG as LockExpiryService
+![02-08-9-kaynak-kilidi](img/02-08-9-kaynak-kilidi.png)
 
-    A1->>API: POST /resources/{id}/lock
-    API-->>A1: 200 kilit alindi - expires_at
-
-    A2->>API: POST /resources/{id}/lock
-    API-->>A2: 409 kaynak mesgul
-
-    alt Normal akis
-        A1->>API: DELETE /resources/{id}/lock
-        API-->>A1: 200 birakildi
-    else AGV ariza yapti
-        BG->>API: suresi dolan kilitleri serbest birak
-        Note over BG: IHostedService<br/>periyodik calisir
-    end
-```
+<sub>Diyagram kaynagi: `docs/diagrams/02-08-9-kaynak-kilidi.mmd`</sub>
 
 Zaman aşımı olmasaydı arızalanan bir AGV koridoru kalıcı olarak bloke ederdi.
 `IHostedService` bu senaryo için var — yapay bir gereksinim değil.
@@ -372,20 +175,9 @@ Zaman aşımı olmasaydı arızalanan bir AGV koridoru kalıcı olarak bloke ede
 
 ## 13. Ekranlar
 
-```mermaid
-flowchart LR
-    D["Fleet Dashboard<br/>AGV durumlari, canli"]
-    TL["Task List<br/>filtre + sayfalama"]
-    TD["Task Detail<br/>atama gecmisi, kilitler"]
-    NT["New Task<br/>gorev olusturma"]
+![02-09-13-ekranlar](img/02-09-13-ekranlar.png)
 
-    D -->|"AGV sec"| TD
-    TL -->|"gorev sec"| TD
-    TL --> NT
-    NT -->|"olustur"| TL
-
-    style D fill:#d5e8d4,stroke:#82b366
-```
+<sub>Diyagram kaynagi: `docs/diagrams/02-09-13-ekranlar.mmd`</sub>
 
 ## 14. Kabul Kriterleri
 

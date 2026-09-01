@@ -37,6 +37,10 @@ python3 docs/onizle.py     # docs/onizleme.html uretir
 
 ## Mimari
 
+### Modular monolith nedir
+
+![Modular monolith](docs/img/modular-monolith-nedir.png)
+
 ### Cozum yapisi
 
 ![Cozum yapisi](docs/img/cozum-yapisi.png)

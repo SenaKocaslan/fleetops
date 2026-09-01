@@ -1,0 +1,67 @@
+erDiagram
+    AGV {
+        guid id PK
+        string code
+        string status
+        int battery_level
+        guid current_location_id "FK yok - modul disi"
+        bytea row_version
+    }
+
+    TRANSPORT_TASK {
+        guid id PK
+        string status
+        guid from_location_id "FK yok - modul disi"
+        guid to_location_id "FK yok - modul disi"
+        string material_code
+        int quantity
+        int priority
+        timestamp created_at
+        bytea row_version
+    }
+    TASK_ASSIGNMENT {
+        guid id PK
+        guid task_id FK
+        guid agv_id "FK yok - modul disi"
+        timestamp assigned_at
+        timestamp completed_at
+    }
+    RESOURCE {
+        guid id PK
+        string code
+        string kind
+    }
+    RESOURCE_LOCK {
+        guid id PK
+        guid resource_id FK
+        guid agv_id "FK yok - modul disi"
+        timestamp acquired_at
+        timestamp expires_at
+        bytea row_version
+    }
+    OUTBOX_MESSAGE {
+        guid id PK
+        string type
+        jsonb payload
+        timestamp occurred_at
+        timestamp processed_at
+    }
+
+    LOCATION {
+        guid id PK
+        string code
+        string zone
+    }
+    STOCK_MOVEMENT {
+        guid id PK
+        string material_code
+        int quantity
+        guid from_location_id FK
+        guid to_location_id FK
+        guid source_task_id "FK yok - modul disi"
+        timestamp moved_at
+    }
+
+    TRANSPORT_TASK ||--o{ TASK_ASSIGNMENT : "atanir"
+    RESOURCE ||--o{ RESOURCE_LOCK : "kilitlenir"
+    LOCATION ||--o{ STOCK_MOVEMENT : "kaynak/hedef"
