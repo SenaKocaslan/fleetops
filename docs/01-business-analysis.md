@@ -31,8 +31,8 @@ Kırmızı üç adım problemin kaynağı: koordinasyon insana bağlı, kayıt m
 
 ```mermaid
 flowchart LR
-    A["AGV musait<br/>gorev ister"] --> B["Sistem gorevi atar<br/><i>tek AGV'ye</i>"]
-    B --> C["Kaynak kilidi<br/><i>koridor/kapi</i>"]
+    A["AGV musait<br/>gorev ister"] --> B["Sistem gorevi atar<br/>tek AGV icin"]
+    B --> C["Kaynak kilidi<br/>koridor veya kapi"]
     C --> D["Gorev tamamlanir"]
     D --> E["Stok hareketi<br/>otomatik islenir"]
 
@@ -55,10 +55,9 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph d1[" "]
-        OP(["Operator"])
-        SV(["Supervisor"])
-    end
+    OP["Operator"]
+    SV["Supervisor"]
+    AGV["AGV<br/>arac uzerindeki yazilim"]
 
     subgraph sistem["FleetOps"]
         API["Web API + Blazor UI"]
@@ -66,18 +65,12 @@ flowchart TB
         API <--> DB
     end
 
-    subgraph d2[" "]
-        AGV["AGV<br/><i>arac uzerindeki yazilim</i>"]
-    end
-
     OP -->|"gorev olusturur, filoyu izler"| API
     SV -->|"raporlar, politika ayari"| API
-    AGV -->|"gorev ister, durum bildirir<br/>HTTP"| API
+    AGV -->|"gorev ister, durum bildirir"| API
     API -->|"gorev atamasi, kilit yaniti"| AGV
 
     style sistem fill:#dae8fc,stroke:#6c8ebf
-    style d1 fill:none,stroke:none
-    style d2 fill:none,stroke:none
 ```
 
 **Sistemin sorumluluğunda olan:** görev havuzu, atama kararı, kaynak kilidi, stok hareketi,

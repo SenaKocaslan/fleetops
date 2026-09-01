@@ -4,26 +4,18 @@
 
 ```mermaid
 flowchart TB
-    subgraph host["Host — ASP.NET Core"]
-        direction TB
-        subgraph mods[" "]
-            direction LR
-            F["<b>Fleet</b><br/>AGV kayit, durum, batarya"]
-            T["<b>Tasks</b><br/>gorev havuzu, atama,<br/>kaynak kilidi"]
-            S["<b>Stock</b><br/>lokasyon, malzeme hareketi"]
-        end
-        SK["<b>SharedKernel</b><br/>ICommand IQuery Result&lt;T&gt;<br/>IntegrationEvent Outbox"]
-    end
+    T["Tasks<br/>gorev havuzu, atama, kaynak kilidi"]
+    F["Fleet<br/>AGV kayit, durum, batarya"]
+    S["Stock<br/>lokasyon, malzeme hareketi"]
+    SK["SharedKernel<br/>ICommand, IQuery, Result<br/>IntegrationEvent, Outbox"]
 
-    T -.->|"TaskCompleted<br/><i>integration event</i>"| S
+    T -.->|"TaskCompleted"| S
     T -.->|"AgvAssigned"| F
 
-    F --> SK
     T --> SK
+    F --> SK
     S --> SK
 
-    style mods fill:none,stroke:none
-    style host fill:#f5f5f5,stroke:#999999
     style T fill:#d5e8d4,stroke:#82b366
     style SK fill:#fff2cc,stroke:#d6b656
 ```
@@ -44,10 +36,10 @@ kaynak kilidi ve outbox hep bu modülde.
 
 ```mermaid
 flowchart TB
-    E["<b>Endpoints</b><br/>minimal API"]
-    A["<b>Application</b><br/>command/query handler, DTO"]
-    D["<b>Domain</b><br/>aggregate, kurallar, domain event"]
-    I["<b>Infrastructure</b><br/>DbContext, repository, EF konfigurasyon"]
+    E["Endpoints<br/>minimal API"]
+    A["Application<br/>command/query handler, DTO"]
+    D["Domain<br/>aggregate, kurallar, domain event"]
+    I["Infrastructure<br/>DbContext, repository, EF konfigurasyon"]
 
     E --> A
     A --> D
@@ -65,9 +57,9 @@ Her modül kendi içinde bu dört katmanı taşır. Bağımlılık yönü GameSt
 
 ```mermaid
 flowchart LR
-    OP(["Operator"])
-    SV(["Supervisor"])
-    AGV(["AGV"])
+    OP["Operator"]
+    SV["Supervisor"]
+    AGV["AGV"]
 
     subgraph sistem["FleetOps"]
         UC1["UC-1<br/>Gorev olustur"]
@@ -382,10 +374,10 @@ Zaman aşımı olmasaydı arızalanan bir AGV koridoru kalıcı olarak bloke ede
 
 ```mermaid
 flowchart LR
-    D["<b>Fleet Dashboard</b><br/>AGV durumlari, canli"]
-    TL["<b>Task List</b><br/>filtre + sayfalama"]
-    TD["<b>Task Detail</b><br/>atama gecmisi, kilitler"]
-    NT["<b>New Task</b><br/>gorev olusturma"]
+    D["Fleet Dashboard<br/>AGV durumlari, canli"]
+    TL["Task List<br/>filtre + sayfalama"]
+    TD["Task Detail<br/>atama gecmisi, kilitler"]
+    NT["New Task<br/>gorev olusturma"]
 
     D -->|"AGV sec"| TD
     TL -->|"gorev sec"| TD
