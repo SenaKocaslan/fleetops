@@ -1,0 +1,267 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="cozum" name="Cozum Yapisi">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1020" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="t" value="FleetOps &#8212; Cozum Yapisi" style="text;html=1;fontSize=24;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="450" y="25" width="600" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="Oklar proje referanslarini gosterir. Moduller birbirine referans vermez." style="text;html=1;fontSize=13;align=center;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="450" y="62" width="600" height="24" as="geometry" />
+        </mxCell>
+
+        <mxCell id="api" value="&lt;b&gt;FleetOps.Api&lt;/b&gt;&#160;&#160;&lt;i&gt;Sdk=Microsoft.NET.Sdk.Web&lt;/i&gt;&lt;br&gt;&lt;br&gt;Program.cs &#183; composition root&lt;br&gt;Blazor &#183; JWT &#183; SignalR hub" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="540" y="115" width="420" height="95" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mf" value="&lt;b&gt;FleetOps.Fleet&lt;/b&gt;&lt;br&gt;&lt;br&gt;Application &#183; Infrastructure&lt;br&gt;Endpoints" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="150" y="295" width="290" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="mt" value="&lt;b&gt;FleetOps.Tasks&lt;/b&gt;&lt;br&gt;&lt;br&gt;Application &#183; Infrastructure&lt;br&gt;Endpoints &#183; Outbox" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;strokeWidth=2.5;" vertex="1" parent="1">
+          <mxGeometry x="605" y="295" width="290" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ms" value="&lt;b&gt;FleetOps.Stock&lt;/b&gt;&lt;br&gt;&lt;br&gt;Application &#183; Infrastructure&lt;br&gt;Endpoints" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="295" width="290" height="95" as="geometry" />
+        </mxCell>
+
+        <mxCell id="y1" value="&lt;b&gt;YASAK&lt;/b&gt;&lt;br&gt;modul &#8594; modul" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="470" y="320" width="110" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="y2" value="&lt;b&gt;YASAK&lt;/b&gt;&lt;br&gt;modul &#8594; modul" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="925" y="320" width="110" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="df" value="&lt;b&gt;FleetOps.Fleet.Domain&lt;/b&gt;&lt;br&gt;Agv aggregate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="150" y="460" width="290" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dt" value="&lt;b&gt;FleetOps.Tasks.Domain&lt;/b&gt;&lt;br&gt;TransportTask &#183; ResourceLock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;strokeWidth=2.5;" vertex="1" parent="1">
+          <mxGeometry x="605" y="460" width="290" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ds" value="&lt;b&gt;FleetOps.Stock.Domain&lt;/b&gt;&lt;br&gt;Location &#183; StockMovement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="460" width="290" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sk" value="&lt;b&gt;FleetOps.SharedKernel&lt;/b&gt;&lt;br&gt;ICommand &#183; IQuery &#183; ICommandHandler &#183; IQueryHandler&lt;br&gt;IntegrationEvent &#183; Outbox altyapisi &#183; Decorator tabanlari&lt;br&gt;&lt;br&gt;&lt;i&gt;Tum modul projeleri buna referans verir.&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="150" y="620" width="550" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="skd" value="&lt;b&gt;FleetOps.SharedKernel.Domain&lt;/b&gt;&lt;br&gt;Entity &#183; AggregateRoot &#183; IDomainEvent &#183; Result&lt;br&gt;&lt;b&gt;NuGet paketi: 0&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;Tum *.Domain projeleri buna referans verir.&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;strokeWidth=2.5;" vertex="1" parent="1">
+          <mxGeometry x="800" y="620" width="550" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="mf"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="mt"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="ms"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="mf" target="df"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="mt" target="dt"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="ms" target="ds"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#d6b656;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="sk" target="skd"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="not" value="&lt;b&gt;Neden modul basina iki proje?&lt;/b&gt;&lt;br&gt;Domain projesi hicbir NuGet paketi icermez. Bu, klasor duzeniyle degil&lt;br&gt;&lt;b&gt;derleyiciyle&lt;/b&gt; garanti edilir: aggregate icine EF Core using'i eklenemez,&lt;br&gt;cunku paket o projede yok.&lt;br&gt;&lt;br&gt;&lt;b&gt;Moduller neden birbirini gormez?&lt;/b&gt;&lt;br&gt;Iletisim yalnizca integration event ile olur. Tasks modulu Stock'u&lt;br&gt;dogrudan cagirsaydi modul siniri yalnizca isimlendirmede kalirdi." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;verticalAlign=top;spacingLeft=14;spacingTop=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="150" y="790" width="550" height="175" as="geometry" />
+        </mxCell>
+
+        <mxCell id="test" value="&lt;b&gt;tests/&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;FleetOps.UnitTests&lt;/b&gt;&#160;&#8594; *.Domain projeleri&lt;br&gt;Aggregate kurallari ve handler'lar &#183; veritabani gerekmez&lt;br&gt;&lt;br&gt;&lt;b&gt;FleetOps.IntegrationTests&lt;/b&gt;&#160;&#8594; FleetOps.Api&lt;br&gt;Concurrency ve outbox akislari &#183; Testcontainers ile PostgreSQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=14;spacingTop=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="800" y="790" width="550" height="175" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="modul" name="Modul Ic Mimarisi">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1560" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="t" value="Modul Ic Mimarisi &#8212; ornek: Tasks" style="text;html=1;fontSize=24;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="25" width="600" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="Her modul kendi icinde bu dort katmani tasir." style="text;html=1;fontSize=13;align=center;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="480" y="62" width="600" height="24" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ep" value="&lt;b&gt;Endpoints&lt;/b&gt;&lt;br&gt;POST /tasks &#183; POST /tasks/claim &#183; POST /tasks/{id}/complete&lt;br&gt;POST /resources/{id}/lock &#183; GET /tasks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="115" width="620" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dec" value="&lt;b&gt;Decorator zinciri&lt;/b&gt;&lt;br&gt;LoggingDecorator &#8594; TransactionDecorator &#8594; Handler&lt;br&gt;&lt;i&gt;handler kodu degismeden log ve transaction kazanir&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="250" width="620" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="app" value="&lt;b&gt;Application&lt;/b&gt;&lt;br&gt;&lt;br&gt;ClaimTaskCommandHandler &#183; CompleteTaskCommandHandler&lt;br&gt;GetTaskListQueryHandler&lt;br&gt;&lt;br&gt;&lt;b&gt;Arayuzler burada tanimlanir:&lt;/b&gt;&lt;br&gt;ITransportTaskRepository &#183; IAssignmentPolicy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="385" width="620" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dom" value="&lt;b&gt;Domain&lt;/b&gt;&#160;&#160;&lt;i&gt;ayri proje, NuGet: 0&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TransportTask&lt;/b&gt; (aggregate root)&lt;br&gt;Assign() &#183; Start() &#183; Complete() &#183; Cancel()&lt;br&gt;property'ler private set &#183; gecersiz gecis reddedilir&lt;br&gt;&lt;br&gt;&lt;b&gt;ResourceLock&lt;/b&gt; &#183; TaskStatus &#183; TaskCompletedDomainEvent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;strokeWidth=2.5;" vertex="1" parent="1">
+          <mxGeometry x="400" y="640" width="620" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="inf" value="&lt;b&gt;Infrastructure&lt;/b&gt;&lt;br&gt;&lt;br&gt;TasksDbContext&lt;br&gt;&lt;i&gt;kendi semasi, kendi migration'i&lt;/i&gt;&lt;br&gt;&lt;br&gt;TransportTaskRepository&lt;br&gt;NearestAgvPolicy&lt;br&gt;OutboxProcessor &#183; LockExpiryService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="385" width="320" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="db" value="PostgreSQL&lt;br&gt;&lt;i&gt;tasks semasi&lt;/i&gt;" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="680" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="ep" target="dec"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dec" target="app"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a3" value="kurallari calistirir" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;fontSize=12;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="app" target="dom"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="a4" value="uygular" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=3;strokeColor=#b85450;fontSize=12;fontColor=#b85450;exitX=0;exitY=0.35;exitDx=0;exitDy=0;entryX=1;entryY=0.35;entryDx=0;entryDy=0;" edge="1" parent="1" source="inf" target="app"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="a5" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#d79b00;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="inf" target="dom">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1110" y="505" /><mxPoint x="1110" y="720" /></Array></mxGeometry>
+        </mxCell>
+
+        <mxCell id="a6" value="EF Core" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;fontSize=12;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="inf" target="db"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="not" value="&lt;b&gt;Bagimlilik kurali&lt;/b&gt;&lt;br&gt;Ok yonu iceri bakar. Infrastructure, Application'da tanimli&lt;br&gt;arayuzleri uygular; Application onu tanimaz. Domain hicbir&lt;br&gt;seye bakmaz ve hicbir paket icermez.&lt;br&gt;&lt;br&gt;&lt;b&gt;Strategy: IAssignmentPolicy&lt;/b&gt;&lt;br&gt;Gorevi hangi AGV alacak? En yakin mi, en dolu bataryali mi,&lt;br&gt;en az mesgul mu &#8212; politika degisebilir olmali.&lt;br&gt;&lt;br&gt;&lt;b&gt;Repository: ITransportTaskRepository&lt;/b&gt;&lt;br&gt;Aggregate'i butun olarak yukler ve kaydeder. GameStore'da&lt;br&gt;kaldirdigimiz CRUD sarmalayicisi degil." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;verticalAlign=top;spacingLeft=14;spacingTop=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="565" width="320" height="235" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="teknoloji" name="Teknoloji Haritasi">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="t" value="Teknoloji Haritasi" style="text;html=1;fontSize=24;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="450" y="25" width="600" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="Her teknoloji, yaninda yazan somut problemi cozdugu icin listede." style="text;html=1;fontSize=13;align=center;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="450" y="60" width="600" height="24" as="geometry" />
+        </mxCell>
+
+        <mxCell id="k1" value="&lt;b&gt;Sunum&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="150" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="k1i" value="&lt;b&gt;Blazor&lt;/b&gt;&#160;&#160;filo panosu, gorev listesi&lt;br&gt;&lt;b&gt;SignalR&lt;/b&gt;&#160;&#160;AGV durumu canli guncellensin&lt;br&gt;&lt;b&gt;JWT + roller&lt;/b&gt;&#160;&#160;Operator / Supervisor ayrimi&lt;br&gt;&lt;b&gt;Minimal API&lt;/b&gt;&#160;&#160;AGV ve arayuz uc noktalari" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;verticalAlign=middle;spacingLeft=14;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="250" y="120" width="1170" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="k2" value="&lt;b&gt;Uygulama&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="275" width="150" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="k2i" value="&lt;b&gt;CQRS&lt;/b&gt;&#160;&#160;yazma aggregate'ten, okuma projeksiyondan&lt;br&gt;&lt;b&gt;Decorator&lt;/b&gt;&#160;&#160;log ve transaction handler'i kirletmesin&lt;br&gt;&lt;b&gt;Strategy&lt;/b&gt;&#160;&#160;atama kurali degisebilir olsun&lt;br&gt;&lt;b&gt;Result&lt;/b&gt;&#160;&#160;beklenen is hatalari istisna olmadan donsun&lt;br&gt;&lt;b&gt;Options&lt;/b&gt;&#160;&#160;kilit suresi, batarya esigi koda gomulmesin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;verticalAlign=middle;spacingLeft=14;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="250" y="275" width="1170" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="k3" value="&lt;b&gt;Domain&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="460" width="150" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="k3i" value="&lt;b&gt;Aggregate + rich domain&lt;/b&gt;&#160;&#160;gecersiz durum gecisi imkansiz olsun&lt;br&gt;&lt;b&gt;State machine&lt;/b&gt;&#160;&#160;gecisler tek yerde tanimli olsun&lt;br&gt;&lt;b&gt;Domain events&lt;/b&gt;&#160;&#160;aggregate ne oldugunu duyursun&lt;br&gt;&lt;i&gt;Bu katmanda hicbir NuGet paketi yoktur.&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;align=left;verticalAlign=middle;spacingLeft=14;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="250" y="460" width="1170" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="k4" value="&lt;b&gt;Altyapi&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="615" width="150" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="k4i" value="&lt;b&gt;EF Core 10 + Npgsql&lt;/b&gt;&#160;&#160;modul basina DbContext ve migration&lt;br&gt;&lt;b&gt;Optimistic concurrency&lt;/b&gt;&#160;&#160;gorev/kilit iki kez verilmesin&lt;br&gt;&lt;b&gt;Repository&lt;/b&gt;&#160;&#160;aggregate butun olarak yuklensin/kaydedilsin&lt;br&gt;&lt;b&gt;Outbox&lt;/b&gt;&#160;&#160;kayit gitti ama olay gitmedi durumu olmasin&lt;br&gt;&lt;b&gt;IHostedService&lt;/b&gt;&#160;&#160;takili kilitler serbest kalsin, outbox islensin&lt;br&gt;&lt;b&gt;PostgreSQL&lt;/b&gt;&#160;&#160;jsonb, satir kilidi, guclu transaction destegi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;align=left;verticalAlign=middle;spacingLeft=14;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="250" y="615" width="1170" height="185" as="geometry" />
+        </mxCell>
+
+        <mxCell id="k5" value="&lt;b&gt;Capraz&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="825" width="150" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="k5i" value="&lt;b&gt;xUnit + NSubstitute&lt;/b&gt;&#160;&#160;domain ve handler birim testleri, veritabanisiz&lt;br&gt;&lt;b&gt;Testcontainers&lt;/b&gt;&#160;&#160;concurrency gercek PostgreSQL'e karsi kanitlanir&lt;br&gt;&lt;b&gt;Docker Compose&lt;/b&gt;&#160;&#160;tek komutla kurulum&lt;br&gt;&lt;b&gt;ILogger + scope&lt;/b&gt;&#160;&#160;bir gorevin izi loglardan surulsun" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;verticalAlign=middle;spacingLeft=14;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="250" y="825" width="1170" height="130" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="akis" name="Calisma Ani Akislari">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="t" value="Calisma Ani Akislari" style="text;html=1;fontSize=24;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="450" y="25" width="600" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b1" value="&lt;b&gt;1 &#183; Gorev talebi &#8212; concurrency&lt;/b&gt;" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="70" y="95" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" value="AGV-1 ve AGV-2&lt;br&gt;ayni anda talep" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="140" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" value="ClaimTaskCommand&lt;br&gt;&lt;i&gt;IAssignmentPolicy&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="290" y="140" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" value="task.Assign(agv)&lt;br&gt;&lt;i&gt;aggregate kurali&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="510" y="140" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" value="UPDATE WHERE&lt;br&gt;row_version esit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="730" y="140" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" value="&lt;b&gt;200&lt;/b&gt; gorev atandi&lt;br&gt;&lt;b&gt;409&lt;/b&gt; digerine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="950" y="140" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c1e" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="c1" target="c2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c2e" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="c2" target="c3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c3e" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="c3" target="c4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c4e" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="c4" target="c5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c6" value="Veritabaninda tek TaskAssignment satiri kalir. Testcontainers ile es zamanli istek gonderilerek kanitlanir." style="text;html=1;fontSize=12;align=left;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="70" y="205" width="1060" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b2" value="&lt;b&gt;2 &#183; Gorev tamamlama &#8212; outbox ve integration event&lt;/b&gt;" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="70" y="290" width="600" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="o0" value="AGV: gorev bitti" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="380" width="160" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="otx" value="&lt;b&gt;Tek transaction&lt;/b&gt;&lt;br&gt;&lt;br&gt;TransportTask &#8594; Completed&lt;br&gt;+&lt;br&gt;OutboxMessage eklenir" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;strokeWidth=2.5;" vertex="1" parent="1">
+          <mxGeometry x="270" y="350" width="230" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="op" value="OutboxProcessor&lt;br&gt;&lt;i&gt;IHostedService&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="640" y="380" width="200" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="os" value="Stock modulu&lt;br&gt;StockMovement kaydi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="380" width="220" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="oe1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="o0" target="otx"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="oe2" value="TaskCompleted" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;fontSize=11;" edge="1" parent="1" source="otx" target="op"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="oe3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="op" target="os"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="o6" value="Durum degisikligi ile &quot;bunu duyur&quot; niyeti ayni transaction'da yazilir. Uygulama arada cokerse outbox kaydi durur ve tekrar denenir." style="text;html=1;fontSize=12;align=left;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="70" y="470" width="1060" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b3" value="&lt;b&gt;3 &#183; Kaynak kilidi &#8212; zaman asimi&lt;/b&gt;" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="70" y="555" width="600" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="l1" value="AGV-1: kilit ister&lt;br&gt;&lt;b&gt;200&lt;/b&gt; kilit alindi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="605" width="190" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="l2" value="AGV-2: kilit ister&lt;br&gt;&lt;b&gt;409&lt;/b&gt; kaynak mesgul" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="680" width="190" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="l3" value="ResourceLock&lt;br&gt;expires_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="640" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l4" value="Normal: AGV birakir" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="605" width="230" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="l5" value="Ariza: LockExpiryService&lt;br&gt;&lt;i&gt;IHostedService serbest birakir&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="680" width="230" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="le1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="l1" target="l3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="le2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;dashed=1;" edge="1" parent="1" source="l2" target="l3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="le3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="l3" target="l4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="le4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;" edge="1" parent="1" source="l3" target="l5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="l6" value="Zaman asimi olmasaydi arizalanan bir AGV koridoru kalici olarak bloke ederdi. IHostedService bu senaryo icin var." style="text;html=1;fontSize=12;align=left;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="70" y="750" width="1060" height="25" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
