@@ -24,9 +24,19 @@ coverage/
 *.coverage
 *.trx
 
-# Blazor / istemci
-wwwroot/dist/
-node_modules/
+# Angular / istemci
+**/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/tmp/
+npm-debug.log*
+yarn-error.log*
+
+# Playwright (e2e) ciktilari
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
 
 # Isletim sistemi
 .DS_Store
