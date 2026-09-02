@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FleetOps.Api/FleetOps.Api.csproj" />
+    <Project Path="src/FleetOps.SharedKernel.Domain/FleetOps.SharedKernel.Domain.csproj" />
+    <Project Path="src/FleetOps.SharedKernel/FleetOps.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Fleet/">
+    <Project Path="src/Modules/Fleet/FleetOps.Fleet.Domain/FleetOps.Fleet.Domain.csproj" />
+    <Project Path="src/Modules/Fleet/FleetOps.Fleet/FleetOps.Fleet.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Stock/">
+    <Project Path="src/Modules/Stock/FleetOps.Stock.Domain/FleetOps.Stock.Domain.csproj" />
+    <Project Path="src/Modules/Stock/FleetOps.Stock/FleetOps.Stock.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Tasks/">
+    <Project Path="src/Modules/Tasks/FleetOps.Tasks.Domain/FleetOps.Tasks.Domain.csproj" />
+    <Project Path="src/Modules/Tasks/FleetOps.Tasks/FleetOps.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FleetOps.IntegrationTests/FleetOps.IntegrationTests.csproj" />
+    <Project Path="tests/FleetOps.UnitTests/FleetOps.UnitTests.csproj" />
+  </Folder>
+</Solution>

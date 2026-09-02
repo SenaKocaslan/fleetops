@@ -1,0 +1,47 @@
+<Project>
+
+  <!-- Tum FleetOps projeleri icin ortak ayarlar.
+       Tek yerde tutulur; 11 csproj'da tekrarlanmaz. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+
+    <!-- Nullable referans tipleri: null hatalarini derleme zamaninda yakalar -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Uyarilar birikmesin diye hata sayilir. Uyari gormezden gelinirse
+         bir sure sonra hicbiri okunmaz hale gelir. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!-- ===================================================================
+       MIMARI KURALLARI - dokuman temennisi degil, derleme hatasi.
+       =================================================================== -->
+
+  <!-- KURAL 1: *.Domain projelerine NuGet paketi eklenemez.
+       Amac: aggregate'lerin altyapidan (EF Core, ASP.NET, Npgsql)
+       bagimsiz kaldigini derleyicinin garanti etmesi. Paket projede
+       yoksa "using Microsoft.EntityFrameworkCore;" yazilamaz. -->
+  <Target Name="DomainPaketsizOlmali" BeforeTargets="Build"
+          Condition="$(MSBuildProjectName.EndsWith('.Domain'))">
+    <Error Condition="'@(PackageReference)' != ''"
+           Text="MIMARI IHLALI: '$(MSBuildProjectName)' bir Domain projesi ve NuGet paketi iceremez. Bulunan: @(PackageReference). Bu paketi ihtiyac duyan Application/Infrastructure projesine ekleyin." />
+  </Target>
+
+  <!-- KURAL 2: Bir modul baska bir modulu proje referansiyla goremez.
+       Moduller arasi iletisim yalnizca integration event ile olur. -->
+  <Target Name="ModullerBirbiriniGormez" BeforeTargets="Build"
+          Condition="$(MSBuildProjectDirectory.Contains('/Modules/'))">
+    <PropertyGroup>
+      <_BuModul>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))))</_BuModul>
+    </PropertyGroup>
+    <ItemGroup>
+      <_YabanciModulRef Include="@(ProjectReference)"
+                        Condition="$([System.String]::Copy('%(FullPath)').Contains('/Modules/')) AND !$([System.String]::Copy('%(FullPath)').Contains('/Modules/$(_BuModul)/'))" />
+    </ItemGroup>
+    <Error Condition="'@(_YabanciModulRef)' != ''"
+           Text="MIMARI IHLALI: '$(MSBuildProjectName)' ($(_BuModul) modulu) baska bir modulu dogrudan referans veriyor: @(_YabanciModulRef). Moduller arasi iletisim yalnizca integration event ile olur." />
+  </Target>
+
+</Project>

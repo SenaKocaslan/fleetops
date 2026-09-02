@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modules\Fleet\FleetOps.Fleet\FleetOps.Fleet.csproj" />
+    <ProjectReference Include="..\Modules\Tasks\FleetOps.Tasks\FleetOps.Tasks.csproj" />
+    <ProjectReference Include="..\Modules\Stock\FleetOps.Stock\FleetOps.Stock.csproj" />
+    <ProjectReference Include="..\FleetOps.SharedKernel\FleetOps.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>
