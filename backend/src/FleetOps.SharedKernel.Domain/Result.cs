@@ -1,16 +1,11 @@
 namespace FleetOps.SharedKernel.Domain;
 
-/// <summary>Beklenen bir is hatasi. Beklenmeyen hatalar exception olarak kalir.</summary>
+// Beklenen bir is hatasi. Beklenmeyen hatalar exception olarak kalir.
 public sealed record Error(string Code, string Message)
 {
     public static readonly Error None = new(string.Empty, string.Empty);
 }
 
-/// <summary>
-/// Beklenen is hatalarini exception firlatmadan dondurmek icin.
-/// "AGV musait degil" bir hata degil, gecerli bir sonuctur; exception
-/// akis kontrolu icin kullanilmaz.
-/// </summary>
 public class Result
 {
     protected Result(bool isSuccess, Error error)
@@ -50,7 +45,6 @@ public sealed class Result<TValue> : Result
 
     internal Result(TValue? value, bool isSuccess, Error error) : base(isSuccess, error) => _value = value;
 
-    /// <summary>Yalnizca IsSuccess dogruyken okunabilir.</summary>
     public TValue Value => IsSuccess
         ? _value!
         : throw new InvalidOperationException("Basarisiz sonucun degeri okunamaz.");

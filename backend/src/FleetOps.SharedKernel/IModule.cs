@@ -4,10 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace FleetOps.SharedKernel;
 
-/// <summary>
-/// Bir modulun kendini sisteme tanitma sozlesmesi. Program.cs modullerin
-/// icini bilmez; her modul kendi servislerini ve uc noktalarini kendi kaydeder.
-/// </summary>
 public interface IModule
 {
     string Name { get; }
@@ -19,11 +15,6 @@ public interface IModule
 
 public static class ModuleExtensions
 {
-    /// <summary>
-    /// Modulu kaydeder. Modul ornegi DI'a da eklenir; boylece uc nokta
-    /// eslemesi static liste tutmadan yapilabilir. Static liste, testlerde
-    /// uygulama birden cok kez ayaga kalkinca birikir ve sizinti yaratirdi.
-    /// </summary>
     public static IServiceCollection AddModule<TModule>(
         this IServiceCollection services,
         IConfiguration configuration)

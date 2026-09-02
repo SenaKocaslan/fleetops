@@ -4,10 +4,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace FleetOps.IntegrationTests;
 
-/// <summary>
-/// Iskelet dogrulamasi: gercek HTTP pipeline ayakta, moduller kendilerini
-/// IModule uzerinden kaydediyor ve uc noktalari eslesiyor.
-/// </summary>
+// Iskelet dogrulamasi: gercek HTTP pipeline ayakta, moduller kendilerini
+// IModule uzerinden kaydediyor ve uc noktalari eslesiyor.
 public class ModuleRegistrationTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;

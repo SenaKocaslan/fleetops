@@ -2,10 +2,8 @@ using FleetOps.SharedKernel.Domain;
 
 namespace FleetOps.SharedKernel;
 
-/// <summary>Sistemin durumunu degistiren istek. Sonuc dondurmez.</summary>
 public interface ICommand;
 
-/// <summary>Sistemin durumunu degistiren ve bir deger donduren istek.</summary>
 public interface ICommand<TResponse>;
 
 public interface ICommandHandler<in TCommand>

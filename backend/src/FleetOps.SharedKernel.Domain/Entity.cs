@@ -1,10 +1,5 @@
 namespace FleetOps.SharedKernel.Domain;
 
-/// <summary>
-/// Kimligi olan domain nesnesi. Esitlik, alanlara degil kimlige gore belirlenir:
-/// veritabanindan iki kez yuklenen ayni AGV, iki farkli C# nesnesi olsa da
-/// ayni varliktir.
-/// </summary>
 public abstract class Entity
 {
     public Guid Id { get; protected set; }
@@ -19,7 +14,6 @@ public abstract class Entity
         Id = id;
     }
 
-    /// <summary>ORM'in nesneyi yeniden olusturabilmesi icin. Elle cagrilmaz.</summary>
     protected Entity()
     {
     }
