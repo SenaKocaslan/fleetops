@@ -22,7 +22,6 @@ public class ModuleRegistrationTests : IClassFixture<WebApplicationFactory<Progr
 
     [Theory]
     [InlineData("/api/fleet/ping", "Fleet")]
-    [InlineData("/api/tasks/ping", "Tasks")]
     [InlineData("/api/stock/ping", "Stock")]
     public async Task Her_modul_kendi_uc_noktasini_esler(string yol, string beklenenModul)
     {

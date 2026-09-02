@@ -1,0 +1,24 @@
+.ust {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  background: #111827;
+  color: #f9fafb;
+}
+
+.ust h1 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.ust span {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+main {
+  max-width: 960px;
+  margin: 1.25rem auto;
+  padding: 0 1rem;
+}

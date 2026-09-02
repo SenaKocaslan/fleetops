@@ -1,0 +1,66 @@
+<section class="panel">
+  <h2>Yeni gorev</h2>
+  <p class="not">
+    Lokasyon secimi Stock modulu tamamlaninca eklenecek; su an gecici kimlik uretiliyor.
+  </p>
+
+  <form (ngSubmit)="create()" #form="ngForm" data-testid="task-form">
+    <label>
+      Malzeme kodu
+      <input name="materialCode" [(ngModel)]="materialCode" required data-testid="material-code" />
+    </label>
+    <label>
+      Miktar
+      <input name="quantity" type="number" [(ngModel)]="quantity" min="1" data-testid="quantity" />
+    </label>
+    <label>
+      Oncelik
+      <input name="priority" type="number" [(ngModel)]="priority" data-testid="priority" />
+    </label>
+    <button type="submit" [disabled]="form.invalid" data-testid="submit">Olustur</button>
+  </form>
+
+  @if (error()) {
+    <p class="hata" data-testid="error">{{ error() }}</p>
+  }
+</section>
+
+<section class="panel">
+  <div class="baslik">
+    <h2>Gorev havuzu</h2>
+    <button type="button" (click)="refresh()" data-testid="refresh">Yenile</button>
+  </div>
+
+  @if (loading()) {
+    <p data-testid="loading">Yukleniyor...</p>
+  } @else if (error()) {
+    <!-- Liste alinamadiginda "gorev yok" demek yaniltici olur:
+         veri yoklugu ile veriye ulasamamak farkli seylerdir. -->
+    <p class="hata" data-testid="list-error">Liste alinamadi.</p>
+  } @else if (tasks().length === 0) {
+    <p data-testid="empty">Henuz gorev yok.</p>
+  } @else {
+    <table data-testid="task-table">
+      <thead>
+        <tr>
+          <th>Malzeme</th>
+          <th>Miktar</th>
+          <th>Oncelik</th>
+          <th>Durum</th>
+          <th>AGV</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (task of tasks(); track task.id) {
+          <tr data-testid="task-row">
+            <td data-testid="task-material">{{ task.materialCode }}</td>
+            <td>{{ task.quantity }}</td>
+            <td>{{ task.priority }}</td>
+            <td><span class="durum">{{ task.status }}</span></td>
+            <td>{{ task.assignedAgvId ?? '-' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>
