@@ -1,0 +1,19 @@
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #e3e3e3;
+  text-align: left;
+}
+
+.serbest {
+  color: #2c7a2c;
+}
+
+.kilitli {
+  color: #a15c00;
+}

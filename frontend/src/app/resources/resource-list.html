@@ -1,0 +1,73 @@
+<section class="panel">
+  <div class="baslik">
+    <h2>Paylasilan kaynaklar</h2>
+    <button type="button" (click)="refresh()" data-testid="resource-refresh">Yenile</button>
+  </div>
+
+  <p class="not">
+    Bir kaynagi ayni anda tek AGV tutabilir. Kilitlerin suresi dolar; takilan bir
+    aracin kilidi arka plandaki servis tarafindan serbest birakilir.
+  </p>
+
+  @if (lockError()) {
+    <p class="hata" data-testid="lock-error">{{ lockError() }}</p>
+  }
+
+  @if (loading()) {
+    <p data-testid="resource-loading">Yukleniyor...</p>
+  } @else if (error()) {
+    <p class="hata" data-testid="resource-list-error">{{ error() }}</p>
+  } @else {
+    <table data-testid="resource-table">
+      <thead>
+        <tr>
+          <th>Kaynak</th>
+          <th>Tur</th>
+          <th>Durum</th>
+          <th>Islem</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (resource of resources(); track resource.id) {
+          <tr data-testid="resource-row">
+            <td data-testid="resource-code">{{ resource.code }}</td>
+            <td>{{ resource.kind }}</td>
+            <td data-testid="resource-holder">
+              @if (resource.lockedByAgvId) {
+                <span class="kilitli">{{ agvKodu(resource.lockedByAgvId) }}</span>
+              } @else {
+                <span class="serbest">Serbest</span>
+              }
+            </td>
+            <td>
+              @if (resource.lockedByAgvId) {
+                <button type="button" data-testid="release" (click)="release(resource)">
+                  Birak
+                </button>
+              } @else {
+                <select
+                  data-testid="resource-agv-select"
+                  [value]="secim()[resource.id] ?? ''"
+                  (change)="secimYap(resource.id, $event)"
+                >
+                  <option value="">AGV secin</option>
+                  @for (agv of agvs(); track agv.id) {
+                    <option [value]="agv.id">{{ agv.code }}</option>
+                  }
+                </select>
+                <button
+                  type="button"
+                  data-testid="lock"
+                  [disabled]="!secim()[resource.id]"
+                  (click)="lock(resource.id)"
+                >
+                  Kilitle
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

@@ -22,3 +22,20 @@ main {
   margin: 1.25rem auto;
   padding: 0 1rem;
 }
+
+.gezinme {
+  display: flex;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #e3e3e3;
+}
+
+.gezinme a {
+  color: #444;
+  text-decoration: none;
+}
+
+.gezinme a.etkin {
+  font-weight: 600;
+  color: #1a1a1a;
+}

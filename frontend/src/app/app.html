@@ -3,6 +3,13 @@
   <span>AGV filo ve gorev yonetimi</span>
 </header>
 
+<nav class="gezinme">
+  <a routerLink="/" routerLinkActive="etkin" [routerLinkActiveOptions]="{ exact: true }" data-testid="nav-tasks">
+    Gorevler
+  </a>
+  <a routerLink="/kaynaklar" routerLinkActive="etkin" data-testid="nav-resources">Kaynaklar</a>
+</nav>
+
 <main>
   <router-outlet />
 </main>
