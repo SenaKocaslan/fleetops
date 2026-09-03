@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { agvSecilebilirOlanaKadarBekle, gorevTamamla } from './yardimcilar';
 
 // Atama akisi: tarayicidan AGV secip gorevi atamak gercekten calisiyor mu?
 test.describe('Gorev atama', () => {
@@ -28,6 +29,7 @@ test.describe('Gorev atama', () => {
 
   test('secilen AGV goreve atanir ve listede kodu gorunur', async ({ page }) => {
     const malzeme = await gorevOlustur(page);
+    await agvSecilebilirOlanaKadarBekle(page, 'AGV-01');
     const satir = page.getByTestId('task-row').filter({ hasText: malzeme });
 
     await agvSec(satir, 'AGV-01');
@@ -37,6 +39,8 @@ test.describe('Gorev atama', () => {
     const atanmis = page.getByTestId('task-row').filter({ hasText: malzeme });
     await expect(atanmis).toContainText('Assigned');
     await expect(atanmis.getByTestId('task-agv')).toHaveText('AGV-01');
+
+    await gorevTamamla(page, malzeme);
   });
 
   test('AGV secilmeden atama butonu basilamaz', async ({ page }) => {
@@ -54,12 +58,16 @@ test.describe('Gorev atama', () => {
     // veriliyor; buraya kadar dogru tasindigini kontrol ediyoruz.
     const secenekler = await satir.getByTestId('agv-select').locator('option').allTextContents();
 
-    expect(secenekler.some((s) => s.includes('AGV-01'))).toBe(true);
+    // Belirli bir AGV'nin orada oldugunu iddia etmiyoruz: musaitlik artik
+    // olaylarla degisiyor ve baska testler etkileyebilir. Iddia kural:
+    // sarjda ve dusuk bataryali AGV asla secenek olamaz.
     expect(secenekler.some((s) => s.includes('AGV-03'))).toBe(false);
+    expect(secenekler.length).toBeGreaterThan(1);
   });
 
   test('atanmis gorevde atama kontrolleri gosterilmez', async ({ page }) => {
     const malzeme = await gorevOlustur(page);
+    await agvSecilebilirOlanaKadarBekle(page, 'AGV-02');
     const satir = page.getByTestId('task-row').filter({ hasText: malzeme });
 
     await agvSec(satir, 'AGV-02');
@@ -68,5 +76,7 @@ test.describe('Gorev atama', () => {
     const atanmis = page.getByTestId('task-row').filter({ hasText: malzeme });
     await expect(atanmis).toContainText('Assigned');
     await expect(atanmis.getByTestId('assign')).toHaveCount(0);
+
+    await gorevTamamla(page, malzeme);
   });
 });

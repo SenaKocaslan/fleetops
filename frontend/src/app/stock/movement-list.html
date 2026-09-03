@@ -1,0 +1,43 @@
+<section class="panel">
+  <div class="baslik">
+    <h2>Stok hareketleri</h2>
+    <button type="button" (click)="refresh()" data-testid="movement-refresh">Yenile</button>
+  </div>
+
+  <p class="not">
+    Bu kayitlar elle olusturulmaz. Bir gorev tamamlandiginda Tasks modulu bir olay
+    yayinlar, olay outbox uzerinden Stock moduluna teslim edilir ve hareket burada
+    olusur.
+  </p>
+
+  @if (loading()) {
+    <p data-testid="movement-loading">Yukleniyor...</p>
+  } @else if (error()) {
+    <p class="hata" data-testid="movement-list-error">{{ error() }}</p>
+  } @else if (movements().length === 0) {
+    <p data-testid="movement-empty">Henuz stok hareketi yok.</p>
+  } @else {
+    <table data-testid="movement-table">
+      <thead>
+        <tr>
+          <th>Malzeme</th>
+          <th>Miktar</th>
+          <th>Nereden</th>
+          <th>Nereye</th>
+          <th>Zaman</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of movements(); track m.id) {
+          <tr data-testid="movement-row">
+            <td data-testid="movement-material">{{ m.materialCode }}</td>
+            <td>{{ m.quantity }}</td>
+            <td>{{ m.fromLocationCode }}</td>
+            <td>{{ m.toLocationCode }}</td>
+            <td>{{ m.movedAtUtc | date: 'short' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

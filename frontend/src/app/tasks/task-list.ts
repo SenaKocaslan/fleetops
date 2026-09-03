@@ -2,6 +2,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AgvService } from '../fleet/agv.service';
 import { AgvSummary } from '../fleet/agv.model';
+import { StockService } from '../stock/stock.service';
+import { LocationSummary } from '../stock/stock.model';
 import { TaskService } from './task.service';
 import { TaskSummary } from './task.model';
 
@@ -14,9 +16,11 @@ import { TaskSummary } from './task.model';
 export class TaskList {
   private readonly service = inject(TaskService);
   private readonly agvService = inject(AgvService);
+  private readonly stockService = inject(StockService);
 
   protected readonly tasks = signal<TaskSummary[]>([]);
   protected readonly agvs = signal<AgvSummary[]>([]);
+  protected readonly locations = signal<LocationSummary[]>([]);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly assignError = signal<string | null>(null);
@@ -36,6 +40,8 @@ export class TaskList {
   protected materialCode = '';
   protected quantity = 1;
   protected priority = 1;
+  protected fromLocationId = '';
+  protected toLocationId = '';
 
   constructor() {
     this.refresh();
@@ -43,6 +49,36 @@ export class TaskList {
       next: (kayitlar) => this.agvs.set(kayitlar),
       // AGV listesi alinamazsa gorev listesi yine calisir; atama yapilamaz.
       error: () => this.agvs.set([]),
+    });
+
+    // Lokasyonlar Stock modulunden geliyor. Gun 3'ten beri form gecici
+    // Guid uretiyordu; Stock modulu yazildigi icin artik gercek.
+    this.stockService.locations().subscribe({
+      next: (kayitlar) => {
+        this.locations.set(kayitlar);
+        this.fromLocationId = kayitlar[0]?.id ?? '';
+        this.toLocationId = kayitlar[1]?.id ?? '';
+      },
+      error: () => this.locations.set([]),
+    });
+  }
+
+  protected start(taskId: string): void {
+    this.durumDegistir(this.service.start(taskId));
+  }
+
+  protected complete(taskId: string): void {
+    this.durumDegistir(this.service.complete(taskId));
+  }
+
+  private durumDegistir(istek: import('rxjs').Observable<void>): void {
+    this.assignError.set(null);
+    istek.subscribe({
+      next: () => this.refresh(),
+      error: (yanit) => {
+        this.assignError.set(yanit?.error?.message ?? 'Gorev durumu degistirilemedi.');
+        this.refresh();
+      },
     });
   }
 
@@ -99,8 +135,8 @@ export class TaskList {
     // gecici olarak uretiliyor; form da bunu ekranda belirtiyor.
     this.service
       .create({
-        fromLocationId: crypto.randomUUID(),
-        toLocationId: crypto.randomUUID(),
+        fromLocationId: this.fromLocationId,
+        toLocationId: this.toLocationId,
         materialCode: this.materialCode,
         quantity: this.quantity,
         priority: this.priority,

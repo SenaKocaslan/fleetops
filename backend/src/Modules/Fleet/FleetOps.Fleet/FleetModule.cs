@@ -1,4 +1,5 @@
 using FleetOps.Fleet.Application;
+using FleetOps.Fleet.Integration;
 using FleetOps.Fleet.Persistence;
 using FleetOps.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,10 @@ public sealed class FleetModule : IModule
             .UseSnakeCaseNamingConvention());
 
         services.AddScoped<IQueryHandler<ListAgvsQuery, IReadOnlyList<AgvSummary>>, ListAgvsQueryHandler>();
+
+        // Fleet, Tasks'in olaylarini dinler. Tasks Fleet'i cagirmaz.
+        services.AddScoped<IIntegrationEventHandler, GorevAtandigindaAgvMesgullestir>();
+        services.AddScoped<IIntegrationEventHandler, GorevTamamlandigindaAgvSerbestBirak>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)

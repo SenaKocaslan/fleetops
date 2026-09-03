@@ -1,10 +1,22 @@
 <section class="panel">
   <h2>Yeni gorev</h2>
-  <p class="not">
-    Lokasyon secimi Stock modulu tamamlaninca eklenecek; su an gecici kimlik uretiliyor.
-  </p>
-
   <form (ngSubmit)="create()" #form="ngForm" data-testid="task-form">
+    <label>
+      Nereden
+      <select name="fromLocationId" [(ngModel)]="fromLocationId" required data-testid="from-location">
+        @for (l of locations(); track l.id) {
+          <option [value]="l.id">{{ l.code }} ({{ l.zone }})</option>
+        }
+      </select>
+    </label>
+    <label>
+      Nereye
+      <select name="toLocationId" [(ngModel)]="toLocationId" required data-testid="to-location">
+        @for (l of locations(); track l.id) {
+          <option [value]="l.id">{{ l.code }} ({{ l.zone }})</option>
+        }
+      </select>
+    </label>
     <label>
       Malzeme kodu
       <input name="materialCode" [(ngModel)]="materialCode" required data-testid="material-code" />
@@ -82,6 +94,12 @@
                   (click)="assign(task.id)"
                 >
                   Ata
+                </button>
+              } @else if (task.status === 'Assigned') {
+                <button type="button" data-testid="start" (click)="start(task.id)">Baslat</button>
+              } @else if (task.status === 'InProgress') {
+                <button type="button" data-testid="complete" (click)="complete(task.id)">
+                  Tamamla
                 </button>
               } @else {
                 <span class="not">-</span>

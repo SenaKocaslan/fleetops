@@ -21,4 +21,12 @@ export class TaskService {
   assign(taskId: string, agvId: string): Observable<void> {
     return this.http.post<void>(`${this.url}/${taskId}/assign`, { agvId });
   }
+
+  start(taskId: string): Observable<void> {
+    return this.http.post<void>(`${this.url}/${taskId}/start`, {});
+  }
+
+  complete(taskId: string): Observable<void> {
+    return this.http.post<void>(`${this.url}/${taskId}/complete`, {});
+  }
 }

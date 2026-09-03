@@ -21,17 +21,19 @@ public class ModuleRegistrationTests : IClassFixture<WebApplicationFactory<Progr
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
+    // Uc modulun de kendi uc noktasini esledigi. Gecici ping uc noktalari
+    // gercek uc noktalarla degistirildi; burada yalnizca eslemenin
+    // yapildigi kontrol ediliyor, davranis kendi test dosyalarinda.
     [Theory]
-    [InlineData("/api/stock/ping", "Stock")]
-    public async Task Her_modul_kendi_uc_noktasini_esler(string yol, string beklenenModul)
+    [InlineData("/api/agvs")]
+    [InlineData("/api/tasks")]
+    [InlineData("/api/resources")]
+    [InlineData("/api/locations")]
+    [InlineData("/api/stock/movements")]
+    public async Task Her_modul_kendi_uc_noktasini_esler(string yol)
     {
         var response = await _factory.CreateClient().GetAsync(yol);
-        response.EnsureSuccessStatusCode();
 
-        var govde = await response.Content.ReadFromJsonAsync<PingYaniti>();
-
-        Assert.Equal(beklenenModul, govde?.Module);
+        Assert.NotEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
-
-    private sealed record PingYaniti(string Module);
 }

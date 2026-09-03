@@ -31,11 +31,16 @@ public class FiloUcNoktalariTests(FleetOpsApiFactory fabrika)
         var agvler = await fabrika.CreateClient()
             .GetFromJsonAsync<List<AgvSummary>>("/api/agvs");
 
-        // AGV-03 sarjda ve batarya esigin altinda: gorev alamaz.
+        // Sabit bir AGV'nin durumuna bagli assert yazilmiyor: integration
+        // event'ler artik AGV durumunu degistiriyor ve baska testler bunu
+        // tetikleyebilir. Iddia kuralin KENDISI: gorev alabilirlik, musait
+        // olmak ve batarya esigini gecmekle ayni sey.
+        Assert.NotEmpty(agvler!);
+        Assert.All(agvler!, a =>
+            Assert.Equal(a.Status == "Available" && a.BatteryLevel >= 20, a.GorevAlabilir));
+
+        // AGV-03 sarjda ve batarya esigin altinda; onu hicbir test degistirmiyor.
         var sarjdaki = Assert.Single(agvler!, a => a.Code == "AGV-03");
         Assert.False(sarjdaki.GorevAlabilir);
-
-        var musait = Assert.Single(agvler!, a => a.Code == "AGV-01");
-        Assert.True(musait.GorevAlabilir);
     }
 }

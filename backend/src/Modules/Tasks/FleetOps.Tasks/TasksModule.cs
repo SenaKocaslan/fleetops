@@ -34,6 +34,8 @@ public sealed class TasksModule : IModule
         services.AddScoped<IQueryHandler<ListTasksQuery, IReadOnlyList<TaskSummary>>, ListTasksQueryHandler>();
         services.AddScoped<ICommandHandler<CreateTaskCommand, Guid>, CreateTaskCommandHandler>();
         services.AddScoped<ICommandHandler<AssignTaskCommand>, AssignTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<StartTaskCommand>, StartTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<CompleteTaskCommand>, CompleteTaskCommandHandler>();
 
         // Kilit suresi ve temizleme araligi yapilandirmadan gelir.
         services.Configure<ResourceLockOptions>(
@@ -45,6 +47,10 @@ public sealed class TasksModule : IModule
         services.AddScoped<ICommandHandler<ReapExpiredLocksCommand, int>, ReapExpiredLocksCommandHandler>();
 
         services.AddHostedService<LockReaper>();
+
+        services.Configure<OutboxOptions>(configuration.GetSection(OutboxOptions.Bolum));
+        services.AddSingleton<IIntegrationEventTypeRegistry, IntegrationEventTypeRegistry>();
+        services.AddHostedService<OutboxDispatcher>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
@@ -80,6 +86,24 @@ public sealed class TasksModule : IModule
         {
             var sonuc = await handler.HandleAsync(new AssignTaskCommand(id, istek.AgvId), ct);
 
+            return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
+        });
+
+        grup.MapPost("/{id:guid}/start", async (
+            Guid id,
+            ICommandHandler<StartTaskCommand> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new StartTaskCommand(id), ct);
+            return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
+        });
+
+        grup.MapPost("/{id:guid}/complete", async (
+            Guid id,
+            ICommandHandler<CompleteTaskCommand> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new CompleteTaskCommand(id), ct);
             return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
         });
 

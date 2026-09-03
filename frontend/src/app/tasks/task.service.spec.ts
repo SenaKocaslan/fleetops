@@ -67,4 +67,16 @@ describe('TaskService', () => {
     expect(istek.request.body).toEqual({ agvId: 'agv-1' });
     istek.flush(null);
   });
+
+  it('durum gecislerini kendi alt adreslerine POST eder', () => {
+    service.start('gorev-1').subscribe();
+    const baslat = http.expectOne(`${environment.apiUrl}/tasks/gorev-1/start`);
+    expect(baslat.request.method).toBe('POST');
+    baslat.flush(null);
+
+    service.complete('gorev-1').subscribe();
+    const tamamla = http.expectOne(`${environment.apiUrl}/tasks/gorev-1/complete`);
+    expect(tamamla.request.method).toBe('POST');
+    tamamla.flush(null);
+  });
 });

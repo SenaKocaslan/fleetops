@@ -116,6 +116,7 @@ public sealed class TransportTask : AggregateRoot
 
         _assignments.Add(new TaskAssignment(Guid.NewGuid(), Id, agvId, nowUtc));
         Status = TransportTaskStatus.Assigned;
+        Raise(new TaskAssignedDomainEvent(Id, agvId, nowUtc));
         return Result.Success();
     }
 
@@ -153,8 +154,15 @@ public sealed class TransportTask : AggregateRoot
             return gecis;
         }
 
+        // AGV kimligi atama kapanmadan once alinmali.
+        var agvId = AktifAtama?.AgvId ?? Guid.Empty;
+
         AktifAtama?.Kapat(nowUtc);
         Status = TransportTaskStatus.Completed;
+
+        Raise(new TaskCompletedDomainEvent(
+            Id, agvId, MaterialCode, Quantity, FromLocationId, ToLocationId, nowUtc));
+
         return Result.Success();
     }
 

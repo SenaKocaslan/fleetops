@@ -1,4 +1,5 @@
 using FleetOps.Fleet.Persistence;
+using FleetOps.Stock.Persistence;
 using FleetOps.Tasks.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -32,6 +33,10 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
         // birakiyoruz; reaper'in kendisi BirTurCalistirAsync ile dogrudan
         // cagirilarak test ediliyor.
         builder.UseSetting("ResourceLock:ReaperInterval", "01:00:00");
+
+        // Ayni sebeple outbox daginin zamanlayicisi da devre disi: olaylarin
+        // NE ZAMAN teslim edildigi testin kontrolunde olmali.
+        builder.UseSetting("Outbox:PollInterval", "01:00:00");
     }
 
     public async Task InitializeAsync()
@@ -49,6 +54,7 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
         using var scope = Services.CreateScope();
         await scope.ServiceProvider.GetRequiredService<FleetDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<TasksDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<StockDbContext>().Database.MigrateAsync();
     }
 
     // Test icinde dogrudan veritabani islemi icin kapsam acar.
