@@ -10,6 +10,10 @@ public sealed class TasksDbContext(DbContextOptions<TasksDbContext> options) : D
 
     public DbSet<TransportTask> TransportTasks => Set<TransportTask>();
 
+    public DbSet<Resource> Resources => Set<Resource>();
+
+    public DbSet<ResourceLock> ResourceLocks => Set<ResourceLock>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);

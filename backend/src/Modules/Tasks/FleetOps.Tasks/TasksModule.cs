@@ -1,6 +1,7 @@
 using FleetOps.SharedKernel.Domain;
 using FleetOps.Tasks.Application;
 using FleetOps.Tasks.Domain;
+using FleetOps.Tasks.Infrastructure;
 using FleetOps.Tasks.Persistence;
 using FleetOps.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace FleetOps.Tasks;
 
@@ -32,6 +34,17 @@ public sealed class TasksModule : IModule
         services.AddScoped<IQueryHandler<ListTasksQuery, IReadOnlyList<TaskSummary>>, ListTasksQueryHandler>();
         services.AddScoped<ICommandHandler<CreateTaskCommand, Guid>, CreateTaskCommandHandler>();
         services.AddScoped<ICommandHandler<AssignTaskCommand>, AssignTaskCommandHandler>();
+
+        // Kilit suresi ve temizleme araligi yapilandirmadan gelir.
+        services.Configure<ResourceLockOptions>(
+            configuration.GetSection(ResourceLockOptions.Bolum));
+
+        services.AddScoped<IQueryHandler<ListResourcesQuery, IReadOnlyList<ResourceSummary>>, ListResourcesQueryHandler>();
+        services.AddScoped<ICommandHandler<AcquireLockCommand, Guid>, AcquireLockCommandHandler>();
+        services.AddScoped<ICommandHandler<ReleaseLockCommand>, ReleaseLockCommandHandler>();
+        services.AddScoped<ICommandHandler<ReapExpiredLocksCommand, int>, ReapExpiredLocksCommandHandler>();
+
+        services.AddHostedService<LockReaper>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
@@ -69,6 +82,40 @@ public sealed class TasksModule : IModule
 
             return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
         });
+
+        var kaynaklar = endpoints.MapGroup("/api/resources").WithTags("Resources");
+
+        kaynaklar.MapGet("/", async (
+            IQueryHandler<ListResourcesQuery, IReadOnlyList<ResourceSummary>> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new ListResourcesQuery(), ct);
+            return Results.Ok(sonuc.Value);
+        });
+
+        kaynaklar.MapPost("/{id:guid}/lock", async (
+            Guid id,
+            AgvIstegi istek,
+            ICommandHandler<AcquireLockCommand, Guid> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new AcquireLockCommand(id, istek.AgvId), ct);
+
+            return sonuc.IsSuccess
+                ? Results.Ok(new { lockId = sonuc.Value })
+                : HataYaniti(sonuc.Error);
+        });
+
+        kaynaklar.MapPost("/{id:guid}/release", async (
+            Guid id,
+            AgvIstegi istek,
+            ICommandHandler<ReleaseLockCommand> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new ReleaseLockCommand(id, istek.AgvId), ct);
+
+            return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
+        });
     }
 
     // Hata -> HTTP durum kodu esleme tek yerde. Kodu metin olarak
@@ -78,14 +125,18 @@ public sealed class TasksModule : IModule
     {
         var govde = new { code = hata.Code, message = hata.Message };
 
-        if (hata == TaskErrors.Bulunamadi)
+        if (hata == TaskErrors.Bulunamadi
+            || hata == ResourceErrors.Bulunamadi
+            || hata == ResourceErrors.KilitBulunamadi)
         {
             return Results.NotFound(govde);
         }
 
         // 409: istemci yanlis bir sey gondermedi, yarisi kaybetti.
         // Ayni istegi tekrar gondermesi anlamli - 400'de degildir.
-        if (hata == TaskErrors.EszamanliDegisiklik)
+        if (hata == TaskErrors.EszamanliDegisiklik
+            || hata == ResourceErrors.KaynakMesgul
+            || hata == ResourceErrors.KilidiBaskasiTutuyor)
         {
             return Results.Conflict(govde);
         }
@@ -96,3 +147,6 @@ public sealed class TasksModule : IModule
 
 // Gorev kimligi URL'den geliyor; govdede yalnizca AGV var.
 public sealed record AssignTaskRequest(Guid AgvId);
+
+// Kaynak kimligi URL'den geliyor; kilitleme ve birakma icin ortak govde.
+public sealed record AgvIstegi(Guid AgvId);

@@ -26,6 +26,12 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
     {
         // Uygulama kodu degismiyor; yalnizca yapilandirma ezilir.
         builder.UseSetting("ConnectionStrings:FleetOps", _veritabani.GetConnectionString());
+
+        // Arka plandaki LockReaper testin ortasinda calisip kilitleri
+        // birakirsa testler flaky olur. Zamanlayiciyi pratikte devre disi
+        // birakiyoruz; reaper'in kendisi BirTurCalistirAsync ile dogrudan
+        // cagirilarak test ediliyor.
+        builder.UseSetting("ResourceLock:ReaperInterval", "01:00:00");
     }
 
     public async Task InitializeAsync()
