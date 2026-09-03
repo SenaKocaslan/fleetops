@@ -58,4 +58,13 @@ describe('TaskService', () => {
     expect(istek.request.body).toEqual(govde);
     istek.flush({ id: 'yeni' });
   });
+
+  it('atamayi gorevin alt adresine POST eder', () => {
+    service.assign('gorev-1', 'agv-1').subscribe();
+
+    const istek = http.expectOne(`${environment.apiUrl}/tasks/gorev-1/assign`);
+    expect(istek.request.method).toBe('POST');
+    expect(istek.request.body).toEqual({ agvId: 'agv-1' });
+    istek.flush(null);
+  });
 });

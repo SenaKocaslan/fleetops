@@ -17,4 +17,8 @@ export class TaskService {
   create(istek: CreateTaskRequest): Observable<{ id: string }> {
     return this.http.post<{ id: string }>(this.url, istek);
   }
+
+  assign(taskId: string, agvId: string): Observable<void> {
+    return this.http.post<void>(`${this.url}/${taskId}/assign`, { agvId });
+  }
 }

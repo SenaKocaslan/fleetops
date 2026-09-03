@@ -31,6 +31,10 @@
     <button type="button" (click)="refresh()" data-testid="refresh">Yenile</button>
   </div>
 
+  @if (assignError()) {
+    <p class="hata" data-testid="assign-error">{{ assignError() }}</p>
+  }
+
   @if (loading()) {
     <p data-testid="loading">Yukleniyor...</p>
   } @else if (error()) {
@@ -48,6 +52,7 @@
           <th>Oncelik</th>
           <th>Durum</th>
           <th>AGV</th>
+          <th>Atama</th>
         </tr>
       </thead>
       <tbody>
@@ -57,7 +62,31 @@
             <td>{{ task.quantity }}</td>
             <td>{{ task.priority }}</td>
             <td><span class="durum">{{ task.status }}</span></td>
-            <td>{{ task.assignedAgvId ?? '-' }}</td>
+            <td data-testid="task-agv">{{ agvKodu(task.assignedAgvId) }}</td>
+            <td>
+              @if (task.status === 'Pending') {
+                <select
+                  data-testid="agv-select"
+                  [value]="secim()[task.id] ?? ''"
+                  (change)="secimYap(task.id, $event)"
+                >
+                  <option value="">AGV secin</option>
+                  @for (agv of musaitAgvler(); track agv.id) {
+                    <option [value]="agv.id">{{ agv.code }} (%{{ agv.batteryLevel }})</option>
+                  }
+                </select>
+                <button
+                  type="button"
+                  data-testid="assign"
+                  [disabled]="!secim()[task.id]"
+                  (click)="assign(task.id)"
+                >
+                  Ata
+                </button>
+              } @else {
+                <span class="not">-</span>
+              }
+            </td>
           </tr>
         }
       </tbody>

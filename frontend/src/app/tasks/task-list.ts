@@ -1,5 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AgvService } from '../fleet/agv.service';
+import { AgvSummary } from '../fleet/agv.model';
 import { TaskService } from './task.service';
 import { TaskSummary } from './task.model';
 
@@ -11,10 +13,25 @@ import { TaskSummary } from './task.model';
 })
 export class TaskList {
   private readonly service = inject(TaskService);
+  private readonly agvService = inject(AgvService);
 
   protected readonly tasks = signal<TaskSummary[]>([]);
+  protected readonly agvs = signal<AgvSummary[]>([]);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly assignError = signal<string | null>(null);
+
+  // Gorev basina secilen AGV. Anahtar gorev kimligi.
+  protected readonly secim = signal<Record<string, string>>({});
+
+  // Listede ham Guid yerine AGV kodu gosterilir.
+  protected readonly agvKodlari = computed(() =>
+    Object.fromEntries(this.agvs().map((a) => [a.id, a.code])),
+  );
+
+  // Yalnizca gorev alabilecek AGV'ler secilebilir. Kural sunucuda
+  // hesaplanip geliyor; burada tekrar yazilmiyor.
+  protected readonly musaitAgvler = computed(() => this.agvs().filter((a) => a.gorevAlabilir));
 
   protected materialCode = '';
   protected quantity = 1;
@@ -22,6 +39,42 @@ export class TaskList {
 
   constructor() {
     this.refresh();
+    this.agvService.list().subscribe({
+      next: (kayitlar) => this.agvs.set(kayitlar),
+      // AGV listesi alinamazsa gorev listesi yine calisir; atama yapilamaz.
+      error: () => this.agvs.set([]),
+    });
+  }
+
+  protected agvKodu(id: string | null): string {
+    return id ? (this.agvKodlari()[id] ?? id) : '-';
+  }
+
+  protected secimYap(taskId: string, olay: Event): void {
+    const agvId = (olay.target as HTMLSelectElement).value;
+    this.secim.update((mevcut) => ({ ...mevcut, [taskId]: agvId }));
+  }
+
+  protected assign(taskId: string): void {
+    const agvId = this.secim()[taskId];
+    if (!agvId) {
+      return;
+    }
+
+    this.assignError.set(null);
+    this.service.assign(taskId, agvId).subscribe({
+      next: () => this.refresh(),
+      error: (yanit) => {
+        // 409: yarisi kaybettik. Kullaniciya "hata" degil "tekrar dene"
+        // demek dogru olan; istek yanlis degildi.
+        this.assignError.set(
+          yanit?.status === 409
+            ? 'Gorev bu sirada baska bir istek tarafindan atandi. Listeyi yenileyip tekrar deneyin.'
+            : (yanit?.error?.message ?? 'Atama yapilamadi.'),
+        );
+        this.refresh();
+      },
+    });
   }
 
   protected refresh(): void {
