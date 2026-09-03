@@ -1,3 +1,4 @@
+using FleetOps.Fleet.Application;
 using FleetOps.Fleet.Persistence;
 using FleetOps.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -24,11 +25,20 @@ public sealed class FleetModule : IModule
             // PostgreSQL'de tirnaksiz tanimlayici kucuk harfe duser; snake_case
             // hem yerlesik gelenek hem de elle SQL yazmayi kolaylastirir.
             .UseSnakeCaseNamingConvention());
+
+        services.AddScoped<IQueryHandler<ListAgvsQuery, IReadOnlyList<AgvSummary>>, ListAgvsQueryHandler>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        
-        endpoints.MapGet("/api/fleet/ping", () => Results.Ok(new { module = "Fleet" }));
+        var grup = endpoints.MapGroup("/api/agvs").WithTags("Fleet");
+
+        grup.MapGet("/", async (
+            IQueryHandler<ListAgvsQuery, IReadOnlyList<AgvSummary>> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new ListAgvsQuery(), ct);
+            return Results.Ok(sonuc.Value);
+        });
     }
 }

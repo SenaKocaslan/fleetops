@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 namespace FleetOps.IntegrationTests;
 
 // Iskelet dogrulamasi: gercek HTTP pipeline ayakta, moduller kendilerini
-// IModule uzerinden kaydediyor ve uc noktalari eslesiyor.
+// IModule uzerinden kaydediyor ve uc noktalari eslesiyor. Fleet ve Tasks
+// artik gercek uc noktalara sahip; onlar kendi test dosyalarinda.
 public class ModuleRegistrationTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
@@ -21,7 +22,6 @@ public class ModuleRegistrationTests : IClassFixture<WebApplicationFactory<Progr
     }
 
     [Theory]
-    [InlineData("/api/fleet/ping", "Fleet")]
     [InlineData("/api/stock/ping", "Stock")]
     public async Task Her_modul_kendi_uc_noktasini_esler(string yol, string beklenenModul)
     {

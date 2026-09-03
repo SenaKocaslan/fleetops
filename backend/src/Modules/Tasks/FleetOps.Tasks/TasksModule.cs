@@ -1,5 +1,6 @@
 using FleetOps.SharedKernel.Domain;
 using FleetOps.Tasks.Application;
+using FleetOps.Tasks.Domain;
 using FleetOps.Tasks.Persistence;
 using FleetOps.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,7 @@ public sealed class TasksModule : IModule
 
         services.AddScoped<IQueryHandler<ListTasksQuery, IReadOnlyList<TaskSummary>>, ListTasksQueryHandler>();
         services.AddScoped<ICommandHandler<CreateTaskCommand, Guid>, CreateTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<AssignTaskCommand>, AssignTaskCommandHandler>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
@@ -54,7 +56,43 @@ public sealed class TasksModule : IModule
             // Beklenen is hatasi 400 doner; exception'a cevrilmez.
             return sonuc.IsSuccess
                 ? Results.Created($"/api/tasks/{sonuc.Value}", new { id = sonuc.Value })
-                : Results.BadRequest(new { code = sonuc.Error.Code, message = sonuc.Error.Message });
+                : HataYaniti(sonuc.Error);
+        });
+
+        grup.MapPost("/{id:guid}/assign", async (
+            Guid id,
+            AssignTaskRequest istek,
+            ICommandHandler<AssignTaskCommand> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new AssignTaskCommand(id, istek.AgvId), ct);
+
+            return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
         });
     }
+
+    // Hata -> HTTP durum kodu esleme tek yerde. Kodu metin olarak
+    // karsilastirmak yerine Error kaydinin kendisiyle karsilastiriyorum:
+    // kod adi degisirse derleyici burayi da bulur.
+    private static IResult HataYaniti(Error hata)
+    {
+        var govde = new { code = hata.Code, message = hata.Message };
+
+        if (hata == TaskErrors.Bulunamadi)
+        {
+            return Results.NotFound(govde);
+        }
+
+        // 409: istemci yanlis bir sey gondermedi, yarisi kaybetti.
+        // Ayni istegi tekrar gondermesi anlamli - 400'de degildir.
+        if (hata == TaskErrors.EszamanliDegisiklik)
+        {
+            return Results.Conflict(govde);
+        }
+
+        return Results.BadRequest(govde);
+    }
 }
+
+// Gorev kimligi URL'den geliyor; govdede yalnizca AGV var.
+public sealed record AssignTaskRequest(Guid AgvId);

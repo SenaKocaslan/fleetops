@@ -12,6 +12,13 @@ internal sealed class TransportTaskConfiguration : IEntityTypeConfiguration<Tran
         builder.ToTable("transport_task");
         builder.HasKey(t => t.Id);
 
+        // Kimlik domain'de uretilir (factory metodu Guid'i kendisi verir).
+        // Bunu soylemezsek EF, Guid anahtari "veritabani uretir" sayar ve
+        // anahtari dolu gelen yeni nesneyi "zaten var olan satir" zannedip
+        // INSERT yerine UPDATE gonderir.
+        builder.Property(t => t.Id).ValueGeneratedNever();
+
+
         builder.Property(t => t.Status)
             .HasConversion<string>()
             .HasMaxLength(20)
