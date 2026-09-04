@@ -4,6 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TaskService } from './task.service';
 import { TaskSummary } from './task.model';
 import { environment } from '../../environments/environment';
+import { PagedResult } from '../sayfalama.model';
 
 describe('TaskService', () => {
   let service: TaskService;
@@ -32,14 +33,26 @@ describe('TaskService', () => {
       },
     ];
 
-    let gelen: TaskSummary[] | undefined;
-    service.list().subscribe((v) => (gelen = v));
+    const sayfa: PagedResult<TaskSummary> = {
+      items: beklenen,
+      page: 2,
+      pageSize: 10,
+      totalCount: 25,
+      totalPages: 3,
+      hasNext: true,
+    };
 
-    const istek = http.expectOne(`${environment.apiUrl}/tasks`);
+    let gelen: PagedResult<TaskSummary> | undefined;
+    service.list(2, 10).subscribe((v) => (gelen = v));
+
+    const istek = http.expectOne(
+      (i) => i.url === `${environment.apiUrl}/tasks` && i.params.get('page') === '2',
+    );
     expect(istek.request.method).toBe('GET');
-    istek.flush(beklenen);
+    expect(istek.request.params.get('pageSize')).toBe('10');
+    istek.flush(sayfa);
 
-    expect(gelen).toEqual(beklenen);
+    expect(gelen).toEqual(sayfa);
   });
 
   it('gorev olusturmayi POST ile gonderir', () => {

@@ -1,3 +1,4 @@
+@if (planlamaYetkisi()) {
 <section class="panel">
   <h2>Yeni gorev</h2>
   <form (ngSubmit)="create()" #form="ngForm" data-testid="task-form">
@@ -36,10 +37,18 @@
     <p class="hata" data-testid="error">{{ error() }}</p>
   }
 </section>
+}
 
 <section class="panel">
   <div class="baslik">
     <h2>Gorev havuzu</h2>
+    <input
+      type="search"
+      placeholder="Malzeme kodu ara"
+      [value]="arama()"
+      (input)="aramaDegisti($event)"
+      data-testid="task-search"
+    />
     <button type="button" (click)="refresh()" data-testid="refresh">Yenile</button>
   </div>
 
@@ -50,8 +59,6 @@
   @if (loading()) {
     <p data-testid="loading">Yukleniyor...</p>
   } @else if (error()) {
-    <!-- Liste alinamadiginda "gorev yok" demek yaniltici olur:
-         veri yoklugu ile veriye ulasamamak farkli seylerdir. -->
     <p class="hata" data-testid="list-error">Liste alinamadi.</p>
   } @else if (tasks().length === 0) {
     <p data-testid="empty">Henuz gorev yok.</p>
@@ -76,7 +83,7 @@
             <td><span class="durum">{{ task.status }}</span></td>
             <td data-testid="task-agv">{{ agvKodu(task.assignedAgvId) }}</td>
             <td>
-              @if (task.status === 'Pending') {
+              @if (task.status === 'Pending' && planlamaYetkisi()) {
                 <select
                   data-testid="agv-select"
                   [value]="secim()[task.id] ?? ''"
@@ -109,5 +116,29 @@
         }
       </tbody>
     </table>
+
+    <div class="sayfalama" data-testid="task-pager">
+      <button
+        type="button"
+        data-testid="prev-page"
+        [disabled]="sayfa().page <= 1"
+        (click)="sayfayaGit(sayfa().page - 1)"
+      >
+        Onceki
+      </button>
+
+      <span data-testid="page-info">
+        Sayfa {{ sayfa().page }} / {{ sayfa().totalPages }} ({{ sayfa().totalCount }} gorev)
+      </span>
+
+      <button
+        type="button"
+        data-testid="next-page"
+        [disabled]="!sayfa().hasNext"
+        (click)="sayfayaGit(sayfa().page + 1)"
+      >
+        Sonraki
+      </button>
+    </div>
   }
 </section>

@@ -31,6 +31,9 @@ public sealed class FleetModule : IModule
         services.AddScoped<IQueryHandler<ListAgvsQuery, IReadOnlyList<AgvSummary>>, ListAgvsQueryHandler>();
         services.AddScoped<ICommandHandler<ReportTelemetryCommand>, ReportTelemetryCommandHandler>();
 
+        services.Configure<FleetAlarmOptions>(configuration.GetSection(FleetAlarmOptions.Bolum));
+        services.AddScoped<IAlarmSource, FiloAlarmKaynagi>();
+
         services.AddSignalR();
         services.AddSingleton<IFleetNotifier, SignalRFleetNotifier>();
 
@@ -43,9 +46,10 @@ public sealed class FleetModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapHub<FleetHub>(FleetHub.Yol);
+        endpoints.MapHub<FleetHub>(FleetHub.Yol).RequireAuthorization(Politikalar.Okuma);
 
-        var grup = endpoints.MapGroup("/api/agvs").WithTags("Fleet");
+        var grup = endpoints.MapGroup("/api/agvs").WithTags("Fleet")
+            .RequireAuthorization(Politikalar.Okuma);
 
         grup.MapGet("/", async (
             IQueryHandler<ListAgvsQuery, IReadOnlyList<AgvSummary>> handler,
@@ -65,7 +69,7 @@ public sealed class FleetModule : IModule
                 new ReportTelemetryCommand(id, istek.BatteryLevel, istek.LocationId), ct);
 
             return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
-        });
+        }).RequireAuthorization(Politikalar.Telemetri);
     }
 
     private static IResult HataYaniti(Error hata)

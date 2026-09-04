@@ -1,16 +1,31 @@
 <header class="ust">
   <h1>FleetOps</h1>
   <span>AGV filo ve gorev yonetimi</span>
+
+  @if (girisYapildi()) {
+    <span class="kullanici" data-testid="oturum-bilgisi">
+      {{ oturum()?.userName }} ({{ oturum()?.role }})
+    </span>
+    <button type="button" class="cikis" (click)="cikis()" data-testid="cikis">Cikis</button>
+  }
 </header>
 
-<nav class="gezinme">
-  <a routerLink="/" routerLinkActive="etkin" [routerLinkActiveOptions]="{ exact: true }" data-testid="nav-tasks">
-    Gorevler
-  </a>
-  <a routerLink="/kaynaklar" routerLinkActive="etkin" data-testid="nav-resources">Kaynaklar</a>
-  <a routerLink="/stok" routerLinkActive="etkin" data-testid="nav-stock">Stok</a>
-  <a routerLink="/filo" routerLinkActive="etkin" data-testid="nav-fleet">Filo</a>
-</nav>
+@if (girisYapildi()) {
+  <nav class="gezinme">
+    <a routerLink="/" routerLinkActive="etkin" [routerLinkActiveOptions]="{ exact: true }" data-testid="nav-tasks">
+      Gorevler
+    </a>
+    <a routerLink="/kaynaklar" routerLinkActive="etkin" data-testid="nav-resources">Kaynaklar</a>
+    <a routerLink="/stok" routerLinkActive="etkin" data-testid="nav-stock">Stok</a>
+    <a routerLink="/filo" routerLinkActive="etkin" data-testid="nav-fleet">Filo</a>
+    <a routerLink="/alarmlar" routerLinkActive="etkin" data-testid="nav-alarms">
+      Alarmlar
+      @if (kritikAlarm() > 0) {
+        <span class="rozet" data-testid="alarm-rozeti">{{ kritikAlarm() }}</span>
+      }
+    </a>
+  </nav>
+}
 
 <main>
   <router-outlet />

@@ -1,4 +1,5 @@
 using FleetOps.SharedKernel;
+using FleetOps.SharedKernel.Domain;
 using FleetOps.Stock.Application;
 using FleetOps.Stock.Integration;
 using FleetOps.Stock.Persistence;
@@ -26,9 +27,8 @@ public sealed class StockModule : IModule
             .UseSnakeCaseNamingConvention());
 
         services.AddScoped<IQueryHandler<ListLocationsQuery, IReadOnlyList<LocationSummary>>, ListLocationsQueryHandler>();
-        services.AddScoped<IQueryHandler<ListStockMovementsQuery, IReadOnlyList<StockMovementSummary>>, ListStockMovementsQueryHandler>();
+        services.AddScoped<IQueryHandler<ListStockMovementsQuery, PagedResult<StockMovementSummary>>, ListStockMovementsQueryHandler>();
 
-        // Stock, Tasks'in olaylarini dinler. Tasks Stock'u cagirmaz.
         services.AddScoped<IIntegrationEventHandler, GorevTamamlandigindaStokHareketiOlustur>();
     }
 
@@ -40,14 +40,18 @@ public sealed class StockModule : IModule
         {
             var sonuc = await handler.HandleAsync(new ListLocationsQuery(), ct);
             return Results.Ok(sonuc.Value);
-        }).WithTags("Stock");
+        }).WithTags("Stock").RequireAuthorization(Politikalar.Okuma);
 
         endpoints.MapGet("/api/stock/movements", async (
-            IQueryHandler<ListStockMovementsQuery, IReadOnlyList<StockMovementSummary>> handler,
+            int? page,
+            int? pageSize,
+            IQueryHandler<ListStockMovementsQuery, PagedResult<StockMovementSummary>> handler,
             CancellationToken ct) =>
         {
-            var sonuc = await handler.HandleAsync(new ListStockMovementsQuery(), ct);
+            var sonuc = await handler.HandleAsync(
+                new ListStockMovementsQuery(new PageRequest(page, pageSize)), ct);
+
             return Results.Ok(sonuc.Value);
-        }).WithTags("Stock");
+        }).WithTags("Stock").RequireAuthorization(Politikalar.Okuma);
     }
 }

@@ -39,3 +39,27 @@ main {
   font-weight: 600;
   color: #1a1a1a;
 }
+
+.ust .kullanici {
+  margin-left: auto;
+  color: #d1d5db;
+}
+
+.cikis {
+  background: transparent;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  color: #f9fafb;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.15rem 0.6rem;
+}
+
+.rozet {
+  background: #b00020;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.7rem;
+  margin-left: 0.25rem;
+  padding: 0.05rem 0.4rem;
+}

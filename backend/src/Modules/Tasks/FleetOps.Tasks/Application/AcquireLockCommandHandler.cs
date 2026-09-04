@@ -38,6 +38,8 @@ internal sealed class AcquireLockCommandHandler(
 
         db.ResourceLocks.Add(sonuc.Value);
 
+        // Once "aktif kilit var mi" diye sorup sonra yazmak yaris acar: iki
+        // sorgunun arasina sigan ucuncu istek ikisini de gecirirdi.
         try
         {
             await db.SaveChangesAsync(cancellationToken);
@@ -46,10 +48,6 @@ internal sealed class AcquireLockCommandHandler(
             when (ex.InnerException is PostgresException
                   { SqlState: PostgresErrorCodes.UniqueViolation })
         {
-            // Once "aktif kilit var mi" diye SORUP sonra yazsaydik, iki istek
-            // arasindaki bosluga sigan ucuncu bir istek ikisini de gecirirdi.
-            // Bu yuzden once yaziyoruz, karari veritabanina biraktik ve
-            // reddedilirse beklenen bir is hatasina ceviriyoruz.
             return Result.Failure<Guid>(ResourceErrors.KaynakMesgul);
         }
 

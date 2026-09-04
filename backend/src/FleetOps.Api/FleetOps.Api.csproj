@@ -8,7 +8,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="EFCore.NamingConventions" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
   </ItemGroup>
 
   <PropertyGroup>

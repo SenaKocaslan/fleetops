@@ -1,11 +1,16 @@
 import { expect, test } from '@playwright/test';
-import { agvSecilebilirOlanaKadarBekle } from './yardimcilar';
+import { agvSecilebilirOlanaKadarBekle, agvSerbestBirak, girisYap } from './yardimcilar';
 
-// Gun 6'nin asil kaniti: modul sinirini gecen tam zincir.
-// Tarayici -> Tasks modulu -> outbox -> arka plandaki dagitici ->
-// Stock modulu -> tarayici. Burada integration testlerden farkli olarak
-// ZAMANLAYICI da devrede: dagiticiyi elle cagirmiyoruz.
 test.describe('Stok hareketi', () => {
+  test.beforeEach(async ({ page }) => {
+    await girisYap(page);
+
+    // Onceki kosulardan kalan atanmis gorevler AGV'leri Busy birakiyor.
+    // Test kendi on kosulunu kurmali.
+    await agvSerbestBirak(page.request, '11111111-1111-1111-1111-111111111111');
+    await agvSerbestBirak(page.request, '22222222-2222-2222-2222-222222222222');
+  });
+
   test('tamamlanan gorev stok hareketine donusur', async ({ page }) => {
     const malzeme = `MLZ-${Date.now()}`;
 
@@ -15,7 +20,7 @@ test.describe('Stok hareketi', () => {
     await page.getByTestId('submit').click();
 
     await expect(page.getByTestId('task-row').filter({ hasText: malzeme })).toBeVisible();
-    await agvSecilebilirOlanaKadarBekle(page);
+    await agvSecilebilirOlanaKadarBekle(page, undefined, malzeme);
 
     const satir = page.getByTestId('task-row').filter({ hasText: malzeme });
     const secim = satir.getByTestId('agv-select');
@@ -30,8 +35,6 @@ test.describe('Stok hareketi', () => {
       page.getByTestId('task-row').filter({ hasText: malzeme }),
     ).toContainText('Completed');
 
-    // Hareket ANINDA olusmaz: olay once outbox'a yazilir, dagitici bir
-    // sonraki turunda teslim eder. Yenileyerek bekliyoruz.
     await page.getByTestId('nav-stock').click();
 
     await expect(async () => {

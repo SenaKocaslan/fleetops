@@ -13,10 +13,8 @@ internal sealed class AssignTaskCommandHandler(TasksDbContext db)
         AssignTaskCommand command,
         CancellationToken cancellationToken)
     {
-        // Yazma yolu: burada projeksiyon degil aggregate yuklenir, cunku
-        // gecis kurali aggregate'in icinde. Assignments da yukleniyor;
-        // aksi halde AktifAtama her zaman null gorunurdu.
         var gorev = await db.TransportTasks
+            // Include olmadan AktifAtama her zaman null gorunur.
             .Include(t => t.Assignments)
             .FirstOrDefaultAsync(t => t.Id == command.TaskId, cancellationToken);
 
@@ -37,9 +35,6 @@ internal sealed class AssignTaskCommandHandler(TasksDbContext db)
         }
         catch (DbUpdateConcurrencyException)
         {
-            // UPDATE ... WHERE id = @id AND xmin = @okunan_xmin sifir satir
-            // etkiledi: goreve biz okuduktan sonra baskasi yazdi. Beklenen
-            // bir durum, bu yuzden exception disari sizmiyor.
             return Result.Failure(TaskErrors.EszamanliDegisiklik);
         }
 

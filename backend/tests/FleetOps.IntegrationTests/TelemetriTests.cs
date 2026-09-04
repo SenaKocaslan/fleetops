@@ -22,7 +22,7 @@ public class TelemetriTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Telemetri_bataryayi_konumu_ve_son_gorulmeyi_yazar()
     {
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
         var once = DateTime.UtcNow;
 
         var yanit = await istemci.PostAsJsonAsync(
@@ -41,7 +41,7 @@ public class TelemetriTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Bilinmeyen_agv_icin_404_doner()
     {
-        var yanit = await fabrika.CreateClient().PostAsJsonAsync(
+        var yanit = await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             $"/api/agvs/{Guid.NewGuid()}/telemetry", new { batteryLevel = 50 });
 
         Assert.Equal(HttpStatusCode.NotFound, yanit.StatusCode);
@@ -52,7 +52,7 @@ public class TelemetriTests(FleetOpsApiFactory fabrika)
     [InlineData(101)]
     public async Task Gecersiz_batarya_400_ve_hata_kodu_doner(int batarya)
     {
-        var yanit = await fabrika.CreateClient().PostAsJsonAsync(
+        var yanit = await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             $"/api/agvs/{Agv01}/telemetry", new { batteryLevel = batarya });
 
         Assert.Equal(HttpStatusCode.BadRequest, yanit.StatusCode);
@@ -64,7 +64,7 @@ public class TelemetriTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Telemetri_signalr_uzerinden_yayinlanir()
     {
-        await using var baglanti = HubBaglantisiKur();
+        await using var baglanti = await HubBaglantisiKurAsync();
         var gelenler = new List<AgvSummary>();
         var ilkYayin = new TaskCompletionSource<AgvSummary>();
 
@@ -76,7 +76,7 @@ public class TelemetriTests(FleetOpsApiFactory fabrika)
 
         await baglanti.StartAsync();
 
-        await fabrika.CreateClient().PostAsJsonAsync(
+        await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             $"/api/agvs/{Agv01}/telemetry", new { batteryLevel = 64, locationId = Lokasyon });
 
         var yayin = await ilkYayin.Task.WaitAsync(TimeSpan.FromSeconds(10));
@@ -90,12 +90,12 @@ public class TelemetriTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Basarisiz_telemetri_yayinlanmaz()
     {
-        await using var baglanti = HubBaglantisiKur();
+        await using var baglanti = await HubBaglantisiKurAsync();
         var yayinSayisi = 0;
         baglanti.On<AgvSummary>(FleetHub.AgvDegisti, _ => Interlocked.Increment(ref yayinSayisi));
         await baglanti.StartAsync();
 
-        await fabrika.CreateClient().PostAsJsonAsync(
+        await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             $"/api/agvs/{Agv01}/telemetry", new { batteryLevel = 500 });
 
         // Yayin gelmedigini beklemek icin kisa bir pencere; gelseydi burada gorulurdu.
@@ -129,14 +129,23 @@ public class TelemetriTests(FleetOpsApiFactory fabrika)
         Assert.True(sonra > once, $"Sarjdaki arac dolmali: {once} -> {sonra}");
     }
 
-    private HubConnection HubBaglantisiKur() => new HubConnectionBuilder()
-        .WithUrl(new Uri(fabrika.Server.BaseAddress, FleetHub.Yol), secenekler =>
-        {
-            // TestServer'in WebSocket'i yok; istek bu handler uzerinden
-            // dogrudan uygulamaya gider.
-            secenekler.HttpMessageHandlerFactory = _ => fabrika.Server.CreateHandler();
-        })
-        .Build();
+    private async Task<HubConnection> HubBaglantisiKurAsync()
+    {
+        // Hub da yetki istiyor. Token'i SignalR istemcisi kendi tasiyor:
+        // long polling'de Authorization basligiyla, WebSocket'te sorgu
+        // dizesiyle (tarayici el sikismasinda baslik gonderemedigi icin).
+        var token = await fabrika.TokenAsync();
+
+        return new HubConnectionBuilder()
+            .WithUrl(new Uri(fabrika.Server.BaseAddress, FleetHub.Yol), secenekler =>
+            {
+                // TestServer'in WebSocket'i yok; istek bu handler uzerinden
+                // dogrudan uygulamaya gider.
+                secenekler.HttpMessageHandlerFactory = _ => fabrika.Server.CreateHandler();
+                secenekler.AccessTokenProvider = () => Task.FromResult<string?>(token);
+            })
+            .Build();
+    }
 
     private async Task<Agv> AgvOkuAsync(Guid id)
     {

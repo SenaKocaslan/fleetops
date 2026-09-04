@@ -10,13 +10,9 @@ using Microsoft.Extensions.Options;
 
 namespace FleetOps.Tasks.Infrastructure;
 
-// Islenmemis outbox satirlarini okur ve kayitli tuketicilere teslim eder.
-//
-// TESLIMAT EN AZ BIR KEZ (at-least-once). Tuketici baska bir modulun
-// veritabanina yaziyor, yani outbox satirini "islendi" isaretlemekle ayni
-// transaction'da degil. Tuketici calistiktan sonra isaretleme basarisiz
-// olursa ayni olay tekrar teslim edilir. Bu yuzden tuketicinin idempotent
-// olmasi zorunlu - bu bir tercih degil, mekanizmanin sonucu.
+// TESLIMAT EN AZ BIR KEZ: tuketici baska modulun veritabanina yaziyor, yani
+// outbox satirini "islendi" isaretlemekle ayni transaction'da degil. Yeni
+// tuketici yazan herkes idempotent yazmak zorunda.
 public sealed class OutboxDispatcher(
     IServiceScopeFactory scopeFactory,
     IOptions<OutboxOptions> options,
@@ -32,17 +28,14 @@ public sealed class OutboxDispatcher(
             {
                 await BirTurCalistirAsync(stoppingToken);
             }
+            // Yakalanmazsa servis sessizce durur ve olaylar bir daha teslim edilmez.
             catch (Exception ex)
             {
-                // Yakalanmazsa servis sessizce durur ve olaylar bir daha
-                // hic teslim edilmez.
                 logger.LogError(ex, "Outbox dagitim turu basarisiz oldu.");
             }
         }
     }
 
-    // Zamanlayicidan bagimsiz tek tur; testten dogrudan cagrilabilir.
-    // Islenen mesaj sayisini doner.
     public async Task<int> BirTurCalistirAsync(CancellationToken cancellationToken)
     {
         await using var kapsam = scopeFactory.CreateAsyncScope();
@@ -50,8 +43,6 @@ public sealed class OutboxDispatcher(
         var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
         var kayitDefteri = kapsam.ServiceProvider.GetRequiredService<IIntegrationEventTypeRegistry>();
 
-        // Tuketiciler baska modullerde; Tasks onlarin turunu bilmez,
-        // yalnizca ortak arayuzu gorur.
         var tuketiciler = kapsam.ServiceProvider.GetServices<IIntegrationEventHandler>().ToList();
 
         var mesajlar = await db.OutboxMessages
@@ -83,7 +74,7 @@ public sealed class OutboxDispatcher(
             catch (Exception ex)
             {
                 // Islenmis isaretlenmiyor: bir sonraki turda tekrar denenecek.
-                mesaj.Basarisiz(ex.Message);
+                mesaj.Basarisiz(HataMetni(ex));
                 logger.LogError(ex, "Outbox mesaji islenemedi: {MesajId}", mesaj.Id);
             }
         }
@@ -94,5 +85,21 @@ public sealed class OutboxDispatcher(
         }
 
         return islenen;
+    }
+
+    // ex.Message tek basina yetmiyor: EF'in "An error occurred while saving
+    // the entity changes" mesaji asil sebebi ic istisnada birakiyor ve
+    // outbox tablosuna bakan kisi hicbir sey ogrenemiyor.
+    private static string HataMetni(Exception ex)
+    {
+        var parcalar = new List<string>();
+
+        for (Exception? mevcut = ex; mevcut is not null; mevcut = mevcut.InnerException)
+        {
+            parcalar.Add($"{mevcut.GetType().Name}: {mevcut.Message}");
+        }
+
+        var metin = string.Join(" -> ", parcalar);
+        return metin.Length > 2000 ? metin[..2000] : metin;
     }
 }

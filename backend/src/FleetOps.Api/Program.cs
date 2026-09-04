@@ -1,3 +1,5 @@
+using FleetOps.Api;
+using FleetOps.Api.Auth;
 using FleetOps.Fleet;
 using FleetOps.SharedKernel;
 using FleetOps.Stock;
@@ -21,6 +23,8 @@ builder.Services.AddCors(options =>
         // icin sorun degil.
         .AllowCredentials()));
 
+builder.Services.AddFleetOpsAuth(builder.Configuration);
+
 builder.Services
     .AddModule<FleetModule>(builder.Configuration)
     .AddModule<TasksModule>(builder.Configuration)
@@ -30,7 +34,14 @@ var app = builder.Build();
 
 app.UseCors(AngularPolitikasi);
 
+// Sira onemli: once kimin oldugu (authentication), sonra ne yapabildigi
+// (authorization). Ters cevrilirse yetkilendirme her zaman anonim gorur.
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+app.MapAuthEndpoints();
+app.MapAlarmEndpoints();
 app.MapModuleEndpoints();
 
 app.Run();

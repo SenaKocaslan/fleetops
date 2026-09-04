@@ -1,0 +1,24 @@
+<section class="giris">
+  <h2>Giris</h2>
+
+  <form (ngSubmit)="giris()" #form="ngForm" data-testid="login-form">
+    <label>
+      Kullanici adi
+      <input name="userName" [(ngModel)]="userName" required autocomplete="username"
+             data-testid="login-user" />
+    </label>
+    <label>
+      Parola
+      <input name="password" type="password" [(ngModel)]="password" required
+             autocomplete="current-password" data-testid="login-password" />
+    </label>
+
+    <button type="submit" [disabled]="form.invalid || gonderiliyor()" data-testid="login-submit">
+      {{ gonderiliyor() ? 'Gonderiliyor...' : 'Giris yap' }}
+    </button>
+  </form>
+
+  @if (hata(); as mesaj) {
+    <p class="hata" data-testid="login-hata">{{ mesaj }}</p>
+  }
+</section>

@@ -39,5 +39,19 @@
         }
       </tbody>
     </table>
+
+    <div class="sayfalama" data-testid="movement-pager">
+      <button type="button" data-testid="movement-prev"
+              [disabled]="sayfa().page <= 1" (click)="sayfayaGit(sayfa().page - 1)">
+        Onceki
+      </button>
+      <span data-testid="movement-page-info">
+        Sayfa {{ sayfa().page }} / {{ sayfa().totalPages }} ({{ sayfa().totalCount }} hareket)
+      </span>
+      <button type="button" data-testid="movement-next"
+              [disabled]="!sayfa().hasNext" (click)="sayfayaGit(sayfa().page + 1)">
+        Sonraki
+      </button>
+    </div>
   }
 </section>

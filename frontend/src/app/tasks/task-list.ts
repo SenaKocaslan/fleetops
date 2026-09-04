@@ -6,6 +6,8 @@ import { StockService } from '../stock/stock.service';
 import { LocationSummary } from '../stock/stock.model';
 import { TaskService } from './task.service';
 import { TaskSummary } from './task.model';
+import { BOS_SAYFA, PagedResult } from '../sayfalama.model';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-task-list',
@@ -18,26 +20,31 @@ export class TaskList {
   private readonly agvService = inject(AgvService);
   private readonly stockService = inject(StockService);
 
-  protected readonly tasks = signal<TaskSummary[]>([]);
+  private readonly auth = inject(AuthService);
+
+  protected readonly sayfa = signal<PagedResult<TaskSummary>>(BOS_SAYFA);
+  protected readonly tasks = computed(() => this.sayfa().items);
+
+  // Gorev acma ve atama Supervisor isi; yetkisiz kullaniciya calismayacak
+  // kontrolleri gostermek yaniltici olur. Sunucu zaten 403 doner, bu sadece
+  // arayuz nezaketi.
+  protected readonly planlamaYetkisi = this.auth.supervisorMu;
   protected readonly agvs = signal<AgvSummary[]>([]);
   protected readonly locations = signal<LocationSummary[]>([]);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly assignError = signal<string | null>(null);
 
-  // Gorev basina secilen AGV. Anahtar gorev kimligi.
   protected readonly secim = signal<Record<string, string>>({});
 
-  // Listede ham Guid yerine AGV kodu gosterilir.
   protected readonly agvKodlari = computed(() =>
     Object.fromEntries(this.agvs().map((a) => [a.id, a.code])),
   );
 
-  // Yalnizca gorev alabilecek AGV'ler secilebilir. Kural sunucuda
-  // hesaplanip geliyor; burada tekrar yazilmiyor.
   protected readonly musaitAgvler = computed(() => this.agvs().filter((a) => a.gorevAlabilir));
 
   protected materialCode = '';
+  protected readonly arama = signal('');
   protected quantity = 1;
   protected priority = 1;
   protected fromLocationId = '';
@@ -47,12 +54,9 @@ export class TaskList {
     this.refresh();
     this.agvService.list().subscribe({
       next: (kayitlar) => this.agvs.set(kayitlar),
-      // AGV listesi alinamazsa gorev listesi yine calisir; atama yapilamaz.
       error: () => this.agvs.set([]),
     });
 
-    // Lokasyonlar Stock modulunden geliyor. Gun 3'ten beri form gecici
-    // Guid uretiyordu; Stock modulu yazildigi icin artik gercek.
     this.stockService.locations().subscribe({
       next: (kayitlar) => {
         this.locations.set(kayitlar);
@@ -101,8 +105,6 @@ export class TaskList {
     this.service.assign(taskId, agvId).subscribe({
       next: () => this.refresh(),
       error: (yanit) => {
-        // 409: yarisi kaybettik. Kullaniciya "hata" degil "tekrar dene"
-        // demek dogru olan; istek yanlis degildi.
         this.assignError.set(
           yanit?.status === 409
             ? 'Gorev bu sirada baska bir istek tarafindan atandi. Listeyi yenileyip tekrar deneyin.'
@@ -116,9 +118,9 @@ export class TaskList {
   protected refresh(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.service.list().subscribe({
+    this.service.list(this.sayfa().page, this.sayfa().pageSize, this.arama()).subscribe({
       next: (kayitlar) => {
-        this.tasks.set(kayitlar);
+        this.sayfa.set(kayitlar);
         this.loading.set(false);
       },
       error: () => {
@@ -128,11 +130,25 @@ export class TaskList {
     });
   }
 
+  protected aramaDegisti(olay: Event): void {
+    this.arama.set((olay.target as HTMLInputElement).value);
+    // Filtre degisince 3. sayfada kalmak bos liste gosterirdi.
+    this.sayfa.update((s) => ({ ...s, page: 1 }));
+    this.refresh();
+  }
+
+  protected sayfayaGit(page: number): void {
+    if (page < 1 || (page > this.sayfa().totalPages && page !== 1)) {
+      return;
+    }
+
+    this.sayfa.update((s) => ({ ...s, page }));
+    this.refresh();
+  }
+
   protected create(): void {
     this.error.set(null);
 
-    // Lokasyonlar Stock modulunde tanimlanacak (Gun 6). O zamana kadar
-    // gecici olarak uretiliyor; form da bunu ekranda belirtiyor.
     this.service
       .create({
         fromLocationId: this.fromLocationId,
@@ -143,10 +159,15 @@ export class TaskList {
       })
       .subscribe({
         next: () => {
+          // Yeni kayit oncelige gore siralanmis havuzda ilk sayfada
+          // olmayabilir; aramayi kendi koduna ayarlayip gosteriyoruz.
+          this.arama.set(this.materialCode);
           this.materialCode = '';
           this.quantity = 1;
           this.priority = 1;
-          this.refresh();
+          // Yeni kayit ilk sayfada; kullanici 3. sayfadaysa olusturdugu
+          // gorevi goremezdi.
+          this.sayfayaGit(1);
         },
         error: (yanit) => {
           this.error.set(yanit?.error?.message ?? 'Gorev olusturulamadi.');

@@ -14,7 +14,6 @@ using Microsoft.Extensions.Options;
 
 namespace FleetOps.Tasks;
 
-
 public sealed class TasksModule : IModule
 {
     public string Name => "Tasks";
@@ -27,17 +26,14 @@ public sealed class TasksModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable(
                     "__ef_migrations_history",
                     TasksDbContext.Schema))
-            // PostgreSQL'de tirnaksiz tanimlayici kucuk harfe duser; snake_case
-            // hem yerlesik gelenek hem de elle SQL yazmayi kolaylastirir.
             .UseSnakeCaseNamingConvention());
 
-        services.AddScoped<IQueryHandler<ListTasksQuery, IReadOnlyList<TaskSummary>>, ListTasksQueryHandler>();
+        services.AddScoped<IQueryHandler<ListTasksQuery, PagedResult<TaskSummary>>, ListTasksQueryHandler>();
         services.AddScoped<ICommandHandler<CreateTaskCommand, Guid>, CreateTaskCommandHandler>();
         services.AddScoped<ICommandHandler<AssignTaskCommand>, AssignTaskCommandHandler>();
         services.AddScoped<ICommandHandler<StartTaskCommand>, StartTaskCommandHandler>();
         services.AddScoped<ICommandHandler<CompleteTaskCommand>, CompleteTaskCommandHandler>();
 
-        // Kilit suresi ve temizleme araligi yapilandirmadan gelir.
         services.Configure<ResourceLockOptions>(
             configuration.GetSection(ResourceLockOptions.Bolum));
 
@@ -45,6 +41,9 @@ public sealed class TasksModule : IModule
         services.AddScoped<ICommandHandler<AcquireLockCommand, Guid>, AcquireLockCommandHandler>();
         services.AddScoped<ICommandHandler<ReleaseLockCommand>, ReleaseLockCommandHandler>();
         services.AddScoped<ICommandHandler<ReapExpiredLocksCommand, int>, ReapExpiredLocksCommandHandler>();
+
+        services.Configure<TasksAlarmOptions>(configuration.GetSection(TasksAlarmOptions.Bolum));
+        services.AddScoped<IAlarmSource, GorevAlarmKaynagi>();
 
         services.AddHostedService<LockReaper>();
 
@@ -55,13 +54,21 @@ public sealed class TasksModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        var grup = endpoints.MapGroup("/api/tasks").WithTags("Tasks");
+        // Grup seviyesinde varsayilan: giris yapmis herkes okuyabilir.
+        // Yazma uc noktalari kendi politikasiyla bunu daraltiyor.
+        var grup = endpoints.MapGroup("/api/tasks").WithTags("Tasks")
+            .RequireAuthorization(Politikalar.Okuma);
 
         grup.MapGet("/", async (
-            IQueryHandler<ListTasksQuery, IReadOnlyList<TaskSummary>> handler,
+            int? page,
+            int? pageSize,
+            string? materialCode,
+            IQueryHandler<ListTasksQuery, PagedResult<TaskSummary>> handler,
             CancellationToken ct) =>
         {
-            var sonuc = await handler.HandleAsync(new ListTasksQuery(), ct);
+            var sonuc = await handler.HandleAsync(
+                new ListTasksQuery(new PageRequest(page, pageSize), materialCode), ct);
+
             return Results.Ok(sonuc.Value);
         });
 
@@ -72,11 +79,10 @@ public sealed class TasksModule : IModule
         {
             var sonuc = await handler.HandleAsync(command, ct);
 
-            // Beklenen is hatasi 400 doner; exception'a cevrilmez.
             return sonuc.IsSuccess
                 ? Results.Created($"/api/tasks/{sonuc.Value}", new { id = sonuc.Value })
                 : HataYaniti(sonuc.Error);
-        });
+        }).RequireAuthorization(Politikalar.GorevPlanlama);
 
         grup.MapPost("/{id:guid}/assign", async (
             Guid id,
@@ -87,7 +93,7 @@ public sealed class TasksModule : IModule
             var sonuc = await handler.HandleAsync(new AssignTaskCommand(id, istek.AgvId), ct);
 
             return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
-        });
+        }).RequireAuthorization(Politikalar.GorevPlanlama);
 
         grup.MapPost("/{id:guid}/start", async (
             Guid id,
@@ -96,7 +102,7 @@ public sealed class TasksModule : IModule
         {
             var sonuc = await handler.HandleAsync(new StartTaskCommand(id), ct);
             return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
-        });
+        }).RequireAuthorization(Politikalar.GorevYurutme);
 
         grup.MapPost("/{id:guid}/complete", async (
             Guid id,
@@ -105,9 +111,10 @@ public sealed class TasksModule : IModule
         {
             var sonuc = await handler.HandleAsync(new CompleteTaskCommand(id), ct);
             return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
-        });
+        }).RequireAuthorization(Politikalar.GorevYurutme);
 
-        var kaynaklar = endpoints.MapGroup("/api/resources").WithTags("Resources");
+        var kaynaklar = endpoints.MapGroup("/api/resources").WithTags("Resources")
+            .RequireAuthorization(Politikalar.Okuma);
 
         kaynaklar.MapGet("/", async (
             IQueryHandler<ListResourcesQuery, IReadOnlyList<ResourceSummary>> handler,
@@ -128,7 +135,7 @@ public sealed class TasksModule : IModule
             return sonuc.IsSuccess
                 ? Results.Ok(new { lockId = sonuc.Value })
                 : HataYaniti(sonuc.Error);
-        });
+        }).RequireAuthorization(Politikalar.GorevYurutme);
 
         kaynaklar.MapPost("/{id:guid}/release", async (
             Guid id,
@@ -139,12 +146,9 @@ public sealed class TasksModule : IModule
             var sonuc = await handler.HandleAsync(new ReleaseLockCommand(id, istek.AgvId), ct);
 
             return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
-        });
+        }).RequireAuthorization(Politikalar.GorevYurutme);
     }
 
-    // Hata -> HTTP durum kodu esleme tek yerde. Kodu metin olarak
-    // karsilastirmak yerine Error kaydinin kendisiyle karsilastiriyorum:
-    // kod adi degisirse derleyici burayi da bulur.
     private static IResult HataYaniti(Error hata)
     {
         var govde = new { code = hata.Code, message = hata.Message };
@@ -156,8 +160,6 @@ public sealed class TasksModule : IModule
             return Results.NotFound(govde);
         }
 
-        // 409: istemci yanlis bir sey gondermedi, yarisi kaybetti.
-        // Ayni istegi tekrar gondermesi anlamli - 400'de degildir.
         if (hata == TaskErrors.EszamanliDegisiklik
             || hata == ResourceErrors.KaynakMesgul
             || hata == ResourceErrors.KilidiBaskasiTutuyor)
@@ -169,8 +171,6 @@ public sealed class TasksModule : IModule
     }
 }
 
-// Gorev kimligi URL'den geliyor; govdede yalnizca AGV var.
 public sealed record AssignTaskRequest(Guid AgvId);
 
-// Kaynak kimligi URL'den geliyor; kilitleme ve birakma icin ortak govde.
 public sealed record AgvIstegi(Guid AgvId);

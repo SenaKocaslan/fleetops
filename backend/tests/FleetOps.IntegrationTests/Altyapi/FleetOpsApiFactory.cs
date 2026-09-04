@@ -1,3 +1,6 @@
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using FleetOps.Api.Auth;
 using FleetOps.Fleet.Persistence;
 using FleetOps.Stock.Persistence;
 using FleetOps.Tasks.Persistence;
@@ -31,6 +34,8 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
 
         // Simulator surekli telemetri yazarsa AGV durumu testin altindan kayar.
         builder.UseSetting("Simulator:Enabled", "false");
+
+        builder.UseSetting("Jwt:SigningKey", "test-imza-anahtari-en-az-32-bayt-uzunlugunda-olmali");
     }
 
     public async Task InitializeAsync()
@@ -43,9 +48,41 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
     public async Task MigrationUygulaAsync()
     {
         using var scope = Services.CreateScope();
+        await scope.ServiceProvider.GetRequiredService<AuthDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<FleetDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<TasksDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<StockDbContext>().Database.MigrateAsync();
+    }
+
+    // Tohum kullanicilar migration'da; testler gercek login akisindan geciyor,
+    // token elle imzalanmiyor. Boylece login bozulursa testler de kirilir.
+    public const string OperatorAdi = "operator";
+    public const string OperatorParolasi = "Operator123!";
+    public const string SupervisorAdi = "supervisor";
+    public const string SupervisorParolasi = "Supervisor123!";
+
+    public async Task<HttpClient> IstemciAsync(
+        string kullaniciAdi = SupervisorAdi,
+        string parola = SupervisorParolasi)
+    {
+        var istemci = CreateClient();
+        istemci.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", await TokenAsync(kullaniciAdi, parola));
+
+        return istemci;
+    }
+
+    public async Task<string> TokenAsync(
+        string kullaniciAdi = SupervisorAdi,
+        string parola = SupervisorParolasi)
+    {
+        var yanit = await CreateClient().PostAsJsonAsync(
+            "/api/auth/login", new { userName = kullaniciAdi, password = parola });
+
+        yanit.EnsureSuccessStatusCode();
+
+        var govde = await yanit.Content.ReadFromJsonAsync<LoginYaniti>();
+        return govde!.Token;
     }
 
     public IServiceScope KapsamAc() => Services.CreateScope();

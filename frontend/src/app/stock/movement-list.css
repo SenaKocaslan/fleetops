@@ -17,3 +17,10 @@ td {
 .kilitli {
   color: #a15c00;
 }
+
+.sayfalama {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}

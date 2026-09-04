@@ -29,7 +29,9 @@ describe('StockService', () => {
   it('stok hareketlerini dogru adresten ceker', () => {
     service.movements().subscribe();
 
-    const istek = http.expectOne(`${environment.apiUrl}/stock/movements`);
+    const istek = http.expectOne(
+      (i) => i.url === `${environment.apiUrl}/stock/movements`,
+    );
     expect(istek.request.method).toBe('GET');
     istek.flush([]);
   });

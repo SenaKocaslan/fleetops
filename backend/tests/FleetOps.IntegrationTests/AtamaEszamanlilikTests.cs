@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FleetOps.IntegrationTests.Altyapi;
+using FleetOps.SharedKernel.Domain;
 using FleetOps.Tasks.Application;
 using FleetOps.Tasks.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -8,12 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace FleetOps.IntegrationTests;
 
-// Projenin pazarlik disi eszamanlilik problemi: ayni goreve ayni anda
-// iki atama denemesi geldiginde yalnizca biri kazanmali.
 [Collection(VeritabaniKoleksiyonu.Ad)]
 public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
 {
-    // Migration ile tohumlanan AGV kimlikleri.
     private static readonly Guid Agv01 = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid Agv02 = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
@@ -27,7 +25,6 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
         var db1 = kapsam1.ServiceProvider.GetRequiredService<TasksDbContext>();
         var db2 = kapsam2.ServiceProvider.GetRequiredService<TasksDbContext>();
 
-        // Iki baglam da gorevi AYNI xmin degeriyle okuyor.
         var gorev1 = await GorevYukleAsync(db1, gorevId);
         var gorev2 = await GorevYukleAsync(db2, gorevId);
         Assert.Equal(gorev1.Version, gorev2.Version);
@@ -35,11 +32,8 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
         Assert.True(gorev1.Assign(Agv01, DateTime.UtcNow).IsSuccess);
         Assert.True(gorev2.Assign(Agv02, DateTime.UtcNow).IsSuccess);
 
-        // Ilk yazan kazanir ve satirin xmin degerini degistirir.
         await db1.SaveChangesAsync();
 
-        // Ikincinin UPDATE'i "WHERE xmin = okudugum_deger" ile calisir,
-        // sifir satir etkiler ve EF bunu cakisma olarak bildirir.
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => db2.SaveChangesAsync());
 
         Assert.Equal(Agv01, await AktifAgvAsync(gorevId));
@@ -50,10 +44,11 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     {
         const int istekSayisi = 8;
         var gorevId = await GorevOlusturAsync();
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
 
-        // Istekleri sirayla baslatirsak yaris hic olusmaz. Hepsini ayri
-        // is parcaciginda hazirlayip tek bir kapiyla ayni anda saliyorum.
+        // Istekleri sirayla baslatirsak yaris hic olusmaz; hepsi tek kapidan.
+        // Kaybedenin 409 mu 400 mu aldigi zamanlamaya bagli, ona gore assert
+        // yazmak flaky olur.
         var kapi = new TaskCompletionSource();
         var istekler = Enumerable.Range(0, istekSayisi).Select(_ => Task.Run(async () =>
         {
@@ -67,15 +62,11 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
 
         var durumlar = yanitlar.Select(y => y.StatusCode).ToList();
 
-        // Degismez: tam olarak bir istek kazanir. Kaybedenlerin 409 mu 400 mu
-        // aldigi zamanlamaya baglidir (istek okumadan once mi sonra mi
-        // commit oldu), bu yuzden ona gore assert yazilmaz - flaky olurdu.
         Assert.Single(durumlar, d => d == HttpStatusCode.NoContent);
         Assert.All(
             durumlar.Where(d => d != HttpStatusCode.NoContent),
             d => Assert.Contains(d, new[] { HttpStatusCode.Conflict, HttpStatusCode.BadRequest }));
 
-        // Asil kanit veritabaninda: tek bir aktif atama olmali.
         using var kapsam = fabrika.KapsamAc();
         var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
         var aktifSayisi = await db.TransportTasks
@@ -90,15 +81,17 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     public async Task Atanan_gorev_listede_agv_ile_gorunur()
     {
         var gorevId = await GorevOlusturAsync();
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
 
         var yanit = await istemci.PostAsJsonAsync(
             $"/api/tasks/{gorevId}/assign", new { agvId = Agv02 });
 
         Assert.Equal(HttpStatusCode.NoContent, yanit.StatusCode);
 
-        var liste = await istemci.GetFromJsonAsync<List<TaskSummary>>("/api/tasks");
-        var gorev = Assert.Single(liste!, g => g.Id == gorevId);
+        var sayfa = await istemci.GetFromJsonAsync<PagedResult<TaskSummary>>(
+            "/api/tasks?pageSize=100");
+        var liste = sayfa!.Items;
+        var gorev = Assert.Single(liste, g => g.Id == gorevId);
 
         Assert.Equal("Assigned", gorev.Status);
         Assert.Equal(Agv02, gorev.AssignedAgvId);
@@ -108,7 +101,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     public async Task Zaten_atanmis_gorev_ikinci_kez_atanamaz()
     {
         var gorevId = await GorevOlusturAsync();
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
 
         await istemci.PostAsJsonAsync($"/api/tasks/{gorevId}/assign", new { agvId = Agv01 });
         var ikinci = await istemci.PostAsJsonAsync($"/api/tasks/{gorevId}/assign", new { agvId = Agv02 });
@@ -121,7 +114,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Olmayan_gorev_icin_404_doner()
     {
-        var yanit = await fabrika.CreateClient().PostAsJsonAsync(
+        var yanit = await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             $"/api/tasks/{Guid.NewGuid()}/assign", new { agvId = Agv01 });
 
         Assert.Equal(HttpStatusCode.NotFound, yanit.StatusCode);
@@ -131,7 +124,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
 
     private async Task<Guid> GorevOlusturAsync()
     {
-        var yanit = await fabrika.CreateClient().PostAsJsonAsync(
+        var yanit = await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             "/api/tasks",
             new CreateTaskCommand(Guid.NewGuid(), Guid.NewGuid(), "MLZ-ATAMA", 3, 1));
 

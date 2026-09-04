@@ -1,0 +1,33 @@
+<section>
+  <div class="baslik">
+    <h2>Alarmlar</h2>
+    <button type="button" (click)="yenile()" data-testid="alarm-refresh">Yenile</button>
+  </div>
+
+  @if (alarmlar().items.length === 0) {
+    <p data-testid="alarm-bos">Aktif alarm yok.</p>
+  } @else {
+    <table data-testid="alarm-tablosu">
+      <thead>
+        <tr>
+          <th>Siddet</th>
+          <th>Kod</th>
+          <th>Konu</th>
+          <th>Aciklama</th>
+          <th>Tespit</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (alarm of alarmlar().items; track alarm.code + alarm.subject) {
+          <tr data-testid="alarm-row">
+            <td><span class="siddet" [class]="alarm.severity.toLowerCase()">{{ alarm.severity }}</span></td>
+            <td>{{ alarm.code }}</td>
+            <td>{{ alarm.subject }}</td>
+            <td>{{ alarm.message }}</td>
+            <td>{{ alarm.detectedAtUtc | date: 'HH:mm:ss' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

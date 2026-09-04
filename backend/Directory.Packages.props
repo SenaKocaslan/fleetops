@@ -13,6 +13,10 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11" />
   </ItemGroup>
 
+  <ItemGroup Label="Kimlik">
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.11" />
+  </ItemGroup>
+
   <ItemGroup Label="Test">
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.11" />

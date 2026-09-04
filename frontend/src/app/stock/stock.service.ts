@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { LocationSummary, StockMovementSummary } from './stock.model';
+import { PagedResult } from '../sayfalama.model';
 
 @Injectable({ providedIn: 'root' })
 export class StockService {
@@ -12,7 +13,10 @@ export class StockService {
     return this.http.get<LocationSummary[]>(`${environment.apiUrl}/locations`);
   }
 
-  movements(): Observable<StockMovementSummary[]> {
-    return this.http.get<StockMovementSummary[]>(`${environment.apiUrl}/stock/movements`);
+  movements(page = 1, pageSize = 20): Observable<PagedResult<StockMovementSummary>> {
+    return this.http.get<PagedResult<StockMovementSummary>>(
+      `${environment.apiUrl}/stock/movements`,
+      { params: { page, pageSize } },
+    );
   }
 }

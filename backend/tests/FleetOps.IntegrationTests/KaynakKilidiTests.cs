@@ -11,15 +11,12 @@ using Microsoft.Extensions.Hosting;
 
 namespace FleetOps.IntegrationTests;
 
-// Projenin ikinci eszamanlilik problemi: bir kaynagi ayni anda iki AGV
-// kilitlemeye calistiginda yalnizca biri kazanmali.
 [Collection(VeritabaniKoleksiyonu.Ad)]
 public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
 {
     private static readonly Guid Agv01 = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid Agv02 = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
-    // Migration ile tohumlanan kaynaklar.
     private static readonly Guid Dock = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
     private static readonly Guid Koridor = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002");
     private static readonly Guid Asansor = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000003");
@@ -27,7 +24,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Tohumlanan_kaynaklar_listelenir()
     {
-        var kaynaklar = await fabrika.CreateClient()
+        var kaynaklar = await (await fabrika.IstemciAsync())
             .GetFromJsonAsync<List<ResourceSummary>>("/api/resources");
 
         var kodlar = kaynaklar!.Select(k => k.Code).ToList();
@@ -39,7 +36,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Kilit_alinir_ve_listede_tutan_agv_gorunur()
     {
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Koridor);
 
         var yanit = await istemci.PostAsJsonAsync(
@@ -57,7 +54,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Kilitli_kaynak_ikinci_agv_tarafindan_alinamaz()
     {
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Asansor);
 
         await istemci.PostAsJsonAsync($"/api/resources/{Asansor}/lock", new { agvId = Agv01 });
@@ -73,7 +70,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     public async Task Paralel_kilit_isteklerinden_yalnizca_biri_basarili_olur()
     {
         const int istekSayisi = 8;
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Dock);
 
         // Istekleri sirayla baslatirsak yaris hic olusmaz; hepsi tek kapidan.
@@ -94,14 +91,13 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
             durumlar.Where(d => d != HttpStatusCode.OK),
             d => Assert.Equal(HttpStatusCode.Conflict, d));
 
-        // Asil kanit veritabaninda: tek aktif kilit.
         Assert.Equal(1, await AktifKilitSayisiAsync(Dock));
     }
 
     [Fact]
     public async Task Kilidi_tutmayan_agv_birakamaz()
     {
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Koridor);
         await istemci.PostAsJsonAsync($"/api/resources/{Koridor}/lock", new { agvId = Agv01 });
 
@@ -116,7 +112,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Birakilan_kaynak_tekrar_kilitlenebilir()
     {
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Asansor);
 
         await istemci.PostAsJsonAsync($"/api/resources/{Asansor}/lock", new { agvId = Agv01 });
@@ -128,7 +124,6 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
         Assert.Equal(HttpStatusCode.NoContent, birak.StatusCode);
         Assert.Equal(HttpStatusCode.OK, tekrar.StatusCode);
 
-        // Gecmis siliniyor mu? Hayir: iki kayit var, biri aktif.
         Assert.Equal(2, await KilitSayisiAsync(Asansor));
         Assert.Equal(1, await AktifKilitSayisiAsync(Asansor));
     }
@@ -138,7 +133,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     {
         await KilitleriTemizleAsync(Koridor);
 
-        var yanit = await fabrika.CreateClient().PostAsJsonAsync(
+        var yanit = await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             $"/api/resources/{Koridor}/release", new { agvId = Agv01 });
 
         Assert.Equal(HttpStatusCode.NotFound, yanit.StatusCode);
@@ -147,7 +142,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Olmayan_kaynak_kilitlenemez()
     {
-        var yanit = await fabrika.CreateClient().PostAsJsonAsync(
+        var yanit = await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             $"/api/resources/{Guid.NewGuid()}/lock", new { agvId = Agv01 });
 
         Assert.Equal(HttpStatusCode.NotFound, yanit.StatusCode);
@@ -166,8 +161,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
         Assert.True(birakilan >= 1);
         Assert.Equal(0, await AktifKilitSayisiAsync(Dock));
 
-        // Ve kaynak yeniden kilitlenebilir hale gelmis olmali.
-        var yanit = await fabrika.CreateClient().PostAsJsonAsync(
+        var yanit = await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             $"/api/resources/{Dock}/lock", new { agvId = Agv02 });
         Assert.Equal(HttpStatusCode.OK, yanit.StatusCode);
     }
@@ -175,7 +169,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Reaper_suresi_dolmamis_kilide_dokunmaz()
     {
-        var istemci = fabrika.CreateClient();
+        var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Koridor);
         await istemci.PostAsJsonAsync($"/api/resources/{Koridor}/lock", new { agvId = Agv01 });
 
@@ -198,8 +192,6 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
         return await reaper.BirTurCalistirAsync(CancellationToken.None);
     }
 
-    // Testler ayni tohum kaynaklari paylasiyor; her test kendi kaynagini
-    // temiz baslatir. Kaynak basina ayri test kullanildigi icin cakisma yok.
     private async Task KilitleriTemizleAsync(Guid kaynakId)
     {
         using var kapsam = fabrika.KapsamAc();
@@ -212,8 +204,6 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
         using var kapsam = fabrika.KapsamAc();
         var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
 
-        // Gecmis bir "simdi" ile aliniyor; boylece suresi coktan dolmus olur.
-        // Zamani soyutlamak yerine bu yeterli: bugun cozdugu bir problem yok.
         var kilit = ResourceLock.Acquire(
             Guid.NewGuid(),
             kaynakId,

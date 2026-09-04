@@ -1,10 +1,11 @@
 import { expect, test } from '@playwright/test';
+import { girisYap } from './yardimcilar';
 
-// Kaynak kilidi akisi tarayicidan calisiyor mu?
 test.describe('Kaynak kilitleri', () => {
-  // Testler ayni tohum kaynaklari paylasiyor. Her test kendi kaynagini
-  // kullanir ve isini bitirince serbest birakir; workers=1 oldugu icin
-  // paralel calismiyorlar.
+  test.beforeEach(async ({ page }) => {
+    await girisYap(page);
+  });
+
   async function satir(page: import('@playwright/test').Page, kod: string) {
     await page.goto('/kaynaklar');
     await expect(page.getByTestId('resource-table')).toBeVisible();
@@ -42,7 +43,6 @@ test.describe('Kaynak kilitleri', () => {
     const kilitli = page.getByTestId('resource-row').filter({ hasText: 'CORRIDOR-A' });
     await expect(kilitli.getByTestId('resource-holder')).toHaveText('AGV-01');
 
-    // Kilitliyken kilitleme kontrolleri yerine birakma butonu var.
     await expect(kilitli.getByTestId('lock')).toHaveCount(0);
     await expect(kilitli.getByTestId('release')).toBeVisible();
 

@@ -73,3 +73,10 @@ th, td {
 .hata {
   color: #b91c1c;
 }
+
+.sayfalama {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}

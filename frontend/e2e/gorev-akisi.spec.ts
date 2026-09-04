@@ -1,16 +1,17 @@
 import { expect, test } from '@playwright/test';
+import { girisYap } from './yardimcilar';
 
-// Walking skeleton'in kanitı: tarayici -> Angular -> HTTP -> API ->
-// PostgreSQL -> geri. Zincirin tamami calisiyor mu?
 test.describe('Gorev havuzu', () => {
+  test.beforeEach(async ({ page }) => {
+    await girisYap(page);
+  });
+
   test('sayfa acilir ve gorev havuzu gorunur', async ({ page }) => {
     await page.goto('/');
 
     await expect(page.getByRole('heading', { name: 'FleetOps' })).toBeVisible();
     await expect(page.getByTestId('task-form')).toBeVisible();
 
-    // Yuklemenin BASARIYLA bittigini bekle. Yalnizca "hata yok" demek
-    // yaris kosulu yaratir: istek daha donmeden test gecebilir.
     await expect(
       page.getByTestId('task-table').or(page.getByTestId('empty')),
     ).toBeVisible();
@@ -32,8 +33,6 @@ test.describe('Gorev havuzu', () => {
   });
 
   test('sunucu tarafi hatasi ekranda gosterilir', async ({ page }) => {
-    // Sadece bosluk iceren kod, HTML required dogrulamasini gecer ama
-    // sunucu Trim() sonrasi reddeder. Yani hata gercekten API'den doner.
     await page.goto('/');
     await page.getByTestId('material-code').fill('   ');
     await page.getByTestId('submit').click();

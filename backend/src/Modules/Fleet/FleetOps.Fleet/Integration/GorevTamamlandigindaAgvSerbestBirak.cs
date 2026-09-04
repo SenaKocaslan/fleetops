@@ -1,8 +1,8 @@
 using FleetOps.Fleet.Application;
+using FleetOps.Fleet.Domain;
 using FleetOps.Fleet.Persistence;
 using FleetOps.SharedKernel;
 using FleetOps.SharedKernel.IntegrationEvents;
-using Microsoft.EntityFrameworkCore;
 
 namespace FleetOps.Fleet.Integration;
 
@@ -11,20 +11,21 @@ internal sealed class GorevTamamlandigindaAgvSerbestBirak(
     IFleetNotifier notifier)
     : IntegrationEventHandler<TaskCompletedIntegrationEvent>
 {
-    protected override async Task HandleAsync(
+    protected override Task HandleAsync(
         TaskCompletedIntegrationEvent olay,
-        CancellationToken cancellationToken)
-    {
-        var agv = await db.Agvs.FirstOrDefaultAsync(a => a.Id == olay.AgvId, cancellationToken);
+        CancellationToken cancellationToken) =>
+        AgvGuncelleyici.GuncelleAsync(db, notifier, olay.AgvId, SerbestBirak, cancellationToken);
 
-        if (agv is null)
+    // Mesgul degilse yazacak bir sey yok; gereksiz UPDATE telemetriyle
+    // catisma ihtimalini artirirdi.
+    private static bool SerbestBirak(Agv agv)
+    {
+        if (agv.Status != AgvStatus.Busy)
         {
-            return;
+            return false;
         }
 
         agv.SerbestBirak();
-        await db.SaveChangesAsync(cancellationToken);
-
-        await notifier.AgvDegistiAsync(AgvSummary.Olustur(agv), cancellationToken);
+        return true;
     }
 }

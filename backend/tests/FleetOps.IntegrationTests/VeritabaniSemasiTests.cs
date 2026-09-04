@@ -28,8 +28,6 @@ public class VeritabaniSemasiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Modul_disina_foreign_key_yoktur()
     {
-        // Mimarinin en kritik kurali: moduller arasi FK yok, sadece ID.
-        // Bunu dokumana yazmak yerine veritabanina soruyoruz.
         using var kapsam = fabrika.KapsamAc();
         var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
 
@@ -71,7 +69,6 @@ public class VeritabaniSemasiTests(FleetOpsApiFactory fabrika)
             Assert.Equal(AgvStatus.Available, agv.Status);
             Assert.NotEqual(0u, agv.Version); // xmin okundu
 
-            // Enum gercekten metin olarak mi yaziliyor?
             var metin = await db.Database
                 .SqlQuery<string>($"SELECT status AS \"Value\" FROM fleet.agv WHERE id = {id}")
                 .SingleAsync();
@@ -112,8 +109,6 @@ public class VeritabaniSemasiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Utc_olmayan_tarih_npgsql_tarafindan_reddedilir()
     {
-        // DEVIR'de kayitli bulgu: Npgsql, Kind=Utc olmayan DateTime kabul etmez.
-        // Bu testin amaci o bilgiyi koda gomup ileride unutulmasini engellemek.
         using var kapsam = fabrika.KapsamAc();
         var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
 
@@ -122,11 +117,11 @@ public class VeritabaniSemasiTests(FleetOpsApiFactory fabrika)
             Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "MLZ-100", 1, 1, yerelSaat).Value;
         db.TransportTasks.Add(gorev);
 
-        // Herhangi bir hata degil, TAM OLARAK Kind hatasi bekleniyor:
-        // aksi halde test yanlis sebeple yesil yanabilir.
         var hata = await Assert.ThrowsAnyAsync<Exception>(() => db.SaveChangesAsync());
         var kok = hata.InnerException ?? hata;
 
+        // Herhangi bir hata degil, TAM OLARAK Kind hatasi bekleniyor:
+        // aksi halde test yanlis sebeple yesil yanar.
         Assert.IsType<ArgumentException>(kok);
         Assert.Contains("Kind=Local", kok.Message, StringComparison.Ordinal);
     }

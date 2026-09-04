@@ -2,7 +2,6 @@ using FleetOps.Fleet.Application;
 using FleetOps.Fleet.Persistence;
 using FleetOps.SharedKernel;
 using FleetOps.SharedKernel.IntegrationEvents;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FleetOps.Fleet.Integration;
@@ -17,22 +16,13 @@ internal sealed class GorevAtandigindaAgvMesgullestir(
         TaskAssignedIntegrationEvent olay,
         CancellationToken cancellationToken)
     {
-        var agv = await db.Agvs.FirstOrDefaultAsync(a => a.Id == olay.AgvId, cancellationToken);
+        // Zaten mesgulse degisiklik yok: ayni olay tekrar teslim edilmis olabilir.
+        var bulundu = await AgvGuncelleyici.GuncelleAsync(
+            db, notifier, olay.AgvId, agv => agv.Mesgullestir().IsSuccess, cancellationToken);
 
-        if (agv is null)
+        if (!bulundu)
         {
             logger.LogWarning("Atama olayindaki AGV bulunamadi: {AgvId}", olay.AgvId);
-            return;
         }
-
-        // Zaten mesgulse hata degil: ayni olay tekrar teslim edilmis olabilir.
-        if (agv.Mesgullestir().IsFailure)
-        {
-            return;
-        }
-
-        await db.SaveChangesAsync(cancellationToken);
-
-        await notifier.AgvDegistiAsync(AgvSummary.Olustur(agv), cancellationToken);
     }
 }

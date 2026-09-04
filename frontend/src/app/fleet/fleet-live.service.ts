@@ -2,11 +2,13 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { environment } from '../../environments/environment';
 import { AgvService } from './agv.service';
+import { AuthService } from '../auth/auth.service';
 import { AgvSummary, agvUygula } from './agv.model';
 
 @Injectable({ providedIn: 'root' })
 export class FleetLiveService {
   private readonly agvService = inject(AgvService);
+  private readonly auth = inject(AuthService);
   private connection: HubConnection | null = null;
 
   readonly agvs = signal<AgvSummary[]>([]);
@@ -26,7 +28,11 @@ export class FleetLiveService {
     }
 
     const baglanti = new HubConnectionBuilder()
-      .withUrl(environment.hubUrl)
+      .withUrl(environment.hubUrl, {
+        // HTTP interceptor SignalR'i kapsamiyor; hub kendi tasiyicisini
+        // kullaniyor. Token'i buraya ayrica vermek zorunlu.
+        accessTokenFactory: () => this.auth.token ?? '',
+      })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Warning)
       .build();
