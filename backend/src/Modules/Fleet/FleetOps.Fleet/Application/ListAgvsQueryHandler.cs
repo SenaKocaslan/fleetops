@@ -12,23 +12,12 @@ internal sealed class ListAgvsQueryHandler(FleetDbContext db)
         ListAgvsQuery query,
         CancellationToken cancellationToken)
     {
-        // Burada bilerek projeksiyon degil, entity yukluyorum: "gorev
-        // alabilir mi" karari Agv.GorevAlabilir() icinde ve o kurali SQL'e
-        // cevirmek icin tekrar yazmak, kuralin iki yerde durmasi demek.
-        // Filo kucuk (onlarca arac), okuma maliyeti onemsiz.
         var agvler = await db.Agvs
             .AsNoTracking()
             .OrderBy(a => a.Code)
             .ToListAsync(cancellationToken);
 
-        var sonuc = agvler
-            .Select(a => new AgvSummary(
-                a.Id,
-                a.Code,
-                a.Status.ToString(),
-                a.BatteryLevel,
-                a.GorevAlabilir()))
-            .ToList();
+        var sonuc = agvler.Select(AgvSummary.Olustur).ToList();
 
         return Result.Success<IReadOnlyList<AgvSummary>>(sonuc);
     }

@@ -1,0 +1,48 @@
+<section>
+  <div class="baslik">
+    <h2>Canli filo durumu</h2>
+    <span
+      class="baglanti"
+      [class.acik]="connected()"
+      data-testid="hub-durumu">
+      {{ connected() ? 'Canli' : 'Baglanti yok' }}
+    </span>
+  </div>
+
+  @if (error(); as hata) {
+    <p class="hata" data-testid="fleet-hata">{{ hata }}</p>
+  }
+
+  <p data-testid="musait-sayisi">Gorev alabilecek arac: {{ musaitSayisi() }}</p>
+
+  @if (agvs().length === 0) {
+    <p data-testid="fleet-bos">Kayitli AGV yok.</p>
+  } @else {
+    <table data-testid="fleet-tablosu">
+      <thead>
+        <tr>
+          <th>Kod</th>
+          <th>Durum</th>
+          <th>Batarya</th>
+          <th>Gorev alabilir</th>
+          <th>Son gorulme</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (agv of agvs(); track agv.id) {
+          <tr [attr.data-testid]="'agv-' + agv.code">
+            <td>{{ agv.code }}</td>
+            <td>{{ agv.status }}</td>
+            <td [class]="bataryaSinifi(agv.batteryLevel)" [attr.data-testid]="'batarya-' + agv.code">
+              {{ agv.batteryLevel }}%
+            </td>
+            <td>{{ agv.gorevAlabilir ? 'Evet' : 'Hayir' }}</td>
+            <td [attr.data-testid]="'gorulme-' + agv.code">
+              {{ agv.lastSeenAtUtc ? (agv.lastSeenAtUtc | date: 'HH:mm:ss') : '-' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

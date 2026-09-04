@@ -1,3 +1,4 @@
+using FleetOps.Fleet.Application;
 using FleetOps.Fleet.Persistence;
 using FleetOps.SharedKernel;
 using FleetOps.SharedKernel.IntegrationEvents;
@@ -6,12 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace FleetOps.Fleet.Integration;
 
-// Tasks modulu bir gorevi atadiginda AGV mesgule alinir.
-// Bu kontrol Gun 4'te bilerek yapilmamisti: Tasks modulu Fleet'i goremez.
-// Iletisimin dogru yeri burasi - Fleet olayi dinliyor, Tasks Fleet'i
-// cagirmiyor.
 internal sealed class GorevAtandigindaAgvMesgullestir(
     FleetDbContext db,
+    IFleetNotifier notifier,
     ILogger<GorevAtandigindaAgvMesgullestir> logger)
     : IntegrationEventHandler<TaskAssignedIntegrationEvent>
 {
@@ -23,20 +21,18 @@ internal sealed class GorevAtandigindaAgvMesgullestir(
 
         if (agv is null)
         {
-            // Olay atilmaz: olmayan bir AGV icin tekrar denemek bir sey
-            // degistirmez, yalnizca kuyrugu tikar.
             logger.LogWarning("Atama olayindaki AGV bulunamadi: {AgvId}", olay.AgvId);
             return;
         }
 
-        // IDEMPOTENT: teslimat en az bir kez oldugu icin ayni olay tekrar
-        // gelebilir. AGV zaten mesgulse aggregate reddediyor ve bu bir hata
-        // degil - ikinci teslim hicbir sey degistirmemis oluyor.
+        // Zaten mesgulse hata degil: ayni olay tekrar teslim edilmis olabilir.
         if (agv.Mesgullestir().IsFailure)
         {
             return;
         }
 
         await db.SaveChangesAsync(cancellationToken);
+
+        await notifier.AgvDegistiAsync(AgvSummary.Olustur(agv), cancellationToken);
     }
 }

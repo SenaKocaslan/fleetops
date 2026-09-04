@@ -7,7 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 const string AngularPolitikasi = "angular";
 
-// Izinli origin'ler koda gomulmez: uretimde farkli olacak.
 var izinliOriginler = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? [];
@@ -16,9 +15,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy(AngularPolitikasi, politika => politika
         .WithOrigins(izinliOriginler)
         .AllowAnyHeader()
-        .AllowAnyMethod()));
+        .AllowAnyMethod()
+        // SignalR istemcisi negotiate isteginde kimlik bilgisi gonderir.
+        // AllowAnyOrigin ile birlikte kullanilamaz; origin listesi acik oldugu
+        // icin sorun degil.
+        .AllowCredentials()));
 
-// Composition root: moduller kendilerini kaydeder, Program.cs iclerini bilmez.
 builder.Services
     .AddModule<FleetModule>(builder.Configuration)
     .AddModule<TasksModule>(builder.Configuration)
@@ -33,5 +35,5 @@ app.MapModuleEndpoints();
 
 app.Run();
 
-// Integration testlerin WebApplicationFactory ile erisebilmesi icin.
+// WebApplicationFactory'nin erisebilmesi icin; kaldirilirsa integration testler derlenmez.
 public partial class Program;

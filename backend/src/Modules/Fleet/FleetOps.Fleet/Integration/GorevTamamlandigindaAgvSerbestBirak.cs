@@ -1,3 +1,4 @@
+using FleetOps.Fleet.Application;
 using FleetOps.Fleet.Persistence;
 using FleetOps.SharedKernel;
 using FleetOps.SharedKernel.IntegrationEvents;
@@ -5,8 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FleetOps.Fleet.Integration;
 
-// Gorev tamamlaninca AGV yeniden musait olur.
-internal sealed class GorevTamamlandigindaAgvSerbestBirak(FleetDbContext db)
+internal sealed class GorevTamamlandigindaAgvSerbestBirak(
+    FleetDbContext db,
+    IFleetNotifier notifier)
     : IntegrationEventHandler<TaskCompletedIntegrationEvent>
 {
     protected override async Task HandleAsync(
@@ -20,10 +22,9 @@ internal sealed class GorevTamamlandigindaAgvSerbestBirak(FleetDbContext db)
             return;
         }
 
-        // SerbestBirak yalnizca mesgulse etki eder; ikinci teslim
-        // hicbir sey degistirmez. Ayrica idempotentlik tablosu gerekmiyor:
-        // "mesgul degil" durumuna gecmek tekrarlanabilir bir islem.
         agv.SerbestBirak();
         await db.SaveChangesAsync(cancellationToken);
+
+        await notifier.AgvDegistiAsync(AgvSummary.Olustur(agv), cancellationToken);
     }
 }

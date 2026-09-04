@@ -21,7 +21,15 @@ describe('AgvService', () => {
 
   it('agv listesini dogru adresten ceker', () => {
     const beklenen: AgvSummary[] = [
-      { id: 'a1', code: 'AGV-01', status: 'Available', batteryLevel: 95, gorevAlabilir: true },
+      {
+        id: 'a1',
+        code: 'AGV-01',
+        status: 'Available',
+        batteryLevel: 95,
+        gorevAlabilir: true,
+        currentLocationId: null,
+        lastSeenAtUtc: null,
+      },
     ];
 
     let gelen: AgvSummary[] | undefined;

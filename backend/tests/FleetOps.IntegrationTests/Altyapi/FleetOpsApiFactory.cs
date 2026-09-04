@@ -9,10 +9,6 @@ using Testcontainers.PostgreSql;
 
 namespace FleetOps.IntegrationTests.Altyapi;
 
-// Gercek PostgreSQL uzerinde calisan test uygulamasi.
-// In-memory provider kullanilmiyor cunku bu projede test edilmesi gereken
-// seyler (optimistic concurrency, jsonb, snake_case eslemesi, gercek SQL)
-// in-memory'de taklit edilmez; orada gecen test uretimde patlar.
 public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _veritabani = new PostgreSqlBuilder("postgres:17-alpine")
@@ -25,27 +21,22 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Uygulama kodu degismiyor; yalnizca yapilandirma ezilir.
         builder.UseSetting("ConnectionStrings:FleetOps", _veritabani.GetConnectionString());
 
-        // Arka plandaki LockReaper testin ortasinda calisip kilitleri
-        // birakirsa testler flaky olur. Zamanlayiciyi pratikte devre disi
-        // birakiyoruz; reaper'in kendisi BirTurCalistirAsync ile dogrudan
-        // cagirilarak test ediliyor.
+        // Arka plan servisleri testin ortasinda calisirsa testler flaky olur.
+        // Zamanlayicilar kapali; servisler testten dogrudan cagriliyor.
         builder.UseSetting("ResourceLock:ReaperInterval", "01:00:00");
 
-        // Ayni sebeple outbox daginin zamanlayicisi da devre disi: olaylarin
-        // NE ZAMAN teslim edildigi testin kontrolunde olmali.
         builder.UseSetting("Outbox:PollInterval", "01:00:00");
+
+        // Simulator surekli telemetri yazarsa AGV durumu testin altindan kayar.
+        builder.UseSetting("Simulator:Enabled", "false");
     }
 
     public async Task InitializeAsync()
     {
         await _veritabani.StartAsync();
 
-        // Migration'lar ACILISTA degil, ayri bir adim olarak uygulanir.
-        // Uygulama Program.cs'te migrate etmez - cok instance'li dagitimda
-        // yaris kosulu olusurdu.
         await MigrationUygulaAsync();
     }
 
@@ -57,12 +48,10 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
         await scope.ServiceProvider.GetRequiredService<StockDbContext>().Database.MigrateAsync();
     }
 
-    // Test icinde dogrudan veritabani islemi icin kapsam acar.
     public IServiceScope KapsamAc() => Services.CreateScope();
 
-    // xUnit v2'nin IAsyncLifetime.DisposeAsync'i Task dondurur;
-    // WebApplicationFactory'nin DisposeAsync'i ise ValueTask. Ikisi ayni
-    // imzayla karsilanamaz, bu yuzden acik arayuz uygulamasi kullanilir.
+    // xUnit v2 Task, WebApplicationFactory ValueTask donduruyor; acik
+    // arayuz uygulamasi zorunlu.
     async Task IAsyncLifetime.DisposeAsync()
     {
         await base.DisposeAsync();

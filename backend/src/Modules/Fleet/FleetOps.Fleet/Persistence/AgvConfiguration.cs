@@ -11,12 +11,8 @@ internal sealed class AgvConfiguration : IEntityTypeConfiguration<Agv>
         builder.ToTable("agv");
         builder.HasKey(a => a.Id);
 
-        // Kimlik domain'de uretilir (factory metodu Guid'i kendisi verir).
-        // Bunu soylemezsek EF, Guid anahtari "veritabani uretir" sayar ve
-        // anahtari dolu gelen yeni nesneyi "zaten var olan satir" zannedip
-        // INSERT yerine UPDATE gonderir.
+        // Kaldirilirsa EF, anahtari dolu gelen yeni nesneye INSERT yerine UPDATE gonderir.
         builder.Property(a => a.Id).ValueGeneratedNever();
-
 
         builder.Property(a => a.Code)
             .HasMaxLength(32)
@@ -24,8 +20,6 @@ internal sealed class AgvConfiguration : IEntityTypeConfiguration<Agv>
 
         builder.HasIndex(a => a.Code).IsUnique();
 
-        // Enum string olarak saklanir: veritabanina bakildiginda "Available"
-        // gorunur, "1" degil. Hata ayiklamada fark yaratir.
         builder.Property(a => a.Status)
             .HasConversion<string>()
             .HasMaxLength(20)
@@ -33,23 +27,16 @@ internal sealed class AgvConfiguration : IEntityTypeConfiguration<Agv>
 
         builder.Property(a => a.BatteryLevel).IsRequired();
 
-        // Stock modulundeki lokasyonun kimligi - FK YOK, sadece ID.
         builder.Property(a => a.CurrentLocationId);
 
-        // Optimistic concurrency: PostgreSQL'in xmin sistem sutunu.
-        // Ayri bir row_version sutunu tutmaya gerek yok, veritabani zaten
-        // her satirin son degistiren transaction'ini biliyor.
+        builder.Property(a => a.LastSeenAtUtc);
+
         builder.Property(a => a.Version)
             .HasColumnName("xmin")
             .HasColumnType("xid")
             .ValueGeneratedOnAddOrUpdate()
             .IsConcurrencyToken();
 
-
-        // Tohum veri: atama akisinin calisabilmesi icin filoda arac olmali.
-        // Acilista calisan tohumlama koduna gore avantaji, cok instance'li
-        // dagitimda yaris kosulu olusturmamasi. AGV kayit akisi (POST
-        // /api/agvs) yazildiginda bu tohum kaldirilacak.
         builder.HasData(
             new
             {
@@ -73,7 +60,6 @@ internal sealed class AgvConfiguration : IEntityTypeConfiguration<Agv>
                 BatteryLevel = 12,
             });
 
-        // Domain event'ler bellekte tutulur, veritabanina yazilmaz.
         builder.Ignore(a => a.DomainEvents);
     }
 }

@@ -2,8 +2,6 @@ using FleetOps.SharedKernel.Domain;
 
 namespace FleetOps.Fleet.Domain;
 
-// Beklenen is hatalari tek yerde. Kod string'leri API yanitinda ve
-// istemcide kullanilacagi icin dagilmamalari onemli.
 public static class FleetErrors
 {
     public static readonly Error KodBos =
@@ -17,4 +15,10 @@ public static class FleetErrors
 
     public static readonly Error ZatenMesgul =
         new("Agv.ZatenMesgul", "AGV zaten mesgul.");
+
+    public static readonly Error Bulunamadi =
+        new("Agv.Bulunamadi", "AGV bulunamadi.");
+
+    public static readonly Error EszamanliDegisiklik =
+        new("Agv.EszamanliDegisiklik", "AGV bu sirada baska bir islemle degisti.");
 }

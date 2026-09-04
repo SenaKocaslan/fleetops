@@ -1,0 +1,42 @@
+.baslik {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.baglanti {
+  background: #eee;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  padding: 0.15rem 0.6rem;
+}
+
+.baglanti.acik {
+  background: #d8f3dc;
+  color: #1b4332;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid #ddd;
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+
+.kritik {
+  color: #b00020;
+  font-weight: 600;
+}
+
+.dusuk {
+  color: #b26a00;
+}
+
+.hata {
+  color: #b00020;
+}
