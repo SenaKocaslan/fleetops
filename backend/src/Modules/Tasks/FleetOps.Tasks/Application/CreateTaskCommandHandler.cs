@@ -12,7 +12,6 @@ internal sealed class CreateTaskCommandHandler(TasksDbContext db)
         CreateTaskCommand command,
         CancellationToken cancellationToken)
     {
-        // Dogrulama aggregate'in icinde; handler kural tekrar etmez.
         var sonuc = TransportTask.Create(
             Guid.NewGuid(),
             command.FromLocationId,

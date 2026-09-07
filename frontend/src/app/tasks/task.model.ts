@@ -1,4 +1,3 @@
-// Backend'deki TaskSummary kaydinin istemci karsiligi.
 export interface TaskSummary {
   id: string;
   status: string;

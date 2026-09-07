@@ -12,8 +12,6 @@ internal sealed class ListResourcesQueryHandler(TasksDbContext db)
         ListResourcesQuery query,
         CancellationToken cancellationToken)
     {
-        // Aktif kilit sol birlestirme ile geliyor; kismi tekil indeks
-        // sayesinde kaynak basina en fazla bir tane olabilecegini biliyoruz.
         var kayitlar = await db.Resources
             .AsNoTracking()
             .OrderBy(r => r.Code)

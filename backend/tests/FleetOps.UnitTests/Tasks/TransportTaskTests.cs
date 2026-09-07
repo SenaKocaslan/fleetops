@@ -11,7 +11,6 @@ public class TransportTaskTests
     private static TransportTask Yeni() =>
         TransportTask.Create(Guid.NewGuid(), Kaynak, Hedef, "MLZ-100", 5, 1, Simdi).Value;
 
-    // Gorevi istenen duruma getirir; gecis matrisi testinde kullanilir.
     private static TransportTask DurumdakiGorev(TransportTaskStatus durum)
     {
         var gorev = Yeni();
@@ -46,8 +45,6 @@ public class TransportTaskTests
         Assert.Equal(durum, gorev.Status);
         return gorev;
     }
-
-    // ---------- olusturma dogrulamalari ----------
 
     [Fact]
     public void Ayni_lokasyona_tasima_gorevi_olusturulamaz()
@@ -84,8 +81,6 @@ public class TransportTaskTests
         Assert.Null(gorev.AktifAtama);
         Assert.Empty(gorev.Assignments);
     }
-
-    // ---------- gecis matrisi: TAM kapsam ----------
 
     public static TheoryData<TransportTaskStatus, TransportTaskStatus, bool> GecisMatrisi()
     {
@@ -134,8 +129,6 @@ public class TransportTaskTests
         Assert.Equal(izinliMi, sonuc.IsSuccess);
         Assert.Equal(izinliMi ? hedef : kaynak, gorev.Status);
     }
-
-    // ---------- atama davranisi ----------
 
     [Fact]
     public void Atama_yapilinca_aktif_atama_olusur()

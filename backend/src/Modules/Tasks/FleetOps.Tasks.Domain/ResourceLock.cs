@@ -2,9 +2,6 @@ using FleetOps.SharedKernel.Domain;
 
 namespace FleetOps.Tasks.Domain;
 
-// Bir AGV'nin bir kaynak uzerindeki kilidi. Suresi doludur: AGV takilirsa
-// kilit sonsuza kadar kalmasin. Birakilan kilit silinmez, kaydi kalir -
-// "bu kaynagi kim ne zaman tuttu" sorusu cevaplanabilsin.
 public sealed class ResourceLock : AggregateRoot
 {
     private ResourceLock(
@@ -60,7 +57,6 @@ public sealed class ResourceLock : AggregateRoot
         return Result.Success(new ResourceLock(id, resourceId, agvId, nowUtc, nowUtc + sure));
     }
 
-    // Kilidi yalnizca tutan AGV birakabilir.
     public Result Release(Guid agvId, DateTime nowUtc)
     {
         if (!Aktif)
@@ -77,8 +73,8 @@ public sealed class ResourceLock : AggregateRoot
         return Result.Success();
     }
 
-    // Zaman asimiyla birakma: sahibi kontrol edilmez, cunku bunu sistem
-    // yapiyor. Ama suresi dolmamis kilide dokunulmaz.
+    // Sahibi kontrol edilmez, bunu sistem yapar. Suresi dolmamis kilide
+    // yine de dokunulmaz.
     public Result ZamanAsimiylaBirak(DateTime nowUtc)
     {
         if (!Aktif)

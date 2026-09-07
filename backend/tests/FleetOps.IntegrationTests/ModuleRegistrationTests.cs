@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace FleetOps.IntegrationTests;
 
-// Iskelet dogrulamasi: gercek HTTP pipeline ayakta, moduller kendilerini
-// IModule uzerinden kaydediyor ve uc noktalari eslesiyor. Fleet ve Tasks
-// artik gercek uc noktalara sahip; onlar kendi test dosyalarinda.
 public class ModuleRegistrationTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
@@ -21,9 +18,6 @@ public class ModuleRegistrationTests : IClassFixture<WebApplicationFactory<Progr
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    // Uc modulun de kendi uc noktasini esledigi. Gecici ping uc noktalari
-    // gercek uc noktalarla degistirildi; burada yalnizca eslemenin
-    // yapildigi kontrol ediliyor, davranis kendi test dosyalarinda.
     [Theory]
     [InlineData("/api/agvs")]
     [InlineData("/api/tasks")]

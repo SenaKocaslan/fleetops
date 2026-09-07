@@ -28,8 +28,6 @@ public static class ResourceErrors
     public static readonly Error KilidinSuresiDolmadi =
         new("Resource.KilidinSuresiDolmadi", "Kilidin suresi henuz dolmadi.");
 
-    // Kaynak baska bir AGV tarafindan tutuluyor. Istemci yanlis bir sey
-    // yapmadi; kaynak serbest kalinca tekrar deneyebilir.
     public static readonly Error KaynakMesgul =
         new("Resource.KaynakMesgul", "Kaynak su anda baska bir AGV tarafindan kilitli.");
 }

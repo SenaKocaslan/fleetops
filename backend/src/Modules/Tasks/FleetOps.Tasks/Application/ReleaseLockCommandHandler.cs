@@ -22,7 +22,6 @@ internal sealed class ReleaseLockCommandHandler(TasksDbContext db)
             return Result.Failure(ResourceErrors.KilitBulunamadi);
         }
 
-        // Sahiplik kontrolu aggregate'in icinde; handler kurali tekrar etmez.
         var sonuc = kilit.Release(command.AgvId, DateTime.UtcNow);
         if (sonuc.IsFailure)
         {

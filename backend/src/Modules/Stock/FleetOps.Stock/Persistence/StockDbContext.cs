@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FleetOps.Stock.Persistence;
 
-// Stock modulunun veritabani baglami. Yalnizca "stock" semasini gorur.
 public sealed class StockDbContext(DbContextOptions<StockDbContext> options) : DbContext(options)
 {
     public const string Schema = "stock";

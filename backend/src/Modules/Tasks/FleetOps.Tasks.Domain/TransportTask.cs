@@ -2,12 +2,8 @@ using FleetOps.SharedKernel.Domain;
 
 namespace FleetOps.Tasks.Domain;
 
-// Bir malzemenin bir lokasyondan digerine tasinma gorevi.
-// Aggregate root: atamalar yalnizca bu sinif uzerinden degistirilir.
 public sealed class TransportTask : AggregateRoot
 {
-    // Durum makinesi TEK yerde. Bir gecis eklenecekse yalnizca bu tablo
-    // degisir; kontroller koda dagilmaz.
     private static readonly Dictionary<TransportTaskStatus, TransportTaskStatus[]> IzinliGecisler =
         new()
         {
@@ -46,7 +42,6 @@ public sealed class TransportTask : AggregateRoot
 
     public TransportTaskStatus Status { get; private set; }
 
-    // Stock modulundeki lokasyon kimlikleri. Foreign key DEGIL.
     public Guid FromLocationId { get; private set; }
 
     public Guid ToLocationId { get; private set; }
@@ -55,17 +50,14 @@ public sealed class TransportTask : AggregateRoot
 
     public int Quantity { get; private set; }
 
-    // Buyuk sayi daha oncelikli.
     public int Priority { get; private set; }
 
     public DateTime CreatedAtUtc { get; private set; }
 
     public IReadOnlyCollection<TaskAssignment> Assignments => _assignments.AsReadOnly();
 
-    // Su an acik olan atama; gorev havuzdaysa null.
     public TaskAssignment? AktifAtama => _assignments.SingleOrDefault(a => a.Aktif);
 
-    // PostgreSQL xmin sistem sutununa eslenir - optimistic concurrency.
     public uint Version { get; private set; }
 
     public static Result<TransportTask> Create(
@@ -120,7 +112,6 @@ public sealed class TransportTask : AggregateRoot
         return Result.Success();
     }
 
-    // AGV gorevi reddetti veya zaman asimina ugradi; gorev havuza doner.
     public Result Release(DateTime nowUtc)
     {
         var gecis = GecisDenetle(TransportTaskStatus.Pending);
@@ -154,7 +145,7 @@ public sealed class TransportTask : AggregateRoot
             return gecis;
         }
 
-        // AGV kimligi atama kapanmadan once alinmali.
+        // Atama kapanmadan once okunmali; sonra okunursa bos gelir.
         var agvId = AktifAtama?.AgvId ?? Guid.Empty;
 
         AktifAtama?.Kapat(nowUtc);

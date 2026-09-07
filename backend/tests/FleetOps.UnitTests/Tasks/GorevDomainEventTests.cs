@@ -2,8 +2,6 @@ using FleetOps.Tasks.Domain;
 
 namespace FleetOps.UnitTests.Tasks;
 
-// Aggregate'in dis dunyaya haber verecegi anlari isaretledigi yer.
-// Bu olaylar disari cikmadan once integration event'e cevriliyor.
 public class GorevDomainEventTests
 {
     private static readonly DateTime Simdi = new(2026, 9, 6, 10, 0, 0, DateTimeKind.Utc);
@@ -37,7 +35,6 @@ public class GorevDomainEventTests
 
         var olay = Assert.Single(gorev.DomainEvents.OfType<TaskCompletedDomainEvent>());
 
-        // AGV kimligi atama kapandiktan sonra okunsaydi bos gelirdi.
         Assert.Equal(agvId, olay.AgvId);
         Assert.Equal("MLZ-100", olay.MaterialCode);
         Assert.Equal(4, olay.Quantity);
@@ -49,7 +46,6 @@ public class GorevDomainEventTests
     {
         var gorev = Gorev();
 
-        // Pending'den dogrudan Completed'a gecilemez.
         var sonuc = gorev.Complete(Simdi);
 
         Assert.True(sonuc.IsFailure);

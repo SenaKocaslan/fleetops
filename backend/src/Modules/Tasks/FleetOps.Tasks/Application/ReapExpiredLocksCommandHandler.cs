@@ -21,8 +21,6 @@ internal sealed class ReapExpiredLocksCommandHandler(TasksDbContext db)
         var birakilan = 0;
         foreach (var kilit in kilitler)
         {
-            // Karari yine aggregate veriyor; sorgu ile aggregate'in fikri
-            // ayrisirsa aggregate kazanir.
             if (kilit.ZamanAsimiylaBirak(simdi).IsSuccess)
             {
                 birakilan++;

@@ -11,6 +11,7 @@ internal sealed class LocationConfiguration : IEntityTypeConfiguration<Location>
     {
         builder.ToTable("location");
         builder.HasKey(l => l.Id);
+        // Kaldirilirsa EF, anahtari dolu gelen yeni nesneye INSERT yerine UPDATE gonderir.
         builder.Property(l => l.Id).ValueGeneratedNever();
 
         builder.Property(l => l.Code).HasMaxLength(32).IsRequired();
@@ -19,8 +20,6 @@ internal sealed class LocationConfiguration : IEntityTypeConfiguration<Location>
 
         builder.Ignore(l => l.DomainEvents);
 
-        // Tohum veri: gorev olustururken gercek lokasyon secilebilsin.
-        // Bu gelene kadar arayuz gecici Guid uretiyordu.
         builder.HasData(
             new { Id = Guid.Parse("cccccccc-0000-0000-0000-000000000001"), Code = "KABUL-01", Zone = "Kabul" },
             new { Id = Guid.Parse("cccccccc-0000-0000-0000-000000000002"), Code = "RAF-A1", Zone = "Depo" },
@@ -35,18 +34,17 @@ internal sealed class StockMovementConfiguration : IEntityTypeConfiguration<Stoc
     {
         builder.ToTable("stock_movement");
         builder.HasKey(m => m.Id);
+        // Kaldirilirsa EF, anahtari dolu gelen yeni nesneye INSERT yerine UPDATE gonderir.
         builder.Property(m => m.Id).ValueGeneratedNever();
 
         builder.Property(m => m.MaterialCode).HasMaxLength(64).IsRequired();
         builder.Property(m => m.Quantity).IsRequired();
 
-        // Lokasyonlar ayni modulde: FK var.
         builder.HasOne<Location>().WithMany()
             .HasForeignKey(m => m.FromLocationId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Location>().WithMany()
             .HasForeignKey(m => m.ToLocationId).OnDelete(DeleteBehavior.Restrict);
 
-        // Tasks modulundeki gorevin kimligi - FK YOK, sadece ID.
         builder.Property(m => m.SourceTaskId).IsRequired();
 
         builder.Property(m => m.MovedAtUtc)
@@ -65,9 +63,9 @@ internal sealed class ProcessedIntegrationEventConfiguration
     {
         builder.ToTable("processed_integration_event");
 
-        // Birincil anahtar olayin kendi kimligi: ayni olayi iki kez
-        // isaretlemek veritabani tarafindan reddedilir.
         builder.HasKey(e => e.Id);
+        // Birincil anahtar olayin kendi kimligi: ayni olayi iki kez islemeyi
+        // veritabani reddeder. Idempotentligi saglayan asil sey bu.
         builder.Property(e => e.Id).ValueGeneratedNever();
 
         builder.Property(e => e.ProcessedAtUtc)

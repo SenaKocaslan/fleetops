@@ -26,7 +26,6 @@ public class ResultTests
     [Fact]
     public void Basarili_sonuc_hata_tasiyamaz()
     {
-        // Result'in kendi tutarliligi: basarili + hata birlikte olusturulamaz.
         Assert.Throws<ArgumentException>(() => Result.Failure(Error.None));
     }
 }

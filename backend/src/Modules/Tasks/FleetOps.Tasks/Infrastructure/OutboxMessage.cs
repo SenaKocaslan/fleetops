@@ -3,10 +3,6 @@ using FleetOps.SharedKernel;
 
 namespace FleetOps.Tasks.Infrastructure;
 
-// Gonderilmeyi bekleyen integration event. Durum degisikligiyle AYNI
-// transaction'da yazilir: ya ikisi birden olur ya hicbiri. "Kayit gitti
-// ama olay gitmedi" durumu bu yuzden imkansiz.
-// Domain projesinde degil, cunku bir is kavrami degil - teslimat mekanizmasi.
 public sealed class OutboxMessage
 {
     private OutboxMessage(Guid id, string type, string payload, DateTime occurredAtUtc)
@@ -23,7 +19,6 @@ public sealed class OutboxMessage
         Payload = string.Empty;
     }
 
-    // Integration event'in kendi kimligi. Tuketici tekrari bununla anlar.
     public Guid Id { get; private set; }
 
     public string Type { get; private set; }
@@ -34,7 +29,6 @@ public sealed class OutboxMessage
 
     public DateTime? ProcessedAtUtc { get; private set; }
 
-    // Basarisiz denemenin sebebi; satir islenmemis olarak kalir.
     public string? Error { get; private set; }
 
     public static OutboxMessage Olustur(IntegrationEvent olay) =>
@@ -49,6 +43,5 @@ public sealed class OutboxMessage
         Error = null;
     }
 
-    // Islenmis olarak isaretlenmez: bir sonraki turda tekrar denenir.
     public void Basarisiz(string hata) => Error = hata;
 }

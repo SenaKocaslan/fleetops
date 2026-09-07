@@ -2,7 +2,6 @@ using FleetOps.SharedKernel.Domain;
 
 namespace FleetOps.Stock.Domain;
 
-// Depodaki fiziksel bir konum: raf, kabul alani, sevkiyat alani.
 public sealed class Location : AggregateRoot
 {
     private Location(Guid id, string code, string zone) : base(id)

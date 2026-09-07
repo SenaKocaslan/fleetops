@@ -1,4 +1,3 @@
-// Backend'deki ResourceSummary kaydinin istemci karsiligi.
 export interface ResourceSummary {
   id: string;
   code: string;

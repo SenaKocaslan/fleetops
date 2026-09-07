@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FleetOps.Tasks.Persistence;
 
-// Tasks modulunun veritabani baglami. Yalnizca "tasks" semasini gorur.
 public sealed class TasksDbContext(DbContextOptions<TasksDbContext> options) : DbContext(options)
 {
     public const string Schema = "tasks";
@@ -18,11 +17,10 @@ public sealed class TasksDbContext(DbContextOptions<TasksDbContext> options) : D
 
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
-    // ISIN KALBI: outbox satirlari SaveChanges'ten ONCE ekleniyor, boylece
-    // durum degisikligiyle ayni transaction'a giriyorlar. Handler'lar bunu
-    // ayrica cagirmak zorunda degil - unutulabilecek bir adim birakmiyoruz.
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        // base.SaveChangesAsync'ten ONCE cagrilmali: outbox satiri durum
+        // degisikligiyle ayni transaction'a boyle giriyor.
         OutboxaYaz();
         return await base.SaveChangesAsync(cancellationToken);
     }
@@ -45,7 +43,7 @@ public sealed class TasksDbContext(DbContextOptions<TasksDbContext> options) : D
                 }
             }
 
-            // Ayni olayin ikinci bir SaveChanges'te tekrar yazilmamasi icin.
+            // Temizlenmezse ayni olay sonraki SaveChanges'te tekrar yazilir.
             aggregate.ClearDomainEvents();
         }
     }

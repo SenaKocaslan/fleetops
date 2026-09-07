@@ -11,7 +11,7 @@ internal sealed class ResourceConfiguration : IEntityTypeConfiguration<Resource>
         builder.ToTable("resource");
         builder.HasKey(r => r.Id);
 
-        // Kimlik domain'de uretilir; bkz. AgvConfiguration'daki aciklama.
+        // Kaldirilirsa EF, anahtari dolu gelen yeni nesneye INSERT yerine UPDATE gonderir.
         builder.Property(r => r.Id).ValueGeneratedNever();
 
         builder.Property(r => r.Code).HasMaxLength(32).IsRequired();
@@ -24,7 +24,6 @@ internal sealed class ResourceConfiguration : IEntityTypeConfiguration<Resource>
 
         builder.Ignore(r => r.DomainEvents);
 
-        // Tohum veri: kilit akisinin denenebilmesi icin kaynak olmali.
         builder.HasData(
             new
             {

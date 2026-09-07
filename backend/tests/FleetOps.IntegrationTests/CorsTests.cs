@@ -3,8 +3,6 @@ using FleetOps.IntegrationTests.Altyapi;
 
 namespace FleetOps.IntegrationTests;
 
-// CORS yapilandirmasi sessizce bozulursa bunu ancak tarayicida fark ederiz.
-// Burada sunucunun yanit basliklarina bakarak erken yakaliyoruz.
 [Collection(VeritabaniKoleksiyonu.Ad)]
 public class CorsTests(FleetOpsApiFactory fabrika)
 {
@@ -36,7 +34,6 @@ public class CorsTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Preflight_istegi_post_metoduna_izin_verir()
     {
-        // Tarayici, POST gondermeden once OPTIONS ile izin sorar.
         var istek = new HttpRequestMessage(HttpMethod.Options, "/api/tasks");
         istek.Headers.Add("Origin", IzinliOrigin);
         istek.Headers.Add("Access-Control-Request-Method", "POST");

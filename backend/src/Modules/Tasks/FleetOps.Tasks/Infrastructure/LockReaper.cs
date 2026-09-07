@@ -7,9 +7,6 @@ using Microsoft.Extensions.Options;
 
 namespace FleetOps.Tasks.Infrastructure;
 
-// Suresi dolmus kilitleri periyodik olarak serbest birakir.
-// Bu servis olmadan takilan bir AGV'nin kilidi sonsuza kadar kalir ve
-// kaynak bir daha kimseye verilemez.
 public sealed class LockReaper(
     IServiceScopeFactory scopeFactory,
     IOptions<ResourceLockOptions> options,
@@ -25,22 +22,18 @@ public sealed class LockReaper(
             {
                 await BirTurCalistirAsync(stoppingToken);
             }
+            // Yakalanmazsa BackgroundService sessizce durur ve kilitler bir daha
+            // hic temizlenmez.
             catch (Exception ex)
             {
-                // Yakalamazsak BackgroundService sessizce durur ve kimse
-                // fark etmez; uygulama calisiyor gorunur ama kilitler
-                // bir daha hic temizlenmez.
                 logger.LogError(ex, "Kilit temizleme turu basarisiz oldu.");
             }
         }
     }
 
-    // Zamanlayicidan bagimsiz tek tur. Testten dogrudan cagrilabilsin diye
-    // ayri: zamanlayiciyi beklemek testi hem yavas hem flaky yapardi.
+    // Zamanlayicidan ayri: handler'lar scoped, bu servis singleton.
     public async Task<int> BirTurCalistirAsync(CancellationToken cancellationToken)
     {
-        // Handler'lar scoped; barindirilan servis singleton. Her tur icin
-        // kendi kapsamini acmak zorunda.
         await using var kapsam = scopeFactory.CreateAsyncScope();
 
         var handler = kapsam.ServiceProvider

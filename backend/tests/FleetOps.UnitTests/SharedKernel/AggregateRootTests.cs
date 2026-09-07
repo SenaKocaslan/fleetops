@@ -37,8 +37,6 @@ public class AggregateRootTests
     [Fact]
     public void Esitlik_alanlara_degil_kimlige_gore_belirlenir()
     {
-        // Ayni AGV'yi veritabanindan iki kez yuklemek iki C# nesnesi verir
-        // ama ayni varliktir.
         var id = Guid.NewGuid();
         Assert.Equal(new TestAggregate(id), new TestAggregate(id));
         Assert.NotEqual(new TestAggregate(id), new TestAggregate(Guid.NewGuid()));

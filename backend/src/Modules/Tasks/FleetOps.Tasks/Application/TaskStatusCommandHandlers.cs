@@ -6,9 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FleetOps.Tasks.Application;
 
-// Iki gecis de ayni sekli izliyor: aggregate'i yukle, karari ona ver,
-// kaydet, cakisirsa beklenen is hatasina cevir. Ortak taban sinif tek
-// yerde tutuyor; her gecis icin ayni on satiri tekrar yazmiyoruz.
 internal abstract class TaskGecisHandler(TasksDbContext db)
 {
     protected async Task<Result> GecisUygulaAsync(

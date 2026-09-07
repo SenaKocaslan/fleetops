@@ -5,9 +5,6 @@ using FleetOps.Tasks.Domain;
 
 namespace FleetOps.Tasks.Infrastructure;
 
-// Ic domain event -> disa acik integration event cevrimi TEK yerde.
-// Karsiligi olmayan domain event'ler null doner ve disari cikmaz;
-// her domain event'in dis dunyayi ilgilendirmesi gerekmiyor.
 internal static class IntegrationEventFactory
 {
     public static IntegrationEvent? Olustur(IDomainEvent domainEvent) => domainEvent switch

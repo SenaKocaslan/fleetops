@@ -20,7 +20,6 @@ export class ResourceList {
   protected readonly error = signal<string | null>(null);
   protected readonly lockError = signal<string | null>(null);
 
-  // Kaynak basina secilen AGV. Anahtar kaynak kimligi.
   protected readonly secim = signal<Record<string, string>>({});
 
   protected readonly agvKodlari = computed(() =>
@@ -78,7 +77,6 @@ export class ResourceList {
     }
 
     this.lockError.set(null);
-    // Kilidi yalnizca tutan AGV birakabilir; tutani listeden biliyoruz.
     this.service.release(resource.id, resource.lockedByAgvId).subscribe({
       next: () => this.refresh(),
       error: (yanit) => this.hatayiGoster(yanit, 'Kilit birakilamadi.'),
@@ -86,7 +84,6 @@ export class ResourceList {
   }
 
   private hatayiGoster(yanit: { status?: number; error?: { message?: string } }, varsayilan: string): void {
-    // 409: istek yanlis degildi, kaynak o anda baskasindaydi.
     this.lockError.set(
       yanit?.status === 409
         ? (yanit?.error?.message ?? 'Kaynak su anda baskasi tarafindan kilitli.')

@@ -8,11 +8,6 @@ using Microsoft.Extensions.Logging;
 
 namespace FleetOps.Stock.Integration;
 
-// Gorev tamamlaninca stok hareketi olusur.
-//
-// Bu tuketici IDEMPOTENT OLMAK ZORUNDA. Fleet'teki "AGV'yi serbest birak"
-// tekrarlanabilir bir islem, ama "hareket kaydi olustur" degil: ayni olay
-// iki kez gelirse iki kayit olusur ve depo sayimlari bozulur.
 internal sealed class GorevTamamlandigindaStokHareketiOlustur(
     StockDbContext db,
     ILogger<GorevTamamlandigindaStokHareketiOlustur> logger)
@@ -22,13 +17,8 @@ internal sealed class GorevTamamlandigindaStokHareketiOlustur(
         TaskCompletedIntegrationEvent olay,
         CancellationToken cancellationToken)
     {
-        // Bu kontrol bir OPTIMIZASYON, kuralin kendisi degil: asil bekci
-        // processed_integration_event tablosunun birincil anahtari. Iki
-        // teslim ayni anda gelirse ikisi de bu kontrolu gecebilir, ama
-        // ikinci INSERT anahtar cakismasindan doner ve transaction geri
-        // alinir. Kontrol yalnizca bilinen tekrarlarda gereksiz exception
-        // uretmemek icin var. (Bilerek bozup dogrulandi: tek basina bu
-        // kontrolu kaldirmak cift kayit olusturmuyor.)
+        // Bu kontrol optimizasyon, kuralin kendisi degil: asil bekci
+        // processed_integration_event'in birincil anahtari.
         var islenmis = await db.ProcessedEvents
             .AnyAsync(e => e.Id == olay.Id, cancellationToken);
 
@@ -48,9 +38,6 @@ internal sealed class GorevTamamlandigindaStokHareketiOlustur(
 
         if (hareket.IsFailure)
         {
-            // Olayin icerigi bir daha degismeyecek; tekrar denemek ayni
-            // sonucu verir ve kuyrugu sonsuza kadar tikar. Islenmis
-            // isaretleyip hatayi kayda geciyoruz.
             logger.LogError(
                 "Stok hareketi olusturulamadi ({Kod}): {Mesaj}",
                 hareket.Error.Code, hareket.Error.Message);
@@ -62,9 +49,7 @@ internal sealed class GorevTamamlandigindaStokHareketiOlustur(
 
         db.ProcessedEvents.Add(new ProcessedIntegrationEvent(olay.Id, DateTime.UtcNow));
 
-        // KRITIK: hareket ile "islendi" isareti AYNI transaction'da yazilir.
-        // Ayri yazilsaydi arada cakan bir hata ya cift kayda ya da hic
-        // islenmemis gorunen bir olaya yol acardi.
+        // Hareket ile "islendi" isareti ayni transaction'da yazilmali.
         await db.SaveChangesAsync(cancellationToken);
     }
 }

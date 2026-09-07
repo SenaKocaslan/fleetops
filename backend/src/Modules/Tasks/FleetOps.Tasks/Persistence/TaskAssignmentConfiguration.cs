@@ -11,14 +11,9 @@ internal sealed class TaskAssignmentConfiguration : IEntityTypeConfiguration<Tas
         builder.ToTable("task_assignment");
         builder.HasKey(a => a.Id);
 
-        // Kimlik domain'de uretilir (factory metodu Guid'i kendisi verir).
-        // Bunu soylemezsek EF, Guid anahtari "veritabani uretir" sayar ve
-        // anahtari dolu gelen yeni nesneyi "zaten var olan satir" zannedip
-        // INSERT yerine UPDATE gonderir.
+        // Kaldirilirsa EF, anahtari dolu gelen yeni nesneye INSERT yerine UPDATE gonderir.
         builder.Property(a => a.Id).ValueGeneratedNever();
 
-
-        // Fleet modulundeki AGV'nin kimligi - FK YOK, sadece ID.
         builder.Property(a => a.AgvId).IsRequired();
 
         builder.Property(a => a.AssignedAtUtc)
@@ -28,7 +23,6 @@ internal sealed class TaskAssignmentConfiguration : IEntityTypeConfiguration<Tas
         builder.Property(a => a.CompletedAtUtc)
             .HasColumnType("timestamp with time zone");
 
-        // "Bu AGV'nin acik atamasi var mi?" sorgusu icin.
         builder.HasIndex(a => new { a.AgvId, a.CompletedAtUtc });
 
         builder.Ignore(a => a.Aktif);

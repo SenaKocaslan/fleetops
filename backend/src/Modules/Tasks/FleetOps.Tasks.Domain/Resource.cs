@@ -2,9 +2,6 @@ using FleetOps.SharedKernel.Domain;
 
 namespace FleetOps.Tasks.Domain;
 
-// Paylasilan tekil kaynak: sarj istasyonu, dar koridor, asansor.
-// Kilitleri kendi icinde tutmuyor - "bir kaynagin tek aktif kilidi olur"
-// kurali satirlar arasi bir kural ve veritabaninda korunuyor.
 public sealed class Resource : AggregateRoot
 {
     private Resource(Guid id, string code, ResourceKind kind) : base(id)

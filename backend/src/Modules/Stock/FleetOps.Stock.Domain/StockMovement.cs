@@ -2,8 +2,6 @@ using FleetOps.SharedKernel.Domain;
 
 namespace FleetOps.Stock.Domain;
 
-// Gerceklesmis bir malzeme hareketi. Gecmis kaydidir: olusturulduktan
-// sonra degismez, bu yuzden durum degistiren metodu yok.
 public sealed class StockMovement : AggregateRoot
 {
     private StockMovement(
@@ -36,7 +34,6 @@ public sealed class StockMovement : AggregateRoot
 
     public Guid ToLocationId { get; private set; }
 
-    // Tasks modulundeki gorevin kimligi. Foreign key DEGIL.
     public Guid SourceTaskId { get; private set; }
 
     public DateTime MovedAtUtc { get; private set; }
