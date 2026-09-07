@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.angular/
+
+# e2e Playwright ile host'tan calisir; imajda tarayici yok.
+e2e/
+test-results/
+playwright-report/

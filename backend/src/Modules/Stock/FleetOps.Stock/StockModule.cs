@@ -16,6 +16,9 @@ public sealed class StockModule : IModule
 {
     public string Name => "Stock";
 
+    public Task MigrateAsync(IServiceProvider services, CancellationToken cancellationToken) =>
+        services.GetRequiredService<StockDbContext>().Database.MigrateAsync(cancellationToken);
+
     public void RegisterServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<StockDbContext>(options =>

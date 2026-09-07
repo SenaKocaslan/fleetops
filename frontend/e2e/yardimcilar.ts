@@ -106,3 +106,36 @@ export async function agvSerbestBirak(request: APIRequestContext, agvId: string)
     data: { batteryLevel: 90 },
   });
 }
+
+// Sayfalama testleri, onceki kosulardan kalan gorevlerin varligina bel
+// baglamamali: temiz bir veritabaninda ikinci sayfa hic olusmaz ve testler
+// "gecmiste kosuldugu icin" yesil yanar. Gereken kaydi test kendisi uretir.
+export async function enAzGorevOlustur(
+  request: APIRequestContext,
+  hedefAdet: number,
+): Promise<void> {
+  const baslik = await yetkiliBaslik(request, 'supervisor');
+
+  const say = async () => {
+    const yanit = await request.get(`${API}/tasks?page=1&pageSize=1`, { headers: baslik });
+    return ((await yanit.json()) as { totalCount: number }).totalCount;
+  };
+
+  const mevcut = await say();
+  const lokasyonlar = await request
+    .get(`${API}/locations`, { headers: baslik })
+    .then((y) => y.json() as Promise<{ id: string }[]>);
+
+  for (let i = mevcut; i < hedefAdet; i++) {
+    await request.post(`${API}/tasks`, {
+      headers: baslik,
+      data: {
+        fromLocationId: lokasyonlar[0].id,
+        toLocationId: lokasyonlar[1].id,
+        materialCode: `SEED-${i}`,
+        quantity: 1,
+        priority: 1,
+      },
+    });
+  }
+}

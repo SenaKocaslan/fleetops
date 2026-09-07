@@ -18,6 +18,9 @@ public sealed class FleetModule : IModule
 {
     public string Name => "Fleet";
 
+    public Task MigrateAsync(IServiceProvider services, CancellationToken cancellationToken) =>
+        services.GetRequiredService<FleetDbContext>().Database.MigrateAsync(cancellationToken);
+
     public void RegisterServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<FleetDbContext>(options =>

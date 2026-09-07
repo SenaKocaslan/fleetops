@@ -1,9 +1,14 @@
 import { expect, test } from '@playwright/test';
-import { API, girisYap, yetkiliBaslik } from './yardimcilar';
+import { API, enAzGorevOlustur, girisYap, yetkiliBaslik } from './yardimcilar';
 
 const AGV02 = '22222222-2222-2222-2222-222222222222';
 
 test.describe('Sayfalama', () => {
+  // Sayfa boyutu 20; ikinci sayfanin var olmasi icin en az 21 kayit gerek.
+  test.beforeAll(async ({ request }) => {
+    await enAzGorevOlustur(request, 25);
+  });
+
   test.beforeEach(async ({ page }) => {
     await girisYap(page);
   });

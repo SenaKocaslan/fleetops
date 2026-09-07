@@ -18,6 +18,9 @@ public sealed class TasksModule : IModule
 {
     public string Name => "Tasks";
 
+    public Task MigrateAsync(IServiceProvider services, CancellationToken cancellationToken) =>
+        services.GetRequiredService<TasksDbContext>().Database.MigrateAsync(cancellationToken);
+
     public void RegisterServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<TasksDbContext>(options =>

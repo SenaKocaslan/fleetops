@@ -11,6 +11,11 @@ public interface IModule
     void RegisterServices(IServiceCollection services, IConfiguration configuration);
 
     void MapEndpoints(IEndpointRouteBuilder endpoints);
+
+    // Modulun kendi semasinin gocunu kendisi uygular. Arayuze konmasinin
+    // sebebi: yeni bir modul eklendiginde composition root'ta bir satir
+    // eklemek unutulabilir; arayuz uyesi unutulamaz, derlenmez.
+    Task MigrateAsync(IServiceProvider services, CancellationToken cancellationToken);
 }
 
 public static class ModuleExtensions

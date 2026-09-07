@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+**/TestResults/
+
+# Testler imaja girmez; imaj yalnizca API'yi calistirir.
+tests/
+
+# GELISTIRME AYARLARI IMAJA GIRMEZ.
+# Icinde gelistirme JWT imza anahtari var; uretim imajinda isi yok.
+# ASPNETCORE_ENVIRONMENT=Production'da okunmazdi ama dosyanin imajda
+# bulunmamasi tek satirlik bir yanlis ayarin sizintiya donusmesini engeller.
+src/FleetOps.Api/appsettings.Development.json

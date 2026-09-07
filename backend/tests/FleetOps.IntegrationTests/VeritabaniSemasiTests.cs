@@ -12,17 +12,23 @@ namespace FleetOps.IntegrationTests;
 public class VeritabaniSemasiTests(FleetOpsApiFactory fabrika)
 {
     [Fact]
-    public async Task Her_modul_kendi_semasina_migration_uygular()
+    public async Task Her_modul_kendi_semasina_kendi_gecmisiyle_migration_uygular()
     {
         using var kapsam = fabrika.KapsamAc();
         var fleet = kapsam.ServiceProvider.GetRequiredService<FleetDbContext>();
 
-        var semalar = await fleet.Database
-            .SqlQuery<string>($"SELECT nspname AS \"Value\" FROM pg_namespace WHERE nspname IN ('fleet','tasks')")
-            .ToListAsync();
+        // Semanin varligi yetmez: bir modul MigrateAsync govdesini bos
+        // birakirsa sema yine de baska bir yoldan olusabilir. Asil kanit
+        // her semada KENDI migration gecmisi tablosunun bulunmasi.
+        var gecmisler = await fleet.Database.SqlQuery<string>($"""
+            SELECT table_schema AS "Value"
+            FROM information_schema.tables
+            WHERE table_name = '__ef_migrations_history'
+            """).ToListAsync();
 
-        Assert.Contains("fleet", semalar);
-        Assert.Contains("tasks", semalar);
+        Assert.Equal(
+            new[] { "auth", "fleet", "stock", "tasks" },
+            gecmisler.Order().ToArray());
     }
 
     [Fact]

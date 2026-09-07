@@ -1,12 +1,9 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using FleetOps.Api;
 using FleetOps.Api.Auth;
-using FleetOps.Fleet.Persistence;
-using FleetOps.Stock.Persistence;
-using FleetOps.Tasks.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
 
@@ -45,14 +42,10 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
         await MigrationUygulaAsync();
     }
 
-    public async Task MigrationUygulaAsync()
-    {
-        using var scope = Services.CreateScope();
-        await scope.ServiceProvider.GetRequiredService<AuthDbContext>().Database.MigrateAsync();
-        await scope.ServiceProvider.GetRequiredService<FleetDbContext>().Database.MigrateAsync();
-        await scope.ServiceProvider.GetRequiredService<TasksDbContext>().Database.MigrateAsync();
-        await scope.ServiceProvider.GetRequiredService<StockDbContext>().Database.MigrateAsync();
-    }
+    // Uretimdeki "--migrate" adimiyla AYNI kodu cagirir. Ayri bir liste
+    // tutulsaydi, bir modul uretimde goc almadigi halde testler yesil kalirdi.
+    public Task MigrationUygulaAsync() =>
+        VeritabaniGocleri.UygulaAsync(Services);
 
     // Tohum kullanicilar migration'da; testler gercek login akisindan geciyor,
     // token elle imzalanmiyor. Boylece login bozulursa testler de kirilir.

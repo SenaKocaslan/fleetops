@@ -32,6 +32,13 @@ builder.Services
 
 var app = builder.Build();
 
+// Goc ayri bir adim; normal acilista calismaz. Bkz. VeritabaniGocleri.
+if (args.Contains(VeritabaniGocleri.Arguman))
+{
+    await VeritabaniGocleri.UygulaAsync(app.Services);
+    return;
+}
+
 app.UseCors(AngularPolitikasi);
 
 // Sira onemli: once kimin oldugu (authentication), sonra ne yapabildigi

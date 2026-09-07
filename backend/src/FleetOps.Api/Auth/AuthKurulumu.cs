@@ -26,6 +26,17 @@ public static class AuthKurulumu
 
         var ayarlar = configuration.GetSection(JwtOptions.Bolum).Get<JwtOptions>() ?? new JwtOptions();
 
+        // Anahtar bos gelirse HMAC-SHA256 yine de calisir ve uygulama sessizce
+        // kalkar; o an uretilen her token sahte token'dan ayirt edilemez.
+        // Bu yuzden acilista patlamasi dogru davranis. 32 bayt HMAC-SHA256'nin
+        // asgarisi -- kisasi zaten IDX10653 ile calisma aninda patlardi.
+        if (Encoding.UTF8.GetByteCount(ayarlar.SigningKey) < 32)
+        {
+            throw new InvalidOperationException(
+                "Jwt:SigningKey en az 32 bayt olmali. Uretimde ortam degiskeninden " +
+                "verilir: Jwt__SigningKey");
+        }
+
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(secenekler =>
             {

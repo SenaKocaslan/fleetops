@@ -1,4 +1,9 @@
-# Gelistirme ve e2e icin veritabani. Api ve web servisleri Gun 9'da eklenecek.
+# Tek komutla ayaga kalkan tam yigin: veritabani + goc adimi + API + arayuz.
+#
+# Baslatma sirasi rastgele degil, kosula bagli:
+#   db  saglikli olana kadar  ->  migrate calisir ve BITER  ->  api  ->  web
+# "depends_on" tek basina yalnizca "baslatildi" demektir; condition olmadan
+# API, semasi olmayan bir veritabanina baglanip patlar.
 services:
   db:
     image: postgres:17-alpine
@@ -10,7 +15,7 @@ services:
     ports:
       # Sistemde PostgreSQL 14 servisi 5432i kullaniyor; ona dokunmamak icin
       # host tarafinda 55432e baglaniyoruz.
-      - "55432:5432"
+      - "${DB_PORT:-55432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -19,6 +24,72 @@ services:
       interval: 3s
       timeout: 3s
       retries: 20
+
+  # Goc AYRI bir servis, API acilisinda degil. Sebebi: api replica sayisi
+  # 1'den buyuk olursa acilista goc uygulayan her kopya ayni anda ayni
+  # semayi degistirmeye calisir. Burada tek sefer calisip cikiyor.
+  migrate:
+    build:
+      context: ./backend
+    image: fleetops-api
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__FleetOps: ${DB_CONNECTION:-Host=db;Port=5432;Database=fleetops;Username=fleetops;Password=fleetops}
+      # Goc adimi da tum uygulamayi kurdugu icin imza anahtari kontrolunden gecer.
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?JWT_SIGNING_KEY tanimli olmali - bkz .env.example}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ./backend
+    image: fleetops-api
+    container_name: fleetops-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__FleetOps: ${DB_CONNECTION:-Host=db;Port=5432;Database=fleetops;Username=fleetops;Password=fleetops}
+
+      # Sir koda ve imaja gomulmez; buradan gelir.
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?JWT_SIGNING_KEY tanimli olmali - bkz .env.example}
+
+      # web ile api ayni origin'den servis edildigi icin (nginx vekilliyor)
+      # uretimde CORS gerekmiyor. Liste yalnizca "ng serve" ile calisan bir
+      # gelistirici konteynerdeki API'ye baglanmak isterse dolduruluyor.
+      Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:4200}
+
+      # Gercek AGV yok; demo icin simulator acik gelir.
+      Simulator__Enabled: ${SIMULATOR_ENABLED:-true}
+      Simulator__LocationIds__0: cccccccc-0000-0000-0000-000000000001
+      Simulator__LocationIds__1: cccccccc-0000-0000-0000-000000000002
+      Simulator__LocationIds__2: cccccccc-0000-0000-0000-000000000003
+      Simulator__LocationIds__3: cccccccc-0000-0000-0000-000000000004
+    ports:
+      # 5199 DEGIL: e2e'de Playwright "dotnet run" ile 5199'u kendisi acar ve
+      # reuseExistingServer acik oldugu icin konteyneri sessizce kullanirdi.
+      # Tarayici zaten API'ye web (8080) uzerinden gider; bu port yalnizca
+      # dogrudan hata ayiklama icin.
+      - "${API_PORT:-5200}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+    image: fleetops-web
+    container_name: fleetops-web
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   db-data:
