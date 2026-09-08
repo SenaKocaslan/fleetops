@@ -46,7 +46,8 @@ public sealed class OutboxDispatcher(
         var tuketiciler = kapsam.ServiceProvider.GetServices<IIntegrationEventHandler>().ToList();
 
         var mesajlar = await db.OutboxMessages
-            .Where(m => m.ProcessedAtUtc == null)
+            // Olu mektuplar kuyrukta degil: bir daha denenmezler.
+            .Where(m => m.ProcessedAtUtc == null && m.DeadLetteredAtUtc == null)
             .OrderBy(m => m.OccurredAtUtc)
             .Take(options.Value.BatchSize)
             .ToListAsync(cancellationToken);
@@ -73,9 +74,25 @@ public sealed class OutboxDispatcher(
             }
             catch (Exception ex)
             {
-                // Islenmis isaretlenmiyor: bir sonraki turda tekrar denenecek.
-                mesaj.Basarisiz(HataMetni(ex));
-                logger.LogError(ex, "Outbox mesaji islenemedi: {MesajId}", mesaj.Id);
+                mesaj.Basarisiz(HataMetni(ex), options.Value.MaxAttempts, DateTime.UtcNow);
+
+                if (mesaj.DeadLetteredAtUtc is null)
+                {
+                    logger.LogError(
+                        ex,
+                        "Outbox mesaji islenemedi, tekrar denenecek: {MesajId} ({Deneme}/{Azami})",
+                        mesaj.Id, mesaj.AttemptCount, options.Value.MaxAttempts);
+                }
+                else
+                {
+                    // Bu satirdan sonra olayi kimse teslim etmeyecek; modullerin
+                    // arasi kalici olarak tutarsiz kaldi. Insan mudahalesi sart,
+                    // bu yuzden ayrica kritik alarm uretiliyor.
+                    logger.LogCritical(
+                        ex,
+                        "Outbox mesaji {Azami} denemeden sonra olu mektuba tasindi: {MesajId}",
+                        options.Value.MaxAttempts, mesaj.Id);
+                }
             }
         }
 

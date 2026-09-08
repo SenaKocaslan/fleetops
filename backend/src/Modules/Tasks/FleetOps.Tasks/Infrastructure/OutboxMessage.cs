@@ -31,6 +31,13 @@ public sealed class OutboxMessage
 
     public string? Error { get; private set; }
 
+    public int AttemptCount { get; private set; }
+
+    // Dolu ise mesaj kuyruktan cikarilmistir: dagitici onu bir daha almaz.
+    // Satir silinmiyor, cunku hatanin ne oldugu ve kac kez denendigi
+    // sorusunun cevabi yalnizca burada duruyor.
+    public DateTime? DeadLetteredAtUtc { get; private set; }
+
     public static OutboxMessage Olustur(IntegrationEvent olay) =>
         new(olay.Id,
             IntegrationEventTypeRegistry.Ad(olay),
@@ -43,5 +50,17 @@ public sealed class OutboxMessage
         Error = null;
     }
 
-    public void Basarisiz(string hata) => Error = hata;
+    // Islenmis isaretlenmez; mesaj bir sonraki turda tekrar denenir. Ama
+    // sonsuza kadar degil: her turda bastan patlayan bir mesaj kuyrugu ve
+    // gunlugu doldurur, arkasindaki saglam mesajlari da yavaslatir.
+    public void Basarisiz(string hata, int azamiDeneme, DateTime nowUtc)
+    {
+        Error = hata;
+        AttemptCount++;
+
+        if (AttemptCount >= azamiDeneme)
+        {
+            DeadLetteredAtUtc = nowUtc;
+        }
+    }
 }

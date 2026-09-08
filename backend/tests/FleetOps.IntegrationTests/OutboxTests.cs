@@ -11,6 +11,7 @@ using FleetOps.Tasks.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace FleetOps.IntegrationTests;
 
@@ -225,6 +226,115 @@ public class OutboxTests(FleetOpsApiFactory fabrika)
 
         return sonuc.Single();
     }
+
+    [Fact]
+    public async Task Surekli_basarisiz_mesaj_azami_denemeden_sonra_kuyruktan_cikar()
+    {
+        await OutboxuTemizleAsync();
+        var azami = AzamiDeneme();
+        await BozukMesajUretAsync();
+
+        // Her tur mesaji bir kez daha deniyor; sonuncusunda sinir doluyor.
+        for (var tur = 1; tur <= azami; tur++)
+        {
+            Assert.Equal(0, await DagiticiCalistirAsync());
+
+            var ara = await BozukMesajiOkuAsync();
+            Assert.Equal(tur, ara.AttemptCount);
+            Assert.Equal(tur == azami, ara.DeadLetteredAtUtc is not null);
+        }
+
+        // Sinir dolduktan sonra dagitici mesaji BIR DAHA ALMIYOR: sayac
+        // artmiyorsa mesaj gercekten kuyruktan cikmis demektir.
+        await DagiticiCalistirAsync();
+        await DagiticiCalistirAsync();
+
+        var son = await BozukMesajiOkuAsync();
+        Assert.Equal(azami, son.AttemptCount);
+        Assert.NotNull(son.DeadLetteredAtUtc);
+
+        // Satir silinmiyor: hata metni tanilama icin duruyor.
+        Assert.Null(son.ProcessedAtUtc);
+        Assert.Contains("OlmayanOlay", son.Error);
+
+        await OutboxuTemizleAsync();
+    }
+
+    [Fact]
+    public async Task Saglam_mesaj_olu_mektup_isaretlenmeden_islenir()
+    {
+        // Kontrol testi: yukaridaki test, dagitici her mesaji olu mektuba
+        // tasisaydi da yesil yanardi.
+        await OutboxuTemizleAsync();
+        await AgvDurumunuSifirlaAsync();
+        var gorevId = await GorevOlusturAsync();
+
+        await (await fabrika.IstemciAsync()).PostAsJsonAsync(
+            $"/api/tasks/{gorevId}/assign", new { agvId = Agv01 });
+
+        Assert.True(await DagiticiCalistirAsync() >= 1);
+
+        using var kapsam = fabrika.KapsamAc();
+        var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
+        var mesaj = await db.OutboxMessages.FirstAsync();
+
+        Assert.Null(mesaj.DeadLetteredAtUtc);
+        Assert.Equal(0, mesaj.AttemptCount);
+        Assert.NotNull(mesaj.ProcessedAtUtc);
+
+        await AgvDurumunuSifirlaAsync();
+    }
+
+    [Fact]
+    public async Task Olu_mektup_kritik_alarm_uretir()
+    {
+        await OutboxuTemizleAsync();
+        await BozukMesajUretAsync();
+
+        for (var tur = 0; tur < AzamiDeneme(); tur++)
+        {
+            await DagiticiCalistirAsync();
+        }
+
+        var yanit = await (await fabrika.IstemciAsync()).GetFromJsonAsync<AlarmYaniti>("/api/alarms");
+
+        var alarm = Assert.Single(yanit!.Items, a => a.Code == "Tasks.TeslimEdilemeyenOlay");
+        Assert.Equal("Kritik", alarm.Severity);
+        Assert.Contains("OlmayanOlay", alarm.Message);
+        Assert.True(yanit.CriticalCount >= 1);
+
+        await OutboxuTemizleAsync();
+    }
+
+    private int AzamiDeneme() =>
+        fabrika.Services.GetRequiredService<IOptions<OutboxOptions>>().Value.MaxAttempts;
+
+    // Turu cozumlenemeyen bir mesaj her turda ayni sekilde patlar; olu
+    // mektuba giden yolu deterministik olarak izlemenin en sade yolu bu.
+    private async Task BozukMesajUretAsync()
+    {
+        var gorevId = await GorevOlusturAsync();
+
+        await (await fabrika.IstemciAsync()).PostAsJsonAsync(
+            $"/api/tasks/{gorevId}/assign", new { agvId = Agv01 });
+
+        using var kapsam = fabrika.KapsamAc();
+        var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
+        await db.OutboxMessages
+            .Where(m => m.ProcessedAtUtc == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(m => m.Type, "OlmayanOlay"));
+    }
+
+    private async Task<OutboxMessage> BozukMesajiOkuAsync()
+    {
+        using var kapsam = fabrika.KapsamAc();
+        var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
+        return await db.OutboxMessages.AsNoTracking().FirstAsync(m => m.Type == "OlmayanOlay");
+    }
+
+    private sealed record AlarmYaniti(List<AlarmKalemi> Items, int CriticalCount);
+
+    private sealed record AlarmKalemi(string Code, string Severity, string Subject, string Message);
 
     private sealed record OlusturmaYaniti(Guid Id);
 }

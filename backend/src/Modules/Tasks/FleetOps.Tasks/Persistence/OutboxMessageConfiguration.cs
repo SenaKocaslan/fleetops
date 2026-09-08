@@ -23,6 +23,10 @@ internal sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outb
 
         builder.Property(m => m.Error).HasMaxLength(2000);
 
-        builder.HasIndex(m => new { m.ProcessedAtUtc, m.OccurredAtUtc });
+        builder.Property(m => m.DeadLetteredAtUtc).HasColumnType("timestamp with time zone");
+
+        // Daginin sorgusu iki alani da filtreliyor; indeks ikisini de
+        // kapsamazsa kuyruk buyudukce tarama tum tabloya doner.
+        builder.HasIndex(m => new { m.ProcessedAtUtc, m.DeadLetteredAtUtc, m.OccurredAtUtc });
     }
 }

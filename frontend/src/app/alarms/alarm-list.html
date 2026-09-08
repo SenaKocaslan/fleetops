@@ -18,7 +18,11 @@
         </tr>
       </thead>
       <tbody>
-        @for (alarm of alarmlar().items; track alarm.code + alarm.subject) {
+        <!-- track $index: alarmlarin dogal bir benzersiz anahtari yok
+             (ayni kod + ayni ozne iki kez cikabilir) ve yinelenen anahtar
+             Angular'da calisma ani hatasi. Liste her tazelemede bastan
+             cizildigi icin kimlik takibinin kazanci da yok. -->
+        @for (alarm of alarmlar().items; track $index) {
           <tr data-testid="alarm-row">
             <td><span class="siddet" [class]="alarm.severity.toLowerCase()">{{ alarm.severity }}</span></td>
             <td>{{ alarm.code }}</td>

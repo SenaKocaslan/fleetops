@@ -61,6 +61,7 @@ birbirlerinin handler'larini cagirmazlar. Iletisim yalnizca integration event il
 | Strategy | Atama kurali degisebilir olsun |
 | Decorator | Log ve transaction handler'i kirletmesin |
 | Outbox | Kayit gitti ama olay gitmedi durumu olmasin |
+| Dead Letter | Bozuk bir olay kuyrugu sonsuza kadar mesgul etmesin |
 | Integration Events | Moduller birbirini dogrudan cagirmasin |
 | Hosted Service | Takili kilitler serbest kalsin |
 | Options | Ayarlar koda gomulmesin |
@@ -130,7 +131,7 @@ npm ci && npm start                        # http://localhost:4200
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 107 birim + 105 integration
+cd backend  && dotnet test                 # 107 birim + 108 integration
 cd frontend && npm test                    # 25 birim (Vitest)
 cd frontend && npm run e2e                 # 28 uctan uca (Playwright)
 ```

@@ -58,6 +58,30 @@ internal sealed class GorevAlarmKaynagi(
                 simdi));
         }
 
+        // Olu mektup: outbox mesaji azami denemeyi tuketti, olay hic teslim
+        // edilmedi. Gunluge yazilmasi yetmez -- kimse gunluge bakmiyor
+        // olabilir. Modullerin arasi kalici olarak tutarsiz kaldigi icin
+        // bu, insan mudahalesi gerektiren tek alarm turu.
+        var oluMektuplar = await db.OutboxMessages
+            .AsNoTracking()
+            .Where(m => m.DeadLetteredAtUtc != null)
+            .OrderBy(m => m.OccurredAtUtc)
+            .Select(m => new { m.Id, m.Type, m.AttemptCount, m.Error })
+            .ToListAsync(cancellationToken);
+
+        foreach (var mesaj in oluMektuplar)
+        {
+            alarmlar.Add(new AlarmSummary(
+                "Tasks.TeslimEdilemeyenOlay",
+                AlarmSeverity.Kritik,
+                // Ozne mesajin kendisi, turu degil: ayni turden iki olu
+                // mektup varsa ikisi de ayri ayri ele alinmali.
+                mesaj.Id.ToString(),
+                $"{mesaj.Type} olayi {mesaj.AttemptCount} denemeden sonra teslim "
+                    + $"edilemedi ve kuyruktan cikarildi. Son hata: {mesaj.Error}",
+                simdi));
+        }
+
         return alarmlar;
     }
 }

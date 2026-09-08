@@ -32,6 +32,10 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
         // Simulator surekli telemetri yazarsa AGV durumu testin altindan kayar.
         builder.UseSetting("Simulator:Enabled", "false");
 
+        // Olu mektup testinin bes tur donmesi gereksiz; sinir dusuruldu.
+        // Testler degeri buradan degil IOptions'tan okuyor.
+        builder.UseSetting("Outbox:MaxAttempts", "3");
+
         builder.UseSetting("Jwt:SigningKey", "test-imza-anahtari-en-az-32-bayt-uzunlugunda-olmali");
     }
 
