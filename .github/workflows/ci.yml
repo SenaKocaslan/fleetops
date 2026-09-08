@@ -1,0 +1,167 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Ayni dala arka arkaya push atilirsa eski kosu iptal edilir; sonucu
+# zaten kimse okumayacak, makineyi bosuna mesgul etmesin.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Compose dosyasi bu degiskeni ZORUNLU tutuyor (varsayilani bilerek yok).
+  # Buradaki deger yalnizca CI icin uretilmis, hicbir yerde kullanilmiyor.
+  JWT_SIGNING_KEY: ci-icin-uretilmis-anlamsiz-imza-anahtari-32-bayttan-uzun
+
+jobs:
+  backend:
+    name: Backend testleri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Paket surumleri Directory.Packages.props'ta merkezi tutuluyor;
+      # onbellek anahtari da o dosyaya bagli.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('backend/Directory.Packages.props') }}
+          restore-keys: nuget-
+
+      # TreatWarningsAsErrors acik: tek bir uyari bu adimi dusurur.
+      - name: Derle
+        working-directory: backend
+        run: dotnet build --configuration Release
+
+      # Entegrasyon testleri Testcontainers ile gercek PostgreSQL 17
+      # kaldiriyor; ubuntu-latest uzerinde Docker hazir geliyor.
+      - name: Test
+        working-directory: backend
+        run: dotnet test --configuration Release --no-build
+
+  frontend:
+    name: Arayuz birim testleri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # "npm install" degil "npm ci": lock dosyasina birebir uyar ve
+      # lock ile package.json ayrisirsa sessizce duzeltmek yerine durur.
+      - name: Bagimliliklar
+        working-directory: frontend
+        run: npm ci
+
+      - name: Test
+        working-directory: frontend
+        run: npm test
+
+      - name: Uretim derlemesi
+        working-directory: frontend
+        run: npm run build
+
+  e2e:
+    name: Uctan uca testler
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('backend/Directory.Packages.props') }}
+          restore-keys: nuget-
+
+      - name: Veritabani
+        run: docker compose up -d db --wait
+
+      # Goc ayri bir adim; uygulama acilista migrate etmiyor. Bu adim
+      # ayni zamanda API'yi derliyor, boylece Playwright'in baslattigi
+      # "dotnet run" soguk derlemeyle zaman asimina ugramiyor.
+      - name: Goc
+        run: dotnet run --project backend/src/FleetOps.Api -- --migrate
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+
+      - name: Bagimliliklar
+        working-directory: frontend
+        run: npm ci
+
+      - name: Tarayici
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      # CI degiskeni GitHub tarafindan otomatik set ediliyor; Playwright
+      # bunu gorunce mevcut sunucuyu yeniden kullanmiyor, kendi API ve
+      # Angular sunucusunu ayaga kaldiriyor.
+      - name: Test
+        working-directory: frontend
+        run: npm run e2e
+
+      - name: Basarisizsa rapor
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-raporu
+          path: frontend/test-results/
+          retention-days: 7
+
+  docker:
+    name: Dagitim yigini
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Imajlari derle
+        run: docker compose build
+
+      # Imajlarin derlenmesi yetmez: asil iddia "bos bir veritabaninda
+      # tek komutla ayaga kalkar". Zincir (db -> migrate -> api -> web)
+      # burada gercekten kosuluyor.
+      - name: Yigini kaldir
+        run: docker compose up -d --wait
+
+      - name: Arayuz ve API yanit veriyor mu
+        run: |
+          curl -fsS http://localhost:8080/ > /dev/null
+          curl -fsS http://localhost:5200/health > /dev/null
+
+      # Tohum verisi migration'lardan geliyor; gercekten geldigini
+      # dogrulamak icin gercek giris akisindan geciliyor.
+      - name: Giris akisi calisiyor mu
+        run: |
+          curl -fsS -X POST http://localhost:8080/api/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"userName":"supervisor","password":"Supervisor123!"}' \
+            | grep -q '"token"'
+
+      - name: Basarisizsa konteyner gunlukleri
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Temizlik
+        if: always()
+        run: docker compose down -v

@@ -1,5 +1,7 @@
 # FleetOps
 
+[![CI](https://github.com/SenaKocaslan/fleetops/actions/workflows/ci.yml/badge.svg)](https://github.com/SenaKocaslan/fleetops/actions/workflows/ci.yml)
+
 AGV (Automated Guided Vehicle) filo ve gorev yonetim sistemi.
 
 Fabrika/depo icinde calisan AGV filosunun merkezi yonetimi: gorev havuzu ve atama,
@@ -138,6 +140,12 @@ in-memory saglayici kullanilmaz. Sebebi: bu projedeki kritik davranislarin cogu
 (xmin optimistic concurrency, kismi tekil indeks, snake_case, enum'un metin
 olarak saklanmasi) in-memory saglayicida hic calismaz ve test yanlis yere
 yesil yanar.
+
+Her push'ta ayni testler GitHub Actions uzerinde de kosuyor (dort is:
+backend, arayuz birim, uctan uca, dagitim yigini). Dagitim isi imajlari
+derlemekle kalmiyor, bos bir veritabaninda tum zinciri kaldirip giris
+akisindan geciyor - "tek komutla ayaga kalkar" iddiasi her push'ta
+yeniden dogrulaniyor.
 
 E2E kosmadan once `docker compose stop api` yapin: konteynerdeki simulator
 ayni veritabanina telemetri yazar ve testlerin altindan AGV durumunu kaydirir.
