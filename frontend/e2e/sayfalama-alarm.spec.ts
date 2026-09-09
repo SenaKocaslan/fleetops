@@ -32,6 +32,15 @@ test.describe('Sayfalama', () => {
     expect(ilkSayfaKodlari.filter((k) => ikinciSayfaKodlari.includes(k))).toEqual([]);
   });
 
+  test('durum filtresi yalnizca o durumdaki gorevleri gosterir', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('task-status-filter').selectOption('Completed');
+
+    const durumlar = await page.getByTestId('task-status').allTextContents();
+    expect(durumlar.length).toBeGreaterThan(0);
+    expect(durumlar.every((d) => d.trim() === 'Completed')).toBe(true);
+  });
+
   test('ilk sayfada onceki butonu kapali', async ({ page }) => {
     await page.goto('/');
 

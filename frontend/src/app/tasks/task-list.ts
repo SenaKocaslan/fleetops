@@ -51,6 +51,17 @@ export class TaskList {
 
   protected materialCode = '';
   protected readonly arama = signal('');
+
+  // Bos = tum durumlar. Bitmis gorevler zaten listenin altina duser;
+  // bu secici "yalnizca sunlari goster" demek isteyenler icin.
+  protected readonly durumSecimi = signal('');
+  protected readonly durumlar = [
+    { deger: '', etiket: 'Tum durumlar' },
+    { deger: 'Pending', etiket: 'Bekleyen' },
+    { deger: 'Assigned', etiket: 'Atanmis' },
+    { deger: 'InProgress', etiket: 'Yurutuluyor' },
+    { deger: 'Completed', etiket: 'Tamamlanan' },
+  ];
   protected quantity = 1;
   protected priority = 1;
   protected fromLocationId = '';
@@ -160,16 +171,25 @@ export class TaskList {
   protected refresh(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.service.list(this.sayfa().page, this.sayfa().pageSize, this.arama()).subscribe({
-      next: (kayitlar) => {
-        this.sayfa.set(kayitlar);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('Gorev listesi alinamadi. API calisiyor mu?');
-        this.loading.set(false);
-      },
-    });
+    this.service
+      .list(this.sayfa().page, this.sayfa().pageSize, this.arama(), this.durumSecimi())
+      .subscribe({
+        next: (kayitlar) => {
+          this.sayfa.set(kayitlar);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Gorev listesi alinamadi. API calisiyor mu?');
+          this.loading.set(false);
+        },
+      });
+  }
+
+  protected durumDegisti(olay: Event): void {
+    this.durumSecimi.set((olay.target as HTMLSelectElement).value);
+    // Filtre daralinca 3. sayfada kalmak bos liste gosterirdi.
+    this.sayfa.update((s) => ({ ...s, page: 1 }));
+    this.refresh();
   }
 
   protected aramaDegisti(olay: Event): void {

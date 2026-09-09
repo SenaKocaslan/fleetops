@@ -191,4 +191,69 @@ public class SayfalamaTests(FleetOpsApiFactory fabrika)
             });
         }
     }
+
+    [Fact]
+    public async Task Bitmis_gorevler_listenin_altina_duser()
+    {
+        // Sadece oncelige gore siralamak, tamamlanmis yuksek oncelikli
+        // gorevlerin ilk sayfayi kaplamasina ve bekleyen isin gorunmemesine
+        // yol aciyordu.
+        await fabrika.FiloyuHazirlaAsync();
+        var istemci = await fabrika.IstemciAsync();
+
+        var etiket = $"SIRA-{Guid.NewGuid().ToString()[..8]}";
+
+        // Tamamlanmis ama YUKSEK oncelikli
+        var tamamlanan = await GorevOlusturAsync(istemci, $"{etiket}-TAM", oncelik: 900);
+        await istemci.PostAsJsonAsync($"/api/tasks/{tamamlanan}/assign",
+            new { agvId = Guid.Parse("11111111-1111-1111-1111-111111111111") });
+        await istemci.PostAsync($"/api/tasks/{tamamlanan}/start", null);
+        await istemci.PostAsync($"/api/tasks/{tamamlanan}/complete", null);
+
+        // Bekleyen ama DUSUK oncelikli
+        var bekleyen = await GorevOlusturAsync(istemci, $"{etiket}-BEK", oncelik: 1);
+
+        var sayfa = await istemci.GetFromJsonAsync<PagedResult<TaskSummary>>(
+            $"/api/tasks?materialCode={etiket}&pageSize=50");
+
+        var sira = sayfa!.Items.Select(g => g.Id).ToList();
+
+        Assert.Equal(bekleyen, sira[0]);
+        Assert.Equal(tamamlanan, sira[^1]);
+    }
+
+    [Fact]
+    public async Task Durum_filtresi_yalnizca_o_durumu_dondurur()
+    {
+        await fabrika.FiloyuHazirlaAsync();
+        var istemci = await fabrika.IstemciAsync();
+
+        var sayfa = await istemci.GetFromJsonAsync<PagedResult<TaskSummary>>(
+            "/api/tasks?status=Completed&pageSize=100");
+
+        Assert.All(sayfa!.Items, g => Assert.Equal("Completed", g.Status));
+    }
+
+    [Fact]
+    public async Task Gecersiz_durum_400_doner()
+    {
+        var yanit = await (await fabrika.IstemciAsync()).GetAsync("/api/tasks?status=OlmayanDurum");
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, yanit.StatusCode);
+    }
+
+    private static async Task<Guid> GorevOlusturAsync(
+        HttpClient istemci, string malzeme, int oncelik)
+    {
+        var yanit = await istemci.PostAsJsonAsync("/api/tasks", new CreateTaskCommand(
+            Guid.Parse("cccccccc-0000-0000-0000-000000000001"),
+            Guid.Parse("cccccccc-0000-0000-0000-000000000002"),
+            malzeme, 1, oncelik));
+
+        yanit.EnsureSuccessStatusCode();
+        var govde = await yanit.Content.ReadFromJsonAsync<SiralamaOlusturmaYaniti>();
+        return govde!.Id;
+    }
+
+    private sealed record SiralamaOlusturmaYaniti(Guid Id);
 }

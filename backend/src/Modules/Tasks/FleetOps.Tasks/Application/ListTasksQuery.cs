@@ -7,9 +7,8 @@ namespace FleetOps.Tasks.Application;
 // MaterialCode aramasi sayfalamayla birlikte zorunlu hale geldi: 90 gorevlik
 // bir havuzda, oncelige gore sirali listede yeni acilan dusuk oncelikli gorev
 // ilk sayfada cikmiyor ve kullanici kendi actigi kaydi bulamiyor.
-// Status filtresi HTTP uc noktasinda ACIK DEGIL; bugun yalnizca otomatik
-// atama kullaniyor ("havuzdaki bekleyen gorevler"). Kullanicinin isteyecegi
-// bir filtre oldugunda uc noktaya da baglanabilir.
+// Status filtresi hem otomatik atamanin ("havuzdaki bekleyen gorevler") hem
+// de arayuzdeki durum secicinin kullandigi tek yol.
 public sealed record ListTasksQuery(
     PageRequest Sayfa,
     string? MaterialCode = null,

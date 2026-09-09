@@ -144,9 +144,9 @@ npm ci && npm start                        # http://localhost:4200
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 107 birim + 133 integration
-cd frontend && npm test                    # 26 birim (Vitest)
-cd frontend && npm run e2e                 # 30 uctan uca (Playwright)
+cd backend  && dotnet test                 # 109 birim + 136 integration
+cd frontend && npm test                    # 28 birim (Vitest)
+cd frontend && npm run e2e                 # 31 uctan uca (Playwright)
 ```
 
 Integration testler Testcontainers ile **gercek PostgreSQL 17** ayaga kaldirir;

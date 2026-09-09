@@ -190,4 +190,27 @@ public class TransportTaskTests
         Assert.Null(gorev.AktifAtama);
         Assert.Equal(bitis, gorev.Assignments.Single().CompletedAtUtc);
     }
+
+    [Fact]
+    public void Bitmis_durumlar_durum_makinesinden_turetilir()
+    {
+        // Liste elle yazilsaydi yeni bir bitis durumu eklendiginde
+        // guncellemeyi unutmak mumkun olurdu; bu test o iddiayi tutuyor.
+        Assert.Equal(
+            new[]
+            {
+                TransportTaskStatus.Completed,
+                TransportTaskStatus.Failed,
+                TransportTaskStatus.Cancelled,
+            }.Order(),
+            TransportTask.BitmisDurumlar.Order());
+    }
+
+    [Fact]
+    public void Devam_eden_durumlar_bitmis_sayilmaz()
+    {
+        Assert.DoesNotContain(TransportTaskStatus.Pending, TransportTask.BitmisDurumlar);
+        Assert.DoesNotContain(TransportTaskStatus.Assigned, TransportTask.BitmisDurumlar);
+        Assert.DoesNotContain(TransportTaskStatus.InProgress, TransportTask.BitmisDurumlar);
+    }
 }

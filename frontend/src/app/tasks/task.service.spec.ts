@@ -92,4 +92,24 @@ describe('TaskService', () => {
     expect(tamamla.request.method).toBe('POST');
     tamamla.flush(null);
   });
+
+  it('durum filtresini sorgu parametresi olarak gonderir', () => {
+    service.list(1, 20, '', 'Pending').subscribe();
+
+    const istek = http.expectOne(
+      (i) => i.url === `${environment.apiUrl}/tasks` && i.params.get('status') === 'Pending',
+    );
+
+    istek.flush({ items: [], page: 1, pageSize: 20, totalCount: 0, totalPages: 0, hasNext: false });
+  });
+
+  it('durum bos ise status parametresi hic gonderilmez', () => {
+    // Bos parametre "durumu bos olanlar" gibi okunabilir; hic gondermemek net.
+    service.list().subscribe();
+
+    const istek = http.expectOne((i) => i.url === `${environment.apiUrl}/tasks`);
+    expect(istek.request.params.has('status')).toBe(false);
+
+    istek.flush({ items: [], page: 1, pageSize: 20, totalCount: 0, totalPages: 0, hasNext: false });
+  });
 });

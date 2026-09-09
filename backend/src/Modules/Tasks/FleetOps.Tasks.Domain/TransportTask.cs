@@ -15,6 +15,13 @@ public sealed class TransportTask : AggregateRoot
             [TransportTaskStatus.Cancelled] = [],
         };
 
+    // Durum makinesinden TURETILIYOR, elle yazilmiyor: cikisi olmayan durum
+    // bitmis demektir. Ayri bir liste tutulsaydi yeni bir bitis durumu
+    // eklendiginde listeye eklemeyi unutmak mumkun olurdu ve siralama
+    // sessizce yanlis calisirdi.
+    public static readonly TransportTaskStatus[] BitmisDurumlar =
+        [.. IzinliGecisler.Where(g => g.Value.Length == 0).Select(g => g.Key).Order()];
+
     private readonly List<TaskAssignment> _assignments = [];
 
     private TransportTask(

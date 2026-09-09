@@ -10,8 +10,17 @@ export class TaskService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/tasks`;
 
-  list(page = 1, pageSize = 20, materialCode = ''): Observable<PagedResult<TaskSummary>> {
+  list(
+    page = 1,
+    pageSize = 20,
+    materialCode = '',
+    status = '',
+  ): Observable<PagedResult<TaskSummary>> {
     const params: Record<string, string | number> = { page, pageSize };
+
+    if (status) {
+      params['status'] = status;
+    }
 
     // Bos parametre gondermek "bos koda esit olanlar" gibi okunabilir;
     // hic gondermemek daha net.

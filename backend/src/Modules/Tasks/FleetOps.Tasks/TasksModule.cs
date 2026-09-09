@@ -66,11 +66,12 @@ public sealed class TasksModule : IModule
             int? page,
             int? pageSize,
             string? materialCode,
+            TransportTaskStatus? status,
             IQueryHandler<ListTasksQuery, PagedResult<TaskSummary>> handler,
             CancellationToken ct) =>
         {
             var sonuc = await handler.HandleAsync(
-                new ListTasksQuery(new PageRequest(page, pageSize), materialCode), ct);
+                new ListTasksQuery(new PageRequest(page, pageSize), materialCode, status), ct);
 
             return Results.Ok(sonuc.Value);
         });

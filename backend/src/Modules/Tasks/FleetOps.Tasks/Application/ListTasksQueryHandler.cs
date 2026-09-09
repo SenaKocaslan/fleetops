@@ -1,5 +1,6 @@
 using FleetOps.SharedKernel;
 using FleetOps.SharedKernel.Domain;
+using FleetOps.Tasks.Domain;
 using FleetOps.Tasks.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,7 +31,11 @@ internal sealed class ListTasksQueryHandler(TasksDbContext db)
         var toplam = await sorgu.CountAsync(cancellationToken);
 
         var kayitlar = await sorgu
-            .OrderByDescending(t => t.Priority)
+            // Bitmis gorevler EN ALTA. Yalnizca oncelige gore siralamak,
+            // tamamlanmis yuksek oncelikli gorevlerin ilk sayfayi kaplamasina
+            // ve kullanicinin asil bekleyen isi gorememesine yol aciyordu.
+            .OrderBy(t => TransportTask.BitmisDurumlar.Contains(t.Status))
+            .ThenByDescending(t => t.Priority)
             .ThenBy(t => t.CreatedAtUtc)
             // Id sadece esitlik bozucu ve sart. Olculdu (2026-09-04): 200k
             // satir + paralel planda, bozucusuz sorguda 40 satirin 39'u
