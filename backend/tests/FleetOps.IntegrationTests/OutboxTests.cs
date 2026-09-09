@@ -195,6 +195,8 @@ public class OutboxTests(FleetOpsApiFactory fabrika)
 
     private async Task OutboxuTemizleAsync()
     {
+        await fabrika.AtamalariKapatAsync();
+
         using var kapsam = fabrika.KapsamAc();
         var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
         await db.OutboxMessages.ExecuteDeleteAsync();

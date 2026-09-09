@@ -1,6 +1,8 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FleetOps.Api;
+using FleetOps.Tasks.Persistence;
+using Microsoft.EntityFrameworkCore;
 using FleetOps.Api.Auth;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -50,6 +52,19 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
     // tutulsaydi, bir modul uretimde goc almadigi halde testler yesil kalirdi.
     public Task MigrationUygulaAsync() =>
         VeritabaniGocleri.UygulaAsync(Services);
+
+    // Tohum AGV sayisi uc ve testler ayni araclari paylasiyor. "Bir AGV'nin
+    // en fazla bir acik atamasi olur" kurali geldikten sonra onceki testten
+    // kalan acik atama sonrakini engelliyor; her test kendi baslangicini
+    // temizliyor. Kural degil, test yalitimi sorunu.
+    public async Task AtamalariKapatAsync()
+    {
+        using var kapsam = KapsamAc();
+        var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE tasks.task_assignment SET completed_at_utc = now() "
+            + "WHERE completed_at_utc IS NULL");
+    }
 
     // Tohum kullanicilar migration'da; testler gercek login akisindan geciyor,
     // token elle imzalanmiyor. Boylece login bozulursa testler de kirilir.

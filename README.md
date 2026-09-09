@@ -58,7 +58,7 @@ birbirlerinin handler'larini cagirmazlar. Iletisim yalnizca integration event il
 | Repository | Aggregate bir butun olarak yuklensin/kaydedilsin |
 | Optimistic Concurrency | Gorev/kilit iki kez verilmesin |
 | State Machine | Gecisler tek yerde tanimli olsun |
-| Strategy | Atama kurali degisebilir olsun |
+| Strategy | Otomatik atamada arac secim kurali degisebilir olsun |
 | Decorator | Log ve transaction handler'i kirletmesin |
 | Outbox | Kayit gitti ama olay gitmedi durumu olmasin |
 | Dead Letter | Bozuk bir olay kuyrugu sonsuza kadar mesgul etmesin |
@@ -131,9 +131,9 @@ npm ci && npm start                        # http://localhost:4200
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 107 birim + 108 integration
-cd frontend && npm test                    # 25 birim (Vitest)
-cd frontend && npm run e2e                 # 28 uctan uca (Playwright)
+cd backend  && dotnet test                 # 107 birim + 120 integration
+cd frontend && npm test                    # 26 birim (Vitest)
+cd frontend && npm run e2e                 # 30 uctan uca (Playwright)
 ```
 
 Integration testler Testcontainers ile **gercek PostgreSQL 17** ayaga kaldirir;
@@ -150,6 +150,27 @@ yeniden dogrulaniyor.
 
 E2E kosmadan once `docker compose stop api` yapin: konteynerdeki simulator
 ayni veritabanina telemetri yazar ve testlerin altindan AGV durumunu kaydirir.
+
+## Otomatik atama
+
+Havuzdaki bekleyen gorevler, oncelik sirasina gore musait araclara dagitilir
+(`POST /api/dispatch/auto-assign`, yalnizca Supervisor). Arac secim kurali
+`IAtamaStratejisi` arkasinda; varsayilan kural bataryasi en yuksek araci
+seciyor, esitlikte arac koduna gore sabit bir sira uyguluyor.
+
+Dagitim **composition root'ta** duruyor, bir modulun icinde degil: "hangi
+goreve hangi arac" sorusu iki modulun verisini birden gerektiriyor ve Tasks,
+Fleet'in araclarini goremiyor. Alarmlarin birlestirildigi yerle ayni gerekce.
+
+Bir tur icinde ayni araca iki gorev verilmemesi yerel bir aday listesiyle
+saglaniyor; sebebi, Fleet'in aracin mesgullestigini ancak outbox olayi teslim
+edildikten SONRA ogrenmesi. Son bekci ise veritabani: `task_assignment`
+uzerindeki kismi tekil indeks, bir AGV'nin ayni anda birden fazla acik
+atamasi olmasini reddediyor.
+
+**Kapsam disi:** koridor/kapi kilidini otomatik almak. Bir gorevin hangi
+kaynaklardan gececegi bilgisi sistemde yok (rota, aracin kendi yaziliminda);
+bu veri olmadan otomatik kilit, sistemi oldugundan akilli gostermek olurdu.
 
 ## Guvenlik notlari
 

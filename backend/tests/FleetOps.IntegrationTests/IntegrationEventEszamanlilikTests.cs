@@ -61,6 +61,7 @@ public class IntegrationEventEszamanlilikTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Telemetri_araya_girse_de_atama_olayi_teslim_edilir()
     {
+        await fabrika.AtamalariKapatAsync();
         await AgvDurumunuSifirlaAsync();
         var baslangic = DateTime.UtcNow;
         var istemci = await fabrika.IstemciAsync();
@@ -90,6 +91,7 @@ public class IntegrationEventEszamanlilikTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Handler_kendi_yazdigi_degisikligi_kaybetmez()
     {
+        await fabrika.AtamalariKapatAsync();
         // Yeniden deneme sirasinda takipteki eski nesne ayrilmazsa sonraki
         // deneme de ayni xmin ile gider ve sonsuza kadar catisir.
         await AgvDurumunuSifirlaAsync();

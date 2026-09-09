@@ -50,7 +50,29 @@
       data-testid="task-search"
     />
     <button type="button" (click)="refresh()" data-testid="refresh">Yenile</button>
+    @if (planlamaYetkisi()) {
+      <button
+        type="button"
+        (click)="otomatikAta()"
+        [disabled]="dagitimCalisiyor()"
+        data-testid="auto-assign"
+      >
+        {{ dagitimCalisiyor() ? 'Dagitiliyor...' : 'Havuzdan ata' }}
+      </button>
+    }
   </div>
+
+  @if (dagitimSonucu(); as ozet) {
+    <p class="dagitim" data-testid="dispatch-result">
+      @if (ozet.atananlar.length > 0) {
+        {{ ozet.atananlar.length }} gorev atandi ({{ ozet.strateji }}):
+        {{ dagitimMetni(ozet) }}
+      } @else {
+        Atanacak gorev bulunamadi. Bekleyen gorev: {{ ozet.bekleyenGorev }}, musait
+        arac: {{ ozet.musaitAgv }}.
+      }
+    </p>
+  }
 
   @if (assignError()) {
     <p class="hata" data-testid="assign-error">{{ assignError() }}</p>

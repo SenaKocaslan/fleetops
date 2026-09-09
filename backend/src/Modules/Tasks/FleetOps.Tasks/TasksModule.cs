@@ -164,6 +164,7 @@ public sealed class TasksModule : IModule
         }
 
         if (hata == TaskErrors.EszamanliDegisiklik
+            || hata == TaskErrors.AgvMesgul
             || hata == ResourceErrors.KaynakMesgul
             || hata == ResourceErrors.KilidiBaskasiTutuyor)
         {

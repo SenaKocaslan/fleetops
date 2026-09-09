@@ -19,6 +19,11 @@ public static class TaskErrors
     public static readonly Error AgvBos =
         new("Task.AgvBos", "Atanacak AGV kimligi bos olamaz.");
 
+    // Bir AGV ayni anda tek bir tasima gorevi yurutur. Istemci yanlis bir sey
+    // yapmadi; arac serbest kalinca ayni istek gecerli olacak.
+    public static readonly Error AgvMesgul =
+        new("Task.AgvMesgul", "Bu AGV'nin halihazirda acik bir gorevi var.");
+
     public static readonly Error Bulunamadi =
         new("Task.Bulunamadi", "Gorev bulunamadi.");
 

@@ -80,3 +80,11 @@ th, td {
   gap: 0.75rem;
   margin-top: 0.75rem;
 }
+
+.dagitim {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid #2f7d4f;
+  background: rgba(47, 125, 79, 0.08);
+  font-size: 0.9rem;
+}

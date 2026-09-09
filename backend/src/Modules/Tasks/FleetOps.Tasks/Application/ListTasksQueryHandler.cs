@@ -14,6 +14,11 @@ internal sealed class ListTasksQueryHandler(TasksDbContext db)
     {
         var sorgu = db.TransportTasks.AsNoTracking();
 
+        if (query.Status is { } durum)
+        {
+            sorgu = sorgu.Where(t => t.Status == durum);
+        }
+
         if (!string.IsNullOrWhiteSpace(query.MaterialCode))
         {
             var ara = query.MaterialCode.Trim();

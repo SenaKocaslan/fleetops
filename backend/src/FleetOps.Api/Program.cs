@@ -1,5 +1,6 @@
 using FleetOps.Api;
 using FleetOps.Api.Auth;
+using FleetOps.Api.Dispatch;
 using FleetOps.Fleet;
 using FleetOps.SharedKernel;
 using FleetOps.Stock;
@@ -24,6 +25,7 @@ builder.Services.AddCors(options =>
         .AllowCredentials()));
 
 builder.Services.AddFleetOpsAuth(builder.Configuration);
+builder.Services.AddDispatch();
 
 builder.Services
     .AddModule<FleetModule>(builder.Configuration)
@@ -49,6 +51,7 @@ app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapAuthEndpoints();
 app.MapAlarmEndpoints();
+app.MapDispatchEndpoints();
 app.MapModuleEndpoints();
 
 app.Run();

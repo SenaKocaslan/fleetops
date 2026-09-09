@@ -23,7 +23,15 @@ internal sealed class TaskAssignmentConfiguration : IEntityTypeConfiguration<Tas
         builder.Property(a => a.CompletedAtUtc)
             .HasColumnType("timestamp with time zone");
 
-        builder.HasIndex(a => new { a.AgvId, a.CompletedAtUtc });
+        // ISIN KALBI: "bir AGV ayni anda tek bir gorev yurutur." Kural tek bir
+        // aggregate'in icinde degil, satirlar arasinda: gorev kendi atamalarini
+        // gorur ama baska bir gorevin atamalarini gormez. Optimistic concurrency
+        // de koruyamaz, cunku henuz var olmayan satir icin karsilastirilacak bir
+        // surum yok. Bu yuzden kurali veritabani uyguluyor -- kismi tekil indeks,
+        // yalnizca kapanmamis atamalari kapsiyor; kapananlar gecmis olarak kaliyor.
+        builder.HasIndex(a => a.AgvId)
+            .IsUnique()
+            .HasFilter("completed_at_utc IS NULL");
 
         builder.Ignore(a => a.Aktif);
     }

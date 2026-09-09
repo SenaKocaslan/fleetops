@@ -5,6 +5,8 @@ import { AgvSummary } from '../fleet/agv.model';
 import { StockService } from '../stock/stock.service';
 import { LocationSummary } from '../stock/stock.model';
 import { TaskService } from './task.service';
+import { DispatchService } from './dispatch.service';
+import { OtomatikAtamaOzeti } from './dispatch.model';
 import { TaskSummary } from './task.model';
 import { BOS_SAYFA, PagedResult } from '../sayfalama.model';
 import { AuthService } from '../auth/auth.service';
@@ -18,6 +20,7 @@ import { AuthService } from '../auth/auth.service';
 export class TaskList {
   private readonly service = inject(TaskService);
   private readonly agvService = inject(AgvService);
+  private readonly dispatch = inject(DispatchService);
   private readonly stockService = inject(StockService);
 
   private readonly auth = inject(AuthService);
@@ -36,6 +39,9 @@ export class TaskList {
   protected readonly assignError = signal<string | null>(null);
 
   protected readonly secim = signal<Record<string, string>>({});
+
+  protected readonly dagitimSonucu = signal<OtomatikAtamaOzeti | null>(null);
+  protected readonly dagitimCalisiyor = signal(false);
 
   protected readonly agvKodlari = computed(() =>
     Object.fromEntries(this.agvs().map((a) => [a.id, a.code])),
@@ -113,6 +119,42 @@ export class TaskList {
         this.refresh();
       },
     });
+  }
+
+  // Havuzdaki bekleyen gorevleri musait araclara dagitir. Hangi aracin
+  // hangi gorevi alacagina sunucudaki strateji karar veriyor; arayuz
+  // yalnizca tetikliyor ve sonucu gosteriyor.
+  protected otomatikAta(): void {
+    this.assignError.set(null);
+    this.dagitimSonucu.set(null);
+    this.dagitimCalisiyor.set(true);
+
+    this.dispatch.otomatikAta().subscribe({
+      next: (ozet) => {
+        this.dagitimSonucu.set(ozet);
+        this.dagitimCalisiyor.set(false);
+
+        // Atanan gorevler oncelige gore havuzun basindaydi; arama filtresi
+        // aciksa kullanici sonucu goremez.
+        this.arama.set('');
+        this.sayfayaGit(1);
+
+        // AGV listesi bilesenin kurulusunda cekiliyordu; dagitimdan sonra
+        // musait arac kumesi degisti.
+        this.agvService.list().subscribe({
+          next: (kayitlar) => this.agvs.set(kayitlar),
+          error: () => undefined,
+        });
+      },
+      error: (yanit) => {
+        this.dagitimCalisiyor.set(false);
+        this.assignError.set(yanit?.error?.message ?? 'Otomatik atama yapilamadi.');
+      },
+    });
+  }
+
+  protected dagitimMetni(ozet: OtomatikAtamaOzeti): string {
+    return ozet.atananlar.map((a) => `${a.materialCode} -> ${a.agvCode}`).join(', ');
   }
 
   protected refresh(): void {
