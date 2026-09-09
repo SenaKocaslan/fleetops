@@ -7,7 +7,9 @@ using Npgsql;
 
 namespace FleetOps.Tasks.Application;
 
-internal sealed class AssignTaskCommandHandler(TasksDbContext db)
+internal sealed class AssignTaskCommandHandler(
+    TasksDbContext db,
+    IAgvUygunlukSaglayici uygunluk)
     : ICommandHandler<AssignTaskCommand>
 {
     public async Task<Result> HandleAsync(
@@ -22,6 +24,21 @@ internal sealed class AssignTaskCommandHandler(TasksDbContext db)
         if (gorev is null)
         {
             return Result.Failure(TaskErrors.Bulunamadi);
+        }
+
+        // Aracin gorev alip alamayacagi Fleet'in kurali; Tasks onu yorumlamaz,
+        // sorar. Kontrol uc noktada degil BURADA: boylece elle atama, otomatik
+        // atama ve ileride eklenecek her cagiran ayni kapidan geciyor.
+        var agv = await uygunluk.GetirAsync(command.AgvId, cancellationToken);
+
+        if (!agv.Bulundu)
+        {
+            return Result.Failure(TaskErrors.AgvBulunamadi);
+        }
+
+        if (!agv.GorevAlabilir)
+        {
+            return Result.Failure(TaskErrors.AgvGorevAlamaz(agv.Kod));
         }
 
         // Nazik kontrol: bilinen bir cakismada kullaniciya anlamli hata donmek

@@ -19,7 +19,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Ayni_goreve_iki_baglam_yazarsa_ikincisi_reddedilir()
     {
-        await fabrika.AtamalariKapatAsync();
+        await fabrika.FiloyuHazirlaAsync();
         var gorevId = await GorevOlusturAsync();
 
         using var kapsam1 = fabrika.KapsamAc();
@@ -44,7 +44,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Paralel_atama_isteklerinden_yalnizca_biri_basarili_olur()
     {
-        await fabrika.AtamalariKapatAsync();
+        await fabrika.FiloyuHazirlaAsync();
         const int istekSayisi = 8;
         var gorevId = await GorevOlusturAsync();
         var istemci = await fabrika.IstemciAsync();
@@ -83,7 +83,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Atanan_gorev_listede_agv_ile_gorunur()
     {
-        await fabrika.AtamalariKapatAsync();
+        await fabrika.FiloyuHazirlaAsync();
         var gorevId = await GorevOlusturAsync();
         var istemci = await fabrika.IstemciAsync();
 
@@ -104,7 +104,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Zaten_atanmis_gorev_ikinci_kez_atanamaz()
     {
-        await fabrika.AtamalariKapatAsync();
+        await fabrika.FiloyuHazirlaAsync();
         var gorevId = await GorevOlusturAsync();
         var istemci = await fabrika.IstemciAsync();
 
@@ -130,7 +130,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Acik_gorevi_olan_agv_ikinci_goreve_atanamaz()
     {
-        await fabrika.AtamalariKapatAsync();
+        await fabrika.FiloyuHazirlaAsync();
         var istemci = await fabrika.IstemciAsync();
         var ilk = await GorevOlusturAsync();
         var ikinci = await GorevOlusturAsync();
@@ -151,7 +151,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
     {
         // Kontrol testi: yukaridaki kural "AGV bir kere atandi mi bir daha
         // atanamaz" seklinde yanlis uygulansaydi da o test yesil yanardi.
-        await fabrika.AtamalariKapatAsync();
+        await fabrika.FiloyuHazirlaAsync();
         var istemci = await fabrika.IstemciAsync();
         var ilk = await GorevOlusturAsync();
         var ikinci = await GorevOlusturAsync();
@@ -173,7 +173,7 @@ public class AtamaEszamanlilikTests(FleetOpsApiFactory fabrika)
         // indeks kaldirilsa bile test yesil yaniyordu. Yarisi deterministik
         // uretmek icin iki ayri baglam kullaniliyor; ikisi de handler'in
         // kontrolunu hic calistirmadan dogrudan yaziyor.
-        await fabrika.AtamalariKapatAsync();
+        await fabrika.FiloyuHazirlaAsync();
         var ilk = await GorevOlusturAsync();
         var ikinci = await GorevOlusturAsync();
 

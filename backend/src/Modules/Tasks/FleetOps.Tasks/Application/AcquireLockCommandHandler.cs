@@ -10,6 +10,7 @@ namespace FleetOps.Tasks.Application;
 
 internal sealed class AcquireLockCommandHandler(
     TasksDbContext db,
+    IAgvUygunlukSaglayici uygunluk,
     IOptions<ResourceLockOptions> options) : ICommandHandler<AcquireLockCommand, Guid>
 {
     public async Task<Result<Guid>> HandleAsync(
@@ -22,6 +23,20 @@ internal sealed class AcquireLockCommandHandler(
         if (!kaynakVar)
         {
             return Result.Failure<Guid>(ResourceErrors.Bulunamadi);
+        }
+
+        // Gorev atamasindan FARKLI soru: burada "gorev alabilir mi" degil
+        // "sahada calisiyor mu" soruluyor. Mesgul arac kilit alabilmeli.
+        var agv = await uygunluk.GetirAsync(command.AgvId, cancellationToken);
+
+        if (!agv.Bulundu)
+        {
+            return Result.Failure<Guid>(ResourceErrors.AgvBulunamadi);
+        }
+
+        if (!agv.SahadaCalisabilir)
+        {
+            return Result.Failure<Guid>(ResourceErrors.AgvSahadaDegil(agv.Kod));
         }
 
         var sonuc = ResourceLock.Acquire(

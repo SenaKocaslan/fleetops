@@ -37,11 +37,17 @@ public sealed class FleetModule : IModule
         services.Configure<FleetAlarmOptions>(configuration.GetSection(FleetAlarmOptions.Bolum));
         services.AddScoped<IAlarmSource, FiloAlarmKaynagi>();
 
+        // Tasks modulu bunu sorup atama/kilit karari veriyor.
+        services.AddScoped<IAgvUygunlukSaglayici, FiloUygunlukSaglayici>();
+
         services.AddSignalR();
         services.AddSingleton<IFleetNotifier, SignalRFleetNotifier>();
 
         services.Configure<SimulatorOptions>(configuration.GetSection(SimulatorOptions.Bolum));
         services.AddHostedService<AgvSimulator>();
+
+        services.Configure<SarjOptions>(configuration.GetSection(SarjOptions.Bolum));
+        services.AddHostedService<SarjYonlendirici>();
 
         services.AddScoped<IIntegrationEventHandler, GorevAtandigindaAgvMesgullestir>();
         services.AddScoped<IIntegrationEventHandler, GorevTamamlandigindaAgvSerbestBirak>();

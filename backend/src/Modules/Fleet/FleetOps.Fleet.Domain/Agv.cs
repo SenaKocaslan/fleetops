@@ -48,6 +48,13 @@ public sealed class Agv : AggregateRoot
     public bool GorevAlabilir() =>
         Status == AgvStatus.Available && BatteryLevel >= AsgariGorevBataryasi;
 
+    // Yeni gorev alamaz ama sahada is yapiyor olabilir. Kaynak kilidi bunu
+    // sorar: kilit gorev YURUTULURKEN alinir, dolayisiyla mesgul arac kilit
+    // alabilmeli. Sarjdaki ya da servis disi arac alamaz -- o kilit
+    // suresi dolana kadar koridoru bosuna kapatirdi.
+    public bool SahadaCalisabilir() =>
+        Status is AgvStatus.Available or AgvStatus.Busy;
+
     public Result Mesgullestir()
     {
         if (Status == AgvStatus.Busy)

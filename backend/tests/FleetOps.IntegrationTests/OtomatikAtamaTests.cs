@@ -136,12 +136,17 @@ public class OtomatikAtamaTests(FleetOpsApiFactory fabrika)
         // basina gecer; atanamaz ama sirayi isgal eder ve asil bekleyen
         // gorev aracsiz kalirdi.
         await HavuzuHazirlaAsync();
-        await SadeceBirAracBirakAsync();
 
+        // SIRA ONEMLI: atama artik aracin musait olmasini sart kosuyor,
+        // dolayisiyla AGV-02 once gorevi almali, sarja sonra alinmali.
         var yurutulen = await GorevOlusturAsync("OTO-YURUTULEN", oncelik: 9);
         var istemci = await fabrika.IstemciAsync();
-        await istemci.PostAsJsonAsync($"/api/tasks/{yurutulen}/assign", new { agvId = Agv02 });
+        var atamaYaniti = await istemci.PostAsJsonAsync(
+            $"/api/tasks/{yurutulen}/assign", new { agvId = Agv02 });
+        atamaYaniti.EnsureSuccessStatusCode();
         await istemci.PostAsync($"/api/tasks/{yurutulen}/start", null);
+
+        await SadeceBirAracBirakAsync();
 
         var bekleyen = await GorevOlusturAsync("OTO-BEKLEYEN", oncelik: 1);
 
@@ -190,7 +195,7 @@ public class OtomatikAtamaTests(FleetOpsApiFactory fabrika)
     // alir ve bu testlerin sayilari tutmaz.
     private async Task HavuzuHazirlaAsync()
     {
-        await fabrika.AtamalariKapatAsync();
+        await fabrika.FiloyuHazirlaAsync();
 
         using (var kapsam = fabrika.KapsamAc())
         {

@@ -1,7 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using FleetOps.Fleet.Application;
+using FleetOps.Fleet.Persistence;
 using FleetOps.IntegrationTests.Altyapi;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FleetOps.IntegrationTests;
 
@@ -26,6 +29,10 @@ public class FiloUcNoktalariTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Gorev_alabilirlik_domain_kuralina_gore_hesaplanir()
     {
+        // Tohum verideki duruma bel baglamak yerine test kendi sahnesini
+        // kuruyor: baska testler araclarin durumunu degistirebiliyor.
+        await Agv03SarjaAlAsync();
+
         var agvler = await (await fabrika.IstemciAsync())
             .GetFromJsonAsync<List<AgvSummary>>("/api/agvs");
 
@@ -36,6 +43,17 @@ public class FiloUcNoktalariTests(FleetOpsApiFactory fabrika)
             Assert.Equal(a.Status == "Available" && a.BatteryLevel >= 20, a.GorevAlabilir));
 
         var sarjdaki = Assert.Single(agvler!, a => a.Code == "AGV-03");
+        Assert.Equal("Charging", sarjdaki.Status);
         Assert.False(sarjdaki.GorevAlabilir);
+    }
+
+    private async Task Agv03SarjaAlAsync()
+    {
+        using var kapsam = fabrika.KapsamAc();
+        var db = kapsam.ServiceProvider.GetRequiredService<FleetDbContext>();
+        var agv = await db.Agvs.SingleAsync(
+            a => a.Id == Guid.Parse("33333333-3333-3333-3333-333333333333"));
+        agv.SarjaAl();
+        await db.SaveChangesAsync();
     }
 }

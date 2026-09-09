@@ -157,10 +157,19 @@ public sealed class TasksModule : IModule
         var govde = new { code = hata.Code, message = hata.Message };
 
         if (hata == TaskErrors.Bulunamadi
+            || hata == TaskErrors.AgvBulunamadi
             || hata == ResourceErrors.Bulunamadi
+            || hata == ResourceErrors.AgvBulunamadi
             || hata == ResourceErrors.KilitBulunamadi)
         {
             return Results.NotFound(govde);
+        }
+
+        // Arac gecici olarak uygun degil: istemci yanlis bir sey yapmadi,
+        // birazdan ayni istek gecerli olacak.
+        if (hata.Code is "Task.AgvGorevAlamaz" or "Resource.AgvSahadaDegil")
+        {
+            return Results.Conflict(govde);
         }
 
         if (hata == TaskErrors.EszamanliDegisiklik

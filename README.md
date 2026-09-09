@@ -45,8 +45,21 @@ hareketine donusmesi ve filo durumunun canli izlenmesi.
 | `Tasks` | Gorev havuzu, atama, kaynak kilidi, outbox |
 | `Stock` | Lokasyon, malzeme hareketi |
 
-Moduller birbirinin `DbContext`'ini gormez, aralarinda foreign key yoktur ve
-birbirlerinin handler'larini cagirmazlar. Iletisim yalnizca integration event ile olur.
+Moduller birbirinin `DbContext`'ini gormez, aralarinda foreign key yoktur,
+birbirlerinin handler'larini cagirmaz ve birbirlerine proje referansi vermez.
+
+Iletisim iki kanaldan olur:
+
+| Kanal | Ne zaman | Ornek |
+|---|---|---|
+| Integration event (asenkron) | Sonuc simdi lazim degilse | Gorev tamamlandi -> stok hareketi olussun |
+| `SharedKernel` arayuzu (senkron) | Cevap KARAR ANINDA lazimsa | Bu AGV su anda gorev alabilir mi? |
+
+Ikinci kanal bilincli bir esneme. "Bu arac gorev alabilir mi" sorusunun cevabi
+atama karari verilirken lazim; olay uzerinden beslenen bir kopya tablo dogasi
+geregi bir tik geride olur ve tam da karar aninda yanlis cevap verir. Kural
+yine korunuyor: soran modul, cevaplayan modulu referans vermiyor -- arada
+`SharedKernel`'deki arayuz ve notr bir kayit duruyor.
 
 ### Uygulanan pattern'ler
 
@@ -63,7 +76,7 @@ birbirlerinin handler'larini cagirmazlar. Iletisim yalnizca integration event il
 | Outbox | Kayit gitti ama olay gitmedi durumu olmasin |
 | Dead Letter | Bozuk bir olay kuyrugu sonsuza kadar mesgul etmesin |
 | Integration Events | Moduller birbirini dogrudan cagirmasin |
-| Hosted Service | Takili kilitler serbest kalsin |
+| Hosted Service | Takili kilitler serbest kalsin, bataryasi biten arac sarja gitsin |
 | Options | Ayarlar koda gomulmesin |
 
 ## Teknoloji
@@ -131,7 +144,7 @@ npm ci && npm start                        # http://localhost:4200
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 107 birim + 120 integration
+cd backend  && dotnet test                 # 107 birim + 133 integration
 cd frontend && npm test                    # 26 birim (Vitest)
 cd frontend && npm run e2e                 # 30 uctan uca (Playwright)
 ```
@@ -150,6 +163,28 @@ yeniden dogrulaniyor.
 
 E2E kosmadan once `docker compose stop api` yapin: konteynerdeki simulator
 ayni veritabanina telemetri yazar ve testlerin altindan AGV durumunu kaydirir.
+
+## Otomatik sarj
+
+Bataryasi esigin altina dusen **musait** arac sarja alinir, sarji yeterli
+seviyeye gelen arac servise doner (`SarjYonlendirici`, periyodik servis).
+
+**Mesgul arac sarja gonderilmez:** yurutulen gorev yarida kalir ve havuza
+donmedigi icin kimse fark etmezdi. Arac gorevi bitirip Available'a dondugunde
+bir sonraki tur onu alir.
+
+**Iki esik var, tek esik degil** (varsayilan 25 ve 80). Tek esik olsaydi tam o
+degerdeki arac her turda sarja gir/cik yapardi: sarja alinir, bir tik sarj
+olur, esigi gecer, servise alinir, gorev alir, tekrar duser. Aradaki bosluk
+bu salinimi kesiyor.
+
+**Karar telemetride degil.** Telemetri aracin bildirimi, bir karar degil;
+"bataryasi dusen arac sarja gitsin" ise bir filo politikasi ve zamanla
+degisebilir. Telemetriye gomulseydi her olcum bir karar noktasi olurdu.
+
+Sarjdaki ya da servis disi araca **gorev atanamaz** ve **kaynak kilidi
+verilmez**. Mesgul arac kilit ALABILIR: kilit zaten gorev yurutulurken
+alinir.
 
 ## Otomatik atama
 

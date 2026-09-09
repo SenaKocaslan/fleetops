@@ -15,7 +15,10 @@ test.describe('Otomatik atama', () => {
       .get(`${API}/locations`, { headers: baslik })
       .then((y) => y.json());
 
-    // En yuksek oncelik: dagitim onceligi yuksek gorevden basliyor.
+    // Havuzda onceki kosulardan kalan 99 oncelikli gorevler var ve onlar
+    // daha eski oldugu icin sirada once geliyorlar. Dagitim yalnizca musait
+    // arac sayisi kadar gorev alabildiginden, bizim gorevimizin bu turda
+    // atanmasi icin havuzun EN ONCELIKLISI olmasi gerekiyor.
     const olustur = await page.request.post(`${API}/tasks`, {
       headers: baslik,
       data: {
@@ -23,7 +26,7 @@ test.describe('Otomatik atama', () => {
         toLocationId: lokasyonlar[1].id,
         materialCode: malzeme,
         quantity: 1,
-        priority: 99,
+        priority: 1000,
       },
     });
     expect(olustur.status()).toBe(201);

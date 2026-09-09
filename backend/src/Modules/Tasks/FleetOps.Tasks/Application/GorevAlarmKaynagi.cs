@@ -37,6 +37,40 @@ internal sealed class GorevAlarmKaynagi(
                 simdi));
         }
 
+        var baslamaSiniri = simdi - _ayarlar.BaslamaEsigi;
+
+        var baslamayanlar = await db.TransportTasks
+            .AsNoTracking()
+            .Where(g => g.Status == TransportTaskStatus.Assigned
+                        && g.Assignments.Any(a => a.CompletedAtUtc == null
+                                                  && a.AssignedAtUtc < baslamaSiniri))
+            .Select(g => new
+            {
+                g.MaterialCode,
+                AgvId = g.Assignments
+                    .Where(a => a.CompletedAtUtc == null)
+                    .Select(a => (Guid?)a.AgvId)
+                    .FirstOrDefault(),
+                AtandiAtUtc = g.Assignments
+                    .Where(a => a.CompletedAtUtc == null)
+                    .Select(a => (DateTime?)a.AssignedAtUtc)
+                    .FirstOrDefault(),
+            })
+            .ToListAsync(cancellationToken);
+
+        foreach (var gorev in baslamayanlar)
+        {
+            var dakika = gorev.AtandiAtUtc is { } t ? (int)(simdi - t).TotalMinutes : 0;
+
+            alarmlar.Add(new AlarmSummary(
+                "Tasks.BaslamayanGorev",
+                AlarmSeverity.Kritik,
+                gorev.MaterialCode,
+                $"Gorev {dakika} dakikadir atanmis ama baslamadi. "
+                    + $"Atanan AGV: {gorev.AgvId}. Arac gorevi almamis olabilir.",
+                simdi));
+        }
+
         // Suresi dolmus AMA hala aktif kilit: LockReaper calismiyor demektir.
         // Tolerans, reaper'in bir sonraki turunu beklemek icin.
         var kilitSiniri = simdi - _ayarlar.KilitGecikmeToleransi;

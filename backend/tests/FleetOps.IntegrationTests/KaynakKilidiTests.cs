@@ -16,6 +16,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
 {
     private static readonly Guid Agv01 = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid Agv02 = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid Agv03 = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
     private static readonly Guid Dock = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
     private static readonly Guid Koridor = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002");
@@ -24,6 +25,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Tohumlanan_kaynaklar_listelenir()
     {
+        await fabrika.FiloyuHazirlaAsync();
         var kaynaklar = await (await fabrika.IstemciAsync())
             .GetFromJsonAsync<List<ResourceSummary>>("/api/resources");
 
@@ -36,6 +38,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Kilit_alinir_ve_listede_tutan_agv_gorunur()
     {
+        await fabrika.FiloyuHazirlaAsync();
         var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Koridor);
 
@@ -54,6 +57,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Kilitli_kaynak_ikinci_agv_tarafindan_alinamaz()
     {
+        await fabrika.FiloyuHazirlaAsync();
         var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Asansor);
 
@@ -69,17 +73,22 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Paralel_kilit_isteklerinden_yalnizca_biri_basarili_olur()
     {
+        await fabrika.FiloyuHazirlaAsync();
         const int istekSayisi = 8;
         var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Dock);
 
         // Istekleri sirayla baslatirsak yaris hic olusmaz; hepsi tek kapidan.
         var kapi = new TaskCompletionSource();
+        // Rastgele GUID DEGIL: kilit artik aracin Fleet'teki durumuna bakiyor,
+        // var olmayan arac 404 alir ve yaris hic kurulmaz. Tohum araclar
+        // sirayla kullaniliyor.
+        var araclar = new[] { Agv01, Agv02, Agv03 };
         var istekler = Enumerable.Range(0, istekSayisi).Select(i => Task.Run(async () =>
         {
             await kapi.Task;
             return await istemci.PostAsJsonAsync(
-                $"/api/resources/{Dock}/lock", new { agvId = Guid.NewGuid() });
+                $"/api/resources/{Dock}/lock", new { agvId = araclar[i % araclar.Length] });
         })).ToArray();
 
         kapi.SetResult();
@@ -97,6 +106,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Kilidi_tutmayan_agv_birakamaz()
     {
+        await fabrika.FiloyuHazirlaAsync();
         var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Koridor);
         await istemci.PostAsJsonAsync($"/api/resources/{Koridor}/lock", new { agvId = Agv01 });
@@ -112,6 +122,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Birakilan_kaynak_tekrar_kilitlenebilir()
     {
+        await fabrika.FiloyuHazirlaAsync();
         var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Asansor);
 
@@ -131,6 +142,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Aktif_kilidi_olmayan_kaynak_birakilamaz()
     {
+        await fabrika.FiloyuHazirlaAsync();
         await KilitleriTemizleAsync(Koridor);
 
         var yanit = await (await fabrika.IstemciAsync()).PostAsJsonAsync(
@@ -142,6 +154,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Olmayan_kaynak_kilitlenemez()
     {
+        await fabrika.FiloyuHazirlaAsync();
         var yanit = await (await fabrika.IstemciAsync()).PostAsJsonAsync(
             $"/api/resources/{Guid.NewGuid()}/lock", new { agvId = Agv01 });
 
@@ -151,6 +164,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Reaper_suresi_dolan_kilidi_serbest_birakir()
     {
+        await fabrika.FiloyuHazirlaAsync();
         await KilitleriTemizleAsync(Dock);
         await SuresiDolmusKilitEkleAsync(Dock, Agv01);
 
@@ -169,6 +183,7 @@ public class KaynakKilidiTests(FleetOpsApiFactory fabrika)
     [Fact]
     public async Task Reaper_suresi_dolmamis_kilide_dokunmaz()
     {
+        await fabrika.FiloyuHazirlaAsync();
         var istemci = await fabrika.IstemciAsync();
         await KilitleriTemizleAsync(Koridor);
         await istemci.PostAsJsonAsync($"/api/resources/{Koridor}/lock", new { agvId = Agv01 });

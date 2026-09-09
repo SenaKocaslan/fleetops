@@ -28,6 +28,15 @@ public static class ResourceErrors
     public static readonly Error KilidinSuresiDolmadi =
         new("Resource.KilidinSuresiDolmadi", "Kilidin suresi henuz dolmadi.");
 
+    // Gorev yurutmekte olan (Busy) arac kilit ALABILIR -- kilit zaten gorev
+    // sirasinda alinir. Alamayan, sahada olmayan arac: sarjdaki ya da servis
+    // disi. Oyle bir arac koridoru kilit suresi dolana kadar bosuna kapatirdi.
+    public static Error AgvSahadaDegil(string kod) =>
+        new("Resource.AgvSahadaDegil", $"{kod} sahada calismiyor; kaynak kilidi alamaz.");
+
+    public static readonly Error AgvBulunamadi =
+        new("Resource.AgvBulunamadi", "Kilidi alacak AGV bulunamadi.");
+
     public static readonly Error KaynakMesgul =
         new("Resource.KaynakMesgul", "Kaynak su anda baska bir AGV tarafindan kilitli.");
 }

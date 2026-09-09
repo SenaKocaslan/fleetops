@@ -1,5 +1,14 @@
 import { expect, test } from '@playwright/test';
-import { agvSecilebilirOlanaKadarBekle, agvSerbestBirak, girisYap, gorevTamamla } from './yardimcilar';
+import {
+  API,
+  agvSecilebilirOlanaKadarBekle,
+  agvSerbestBirak,
+  girisYap,
+  gorevTamamla,
+  yetkiliBaslik,
+} from './yardimcilar';
+
+const AGV03 = '33333333-3333-3333-3333-333333333333';
 
 test.describe('Gorev atama', () => {
   test.beforeEach(async ({ page }) => {
@@ -53,8 +62,24 @@ test.describe('Gorev atama', () => {
   });
 
   test('gorev alamayan AGV listede secilemez', async ({ page }) => {
+    // AGV-03'un tohum verideki "Charging" durumuna GUVENILEMEZ: sarj
+    // yonlendirici dolan araci servise donduruyor. Test uygunsuz araci
+    // kendisi uretiyor -- bataryasini esigin altina indirerek.
+    await page.request.post(`${API}/agvs/${AGV03}/telemetry`, {
+      headers: await yetkiliBaslik(page.request, 'operator'),
+      data: { batteryLevel: 5, locationId: null },
+    });
+
     const malzeme = await gorevOlustur(page);
+
+    // AGV listesi bilesenin kurulusunda cekiliyor; batarya degisikliginin
+    // acilir listeye yansimasi icin tam yenileme sart. Yenileme de arama
+    // filtresini sifirliyor, o yuzden filtre geri konuyor.
+    await page.reload();
+    await page.getByTestId('task-search').fill(malzeme);
+
     const satir = page.getByTestId('task-row').filter({ hasText: malzeme });
+    await expect(satir).toBeVisible();
 
     const secenekler = await satir.getByTestId('agv-select').locator('option').allTextContents();
 

@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FleetOps.Api;
+using FleetOps.Fleet.Persistence;
 using FleetOps.Tasks.Persistence;
 using Microsoft.EntityFrameworkCore;
 using FleetOps.Api.Auth;
@@ -31,6 +32,10 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
 
         builder.UseSetting("Outbox:PollInterval", "01:00:00");
 
+        // Sarj yonlendirici testin ortasinda arac durumu degistirirse
+        // testler flaky olur; tur testten dogrudan cagriliyor.
+        builder.UseSetting("Sarj:Interval", "01:00:00");
+
         // Simulator surekli telemetri yazarsa AGV durumu testin altindan kayar.
         builder.UseSetting("Simulator:Enabled", "false");
 
@@ -57,13 +62,26 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
     // en fazla bir acik atamasi olur" kurali geldikten sonra onceki testten
     // kalan acik atama sonrakini engelliyor; her test kendi baslangicini
     // temizliyor. Kural degil, test yalitimi sorunu.
-    public async Task AtamalariKapatAsync()
+    public async Task FiloyuHazirlaAsync()
     {
         using var kapsam = KapsamAc();
-        var db = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
-        await db.Database.ExecuteSqlRawAsync(
+
+        var tasks = kapsam.ServiceProvider.GetRequiredService<TasksDbContext>();
+        await tasks.Database.ExecuteSqlRawAsync(
             "UPDATE tasks.task_assignment SET completed_at_utc = now() "
             + "WHERE completed_at_utc IS NULL");
+
+        // Atama ve kilit artik aracin Fleet'teki durumuna bakiyor. Sarj
+        // testleri araclari servis disi birakabildigi icin, araca ihtiyaci
+        // olan her test filoyu kendi bilinen durumuna getiriyor.
+        var fleet = kapsam.ServiceProvider.GetRequiredService<FleetDbContext>();
+        foreach (var agv in await fleet.Agvs.ToListAsync())
+        {
+            agv.ServiseAl();
+            agv.BataryaBildir(100);
+        }
+
+        await fleet.SaveChangesAsync();
     }
 
     // Tohum kullanicilar migration'da; testler gercek login akisindan geciyor,

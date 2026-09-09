@@ -31,6 +31,14 @@ public static class TaskErrors
         new("Task.EszamanliDegisiklik",
             "Gorev bu sirada baska bir istek tarafindan degistirildi. Lutfen tekrar deneyin.");
 
+    // Arac sarjda, servis disi ya da bataryasi yetersiz. Istemci yanlis bir
+    // sey yapmadi; arac uygun hale gelince ayni istek gecerli olacak.
+    public static Error AgvGorevAlamaz(string kod) =>
+        new("Task.AgvGorevAlamaz", $"{kod} su anda gorev alamaz (sarjda, servis disi veya bataryasi yetersiz).");
+
+    public static readonly Error AgvBulunamadi =
+        new("Task.AgvBulunamadi", "Atanacak AGV bulunamadi.");
+
     public static Error GecersizGecis(TransportTaskStatus mevcut, TransportTaskStatus hedef) =>
         new("Task.GecersizGecis", $"Gorev durumu '{mevcut}' iken '{hedef}' durumuna gecemez.");
 }
