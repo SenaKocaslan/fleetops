@@ -13,6 +13,13 @@ public static class ParolaHashleyici
     private const int HashUzunlugu = 32;
     private const int Tekrar = 100_000;
 
+    // Kullanici bulunamadiginda da AYNI maliyette bir dogrulama yapilsin diye.
+    // Olculdu (2026-09-11): var olan kullaniciya yanlis parola 63 ms, olmayan
+    // kullanici 1 ms suruyordu. Yanit ayniydi ama sure, hangi kullanici
+    // adlarinin var oldugunu sizdiriyordu. Ayni tur sayisiyla uretildigi icin
+    // maliyeti gercek bir hash'le ayni.
+    public static readonly string KarsilastirmaHashi = Hashle(Guid.NewGuid().ToString());
+
     public static string Hashle(string parola)
     {
         var tuz = RandomNumberGenerator.GetBytes(TuzUzunlugu);

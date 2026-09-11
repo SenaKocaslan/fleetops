@@ -176,7 +176,7 @@ yollar, parametreler, istek govdeleri ve yetki bilgisi eksiksiz.
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 115 birim + 142 integration
+cd backend  && dotnet test                 # 115 birim + 148 integration
 cd frontend && npm test                    # 28 birim (Vitest)
 cd frontend && npm run e2e                 # 31 uctan uca (Playwright)
 cd frontend && npm run e2e:tip             # e2e dosyalarinin tip denetimi
@@ -255,6 +255,26 @@ bu veri olmadan otomatik kilit, sistemi oldugundan akilli gostermek olurdu.
 - Bilinmeyen kullanici ile yanlis parola **ayni** yaniti doner; farkli yanit
   hangi kullanici adlarinin var oldugunu sizdirirdi.
 - Konteynerler root olmayan kullaniciyla calisir (`uid=1654 app`).
+- **Veritabani ve API portlari yalnizca `127.0.0.1`'e bagli.** Olculdu:
+  onceden `0.0.0.0`'a bagliydi ve makinenin ag adresinden varsayilan
+  parolayla veritabanina baglanilabiliyordu. Agdan gelen herkes yalnizca
+  arayuze (8080) ulasir ve nginx'ten gecer.
+- **Giris sure sizdirmaz.** Olculdu: var olan kullaniciya yanlis parola
+  63 ms, olmayan kullanici 1 ms suruyordu; yanit ayniydi ama sure hangi
+  kullanici adlarinin var oldugunu sizdiriyordu. Kullanici yoksa da ayni
+  maliyette bir dogrulama yapiliyor.
+- **Giris denemeleri iki katmanda sinirli.** Kullanici adi basina 5
+  basarisiz denemede 5 dakika kilit (uygulamada; kilit olmayan kullanici
+  adlari icin de isler, yoksa 429/401 farki var olani sizdirirdi). IP basina
+  dakikada 10 deneme (nginx'te; uygulama nginx'in arkasinda oldugu icin
+  gercek istemci IP'sini goremez).
+- nginx `api` adini her istekte Docker DNS'inden yeniden cozer. Olculdu:
+  sabit adla yazildiginda nginx IP'yi yalnizca acilista cozuyordu; api
+  konteyneri yeniden olusturulup yeni IP aldiginda arayuzun tum API
+  cagrilari 502 dondu. CI bunu her push'ta deterministik olarak sinar.
+- Bilinen bedel: saldirgan baskasinin kullanici adina yanlis parola
+  deneyerek onu 5 dakika kilitleyebilir. Compose'daki varsayilan veritabani
+  parolasi yalnizca yerel erisim icin; uretimde `.env` ile degistirilmeli.
 - Bir uc noktaya `RequireAuthorization` eklemeyi unutmak sessiz bir aciktir;
   bir test tum uc noktalari sayip denetler, beyaz liste yalnizca
   `/api/auth/login`.

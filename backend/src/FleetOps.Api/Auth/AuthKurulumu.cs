@@ -24,6 +24,10 @@ public static class AuthKurulumu
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.Bolum));
         services.AddScoped<TokenUretici>();
 
+        services.AddMemoryCache();
+        services.Configure<GirisOptions>(configuration.GetSection(GirisOptions.Bolum));
+        services.AddSingleton<GirisDenemeSayaci>();
+
         var ayarlar = configuration.GetSection(JwtOptions.Bolum).Get<JwtOptions>() ?? new JwtOptions();
 
         // Anahtar bos gelirse HMAC-SHA256 yine de calisir ve uygulama sessizce
@@ -94,18 +98,34 @@ public static class AuthKurulumu
             LoginIstegi istek,
             AuthDbContext db,
             TokenUretici uretici,
+            GirisDenemeSayaci sayac,
             CancellationToken ct) =>
         {
+            // Hash hesaplanmadan ONCE: kilitli hesaba yapilan deneme sunucuya
+            // PBKDF2 maliyeti odetmesin.
+            if (sayac.KilitliMi(istek.UserName))
+            {
+                return Results.StatusCode(StatusCodes.Status429TooManyRequests);
+            }
+
             var kullanici = await db.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(k => k.UserName == istek.UserName, ct);
 
-            // Kullanici yok ile parola yanlis AYNI yaniti doner; farkli yanit
-            // hangi kullanici adlarinin var oldugunu sizdirir.
-            if (kullanici is null || !ParolaHashleyici.Dogrula(istek.Password, kullanici.PasswordHash))
+            // Kullanici yok ile parola yanlis AYNI yaniti ve AYNI SUREYI verir.
+            // Dogrulama her durumda calisir; kullanici yoksa ayni maliyetteki
+            // karsilastirma hash'ine karsi.
+            var parolaDogru = ParolaHashleyici.Dogrula(
+                istek.Password,
+                kullanici?.PasswordHash ?? ParolaHashleyici.KarsilastirmaHashi);
+
+            if (kullanici is null || !parolaDogru)
             {
+                sayac.BasarisizKaydet(istek.UserName);
                 return Results.Unauthorized();
             }
+
+            sayac.Sifirla(istek.UserName);
 
             var (token, bitis) = uretici.Uret(kullanici);
 

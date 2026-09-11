@@ -13,9 +13,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-fleetops}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fleetops}
     ports:
+      # YALNIZCA 127.0.0.1. Olculdu (2026-09-11): port 0.0.0.0'a bagliydi ve
+      # makinenin ag adresinden varsayilan parolayla baglanip auth.app_user
+      # tablosu okunabildi -- fabrika agindaki herkes veritabanina ulasiyordu.
+      # Konteynerler birbirine Docker agi uzerinden ulasir; bu port yalnizca
+      # gelistirme ve e2e icin makinenin kendisinden erisim saglar.
       # Sistemde PostgreSQL 14 servisi 5432i kullaniyor; ona dokunmamak icin
       # host tarafinda 55432e baglaniyoruz.
-      - "${DB_PORT:-55432}:5432"
+      - "127.0.0.1:${DB_PORT:-55432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     # api ve web'de vardi, db'de YOKTU. Olculdu (2026-09-11): makine yeniden
@@ -70,11 +75,14 @@ services:
       Simulator__LocationIds__2: cccccccc-0000-0000-0000-000000000003
       Simulator__LocationIds__3: cccccccc-0000-0000-0000-000000000004
     ports:
+      # YALNIZCA 127.0.0.1: bu port nginx'i ve oradaki giris sinirlamasini
+      # atliyor. Hata ayiklama icin makinenin kendisinden erisilir; agdan
+      # gelen herkes arayuz (8080) uzerinden, nginx'ten gecerek girer.
       # 5199 DEGIL: e2e'de Playwright "dotnet run" ile 5199'u kendisi acar ve
       # reuseExistingServer acik oldugu icin konteyneri sessizce kullanirdi.
       # Tarayici zaten API'ye web (8080) uzerinden gider; bu port yalnizca
       # dogrudan hata ayiklama icin.
-      - "${API_PORT:-5200}:8080"
+      - "127.0.0.1:${API_PORT:-5200}:8080"
     depends_on:
       db:
         condition: service_healthy

@@ -44,6 +44,12 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
         // Testler degeri buradan degil IOptions'tan okuyor.
         builder.UseSetting("Outbox:MaxAttempts", "3");
 
+        // Paylasilan fabrikada bircok test ayni kullaniciyla giris yapiyor;
+        // yanlis parola deneyen testler toplanip supervisor'u kilitlerse
+        // IstemciAsync'e bagli tum testler 429 alirdi. Sinirin kendisi
+        // GirisGuvenligiTests'te kendi fabrikasiyla sinaniyor.
+        builder.UseSetting("Giris:AzamiBasarisiz", "1000");
+
         builder.UseSetting("Jwt:SigningKey", "test-imza-anahtari-en-az-32-bayt-uzunlugunda-olmali");
     }
 
