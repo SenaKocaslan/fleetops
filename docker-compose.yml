@@ -18,6 +18,9 @@ services:
       - "${DB_PORT:-55432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+    # api ve web'de vardi, db'de YOKTU. Olculdu (2026-09-11): makine yeniden
+    # basladiginda Docker api ve web'i geri kaldirdi, veritabani kapali kaldi.
+    restart: unless-stopped
     healthcheck:
       # Api ve migration adimi, veritabani gercekten hazir olmadan baslamasin.
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fleetops} -d ${POSTGRES_DB:-fleetops}"]

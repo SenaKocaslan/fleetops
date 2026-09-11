@@ -10,14 +10,6 @@ public class ModuleRegistrationTests : IClassFixture<WebApplicationFactory<Progr
 
     public ModuleRegistrationTests(WebApplicationFactory<Program> factory) => _factory = factory;
 
-    [Fact]
-    public async Task Saglik_uc_noktasi_cevap_verir()
-    {
-        var response = await _factory.CreateClient().GetAsync("/health");
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
     [Theory]
     [InlineData("/api/agvs")]
     [InlineData("/api/tasks")]

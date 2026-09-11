@@ -158,6 +158,28 @@ jobs:
             -d '{"userName":"supervisor","password":"Supervisor123!"}' \
             | grep -q '"token"'
 
+      # Saglik kontrolu veritabanina gercekten bakiyor mu? Onceden bakmiyordu
+      # ve db kapaliyken 200 donuyordu (olculdu 2026-09-11). Compose zinciri
+      # ve Docker HEALTHCHECK bu uc noktaya guveniyor; iddia burada her
+      # push'ta yeniden sinaniyor.
+      - name: Veritabani dusunce saglik kontrolu bunu goruyor mu
+        run: |
+          docker compose stop db
+          kod=""
+          for i in $(seq 1 10); do
+            kod=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5200/health || true)
+            [ "$kod" = "503" ] && break
+            sleep 1
+          done
+          echo "db kapaliyken /health: $kod"
+          test "$kod" = "503"
+
+      - name: Veritabani donunce saglik kendiliginden duzeliyor mu
+        run: |
+          docker compose start db
+          docker compose up -d --wait
+          curl -fsS http://localhost:5200/health
+
       - name: Basarisizsa konteyner gunlukleri
         if: failure()
         run: docker compose logs --no-color

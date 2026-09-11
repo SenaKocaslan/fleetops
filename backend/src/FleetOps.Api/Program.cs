@@ -27,6 +27,11 @@ builder.Services.AddCors(options =>
 builder.Services.AddFleetOpsAuth(builder.Configuration);
 builder.Services.AddDispatch();
 
+// Zaman asimi Docker HEALTHCHECK'in 3 saniyesiyle ayni: ulasilamayan bir
+// sunucuda baglanti denemesi varsayilan olarak 15 saniye bekler.
+builder.Services.AddHealthChecks()
+    .AddCheck<VeritabaniSaglikKontrolu>("veritabani", timeout: TimeSpan.FromSeconds(3));
+
 builder.Services
     .AddModule<FleetModule>(builder.Configuration)
     .AddModule<TasksModule>(builder.Configuration)
@@ -48,7 +53,7 @@ app.UseCors(AngularPolitikasi);
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+app.MapHealthChecks("/health");
 app.MapAuthEndpoints();
 app.MapAlarmEndpoints();
 app.MapDispatchEndpoints();

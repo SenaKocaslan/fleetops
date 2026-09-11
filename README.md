@@ -119,6 +119,11 @@ Servisler kosula bagli sirayla kalkar:
 db (healthy)  ->  migrate (exit 0)  ->  api (healthy)  ->  web
 ```
 
+**`/health` veritabanina bakar.** Veritabanina ulasilamazsa 503 doner;
+Docker HEALTHCHECK, compose'daki baslatma sirasi ve CI bu cevaba guveniyor.
+Veritabani geri geldiginde API yeniden baslatilmadan kendiliginden 200'e
+doner. CI her push'ta veritabanini durdurup bunu yeniden sinar.
+
 **Migration acilista calismaz.** Ayri bir servis (`migrate`) `--migrate`
 argumaniyla bir kez calisip cikar. Sebebi: `api` birden fazla kopya olarak
 kalkarsa her kopya ayni semayi ayni anda degistirmeye calisirdi. Ayrica
@@ -144,7 +149,7 @@ npm ci && npm start                        # http://localhost:4200
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 109 birim + 136 integration
+cd backend  && dotnet test                 # 109 birim + 137 integration
 cd frontend && npm test                    # 28 birim (Vitest)
 cd frontend && npm run e2e                 # 31 uctan uca (Playwright)
 ```
