@@ -147,7 +147,9 @@ jobs:
   docker:
     name: Dagitim yigini
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Olculdu: imaj derleme bir kosuda 968 sn surdu (olagani ~40 sn). Sinir
+    # gorulen en kotu surenin rahatca ustunde; amac takilmayi kesmek.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
