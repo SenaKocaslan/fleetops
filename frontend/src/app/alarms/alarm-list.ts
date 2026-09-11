@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { AlarmService } from './alarm.service';
 import { Alarm, AlarmGrubu } from './alarm.model';
+import { alarmAdi, siddet } from '../etiketler';
 
 @Component({
   selector: 'app-alarm-list',
@@ -13,6 +14,8 @@ export class AlarmList {
   private readonly service = inject(AlarmService);
 
   protected readonly alarmlar = this.service.son;
+  protected readonly siddetAdi = siddet;
+  protected readonly alarmAdi = alarmAdi;
 
   constructor() {
     this.service.yenile();

@@ -1,60 +1,65 @@
 @if (planlamaYetkisi()) {
-<section class="panel">
-  <h2>Yeni gorev</h2>
-  <form (ngSubmit)="create()" #form="ngForm" data-testid="task-form">
-    <label>
-      Nereden
-      <select name="fromLocationId" [(ngModel)]="fromLocationId" required data-testid="from-location">
-        @for (l of locations(); track l.id) {
-          <option [value]="l.id">{{ l.code }} ({{ l.zone }})</option>
-        }
-      </select>
-    </label>
-    <label>
-      Nereye
-      <select name="toLocationId" [(ngModel)]="toLocationId" required data-testid="to-location">
-        @for (l of locations(); track l.id) {
-          <option [value]="l.id">{{ l.code }} ({{ l.zone }})</option>
-        }
-      </select>
-    </label>
-    <label>
-      Malzeme kodu
-      <input name="materialCode" [(ngModel)]="materialCode" required data-testid="material-code" />
-    </label>
-    <label>
-      Miktar
-      <input name="quantity" type="number" [(ngModel)]="quantity" min="1" data-testid="quantity" />
-    </label>
-    <label>
-      Oncelik
-      <input name="priority" type="number" min="1" max="10" [(ngModel)]="priority" data-testid="priority" />
-    </label>
-    <button type="submit" [disabled]="form.invalid" data-testid="submit">Olustur</button>
-  </form>
+  <section class="panel">
+    <div class="panel-baslik">
+      <h2>Yeni görev</h2>
+    </div>
 
-  @if (error()) {
-    <p class="hata" data-testid="error">{{ error() }}</p>
-  }
-</section>
+    <form class="gorev-formu" (ngSubmit)="create()" #form="ngForm" data-testid="task-form">
+      <label class="alan">
+        Nereden
+        <select name="fromLocationId" [(ngModel)]="fromLocationId" required data-testid="from-location">
+          @for (l of locations(); track l.id) {
+            <option [value]="l.id">{{ l.code }} · {{ l.zone }}</option>
+          }
+        </select>
+      </label>
+      <label class="alan">
+        Nereye
+        <select name="toLocationId" [(ngModel)]="toLocationId" required data-testid="to-location">
+          @for (l of locations(); track l.id) {
+            <option [value]="l.id">{{ l.code }} · {{ l.zone }}</option>
+          }
+        </select>
+      </label>
+      <label class="alan">
+        Malzeme kodu
+        <input name="materialCode" [(ngModel)]="materialCode" required
+               placeholder="Örn. MLZ-100" data-testid="material-code" />
+      </label>
+      <label class="alan">
+        Miktar
+        <input name="quantity" type="number" [(ngModel)]="quantity" min="1" data-testid="quantity" />
+      </label>
+      <label class="alan">
+        Öncelik (1–10)
+        <input name="priority" type="number" min="1" max="10" [(ngModel)]="priority" data-testid="priority" />
+      </label>
+      <button type="submit" [disabled]="form.invalid" data-testid="submit">Oluştur</button>
+    </form>
+
+    @if (error()) {
+      <p class="hata form-hatasi" data-testid="error">{{ error() }}</p>
+    }
+  </section>
 }
 
 <section class="panel">
-  <div class="baslik">
-    <h2>Gorev havuzu</h2>
+  <div class="panel-baslik">
+    <h2>Görev havuzu</h2>
     <input
+      class="arama"
       type="search"
       placeholder="Malzeme kodu ara"
       [value]="arama()"
       (input)="aramaDegisti($event)"
       data-testid="task-search"
     />
-    <select (change)="durumDegisti($event)" data-testid="task-status-filter">
+    <select class="durum-secici" (change)="durumDegisti($event)" data-testid="task-status-filter">
       @for (d of durumlar; track d.deger) {
         <option [value]="d.deger">{{ d.etiket }}</option>
       }
     </select>
-    <button type="button" (click)="refresh()" data-testid="refresh">Yenile</button>
+    <button type="button" class="ikincil" (click)="refresh()" data-testid="refresh">Yenile</button>
     @if (planlamaYetkisi()) {
       <button
         type="button"
@@ -62,7 +67,7 @@
         [disabled]="dagitimCalisiyor()"
         data-testid="auto-assign"
       >
-        {{ dagitimCalisiyor() ? 'Dagitiliyor...' : 'Havuzdan ata' }}
+        {{ dagitimCalisiyor() ? 'Dağıtılıyor…' : 'Havuzdan ata' }}
       </button>
     }
   </div>
@@ -70,11 +75,11 @@
   @if (dagitimSonucu(); as ozet) {
     <p class="dagitim" data-testid="dispatch-result">
       @if (ozet.atananlar.length > 0) {
-        {{ ozet.atananlar.length }} gorev atandi ({{ ozet.strateji }}):
+        {{ ozet.atananlar.length }} görev atandı ({{ stratejiAdi(ozet.strateji) }}):
         {{ dagitimMetni(ozet) }}
       } @else {
-        Atanacak gorev bulunamadi. Bekleyen gorev: {{ ozet.bekleyenGorev }}, musait
-        arac: {{ ozet.musaitAgv }}.
+        Atanacak görev bulunamadı. Bekleyen görev: {{ ozet.bekleyenGorev }}, müsait
+        araç: {{ ozet.musaitAgv }}.
       }
     </p>
   }
@@ -84,73 +89,81 @@
   }
 
   @if (loading()) {
-    <p data-testid="loading">Yukleniyor...</p>
+    <p class="bos" data-testid="loading">Yükleniyor…</p>
   } @else if (error()) {
-    <p class="hata" data-testid="list-error">Liste alinamadi.</p>
+    <p class="hata" data-testid="list-error">Görev listesi alınamadı.</p>
   } @else if (tasks().length === 0) {
-    <p data-testid="empty">Henuz gorev yok.</p>
+    <p class="bos" data-testid="empty">Bu filtreye uyan görev yok.</p>
   } @else {
     <table data-testid="task-table">
       <thead>
         <tr>
           <th>Malzeme</th>
-          <th>Miktar</th>
-          <th>Oncelik</th>
+          <th class="sayi">Miktar</th>
+          <th class="sayi">Öncelik</th>
           <th>Durum</th>
           <th>AGV</th>
-          <th>Atama</th>
+          <th class="islemler-baslik">İşlemler</th>
         </tr>
       </thead>
       <tbody>
         @for (task of tasks(); track task.id) {
           <tr data-testid="task-row">
-            <td data-testid="task-material">{{ task.materialCode }}</td>
-            <td>{{ task.quantity }}</td>
-            <td>{{ task.priority }}</td>
-            <td><span class="durum" data-testid="task-status">{{ task.status }}</span></td>
-            <td data-testid="task-agv">{{ agvKodu(task.assignedAgvId) }}</td>
+            <td class="malzeme" data-testid="task-material">{{ task.materialCode }}</td>
+            <td class="sayi">{{ task.quantity }}</td>
+            <td class="sayi">{{ task.priority }}</td>
             <td>
-              @if (task.status === 'Pending' && planlamaYetkisi()) {
-                <select
-                  data-testid="agv-select"
-                  [value]="secim()[task.id] ?? ''"
-                  (change)="secimYap(task.id, $event)"
-                >
-                  <option value="">AGV secin</option>
-                  @for (agv of musaitAgvler(); track agv.id) {
-                    <option [value]="agv.id">{{ agv.code }} (%{{ agv.batteryLevel }})</option>
-                  }
-                </select>
-                <button
-                  type="button"
-                  data-testid="assign"
-                  [disabled]="!secim()[task.id]"
-                  (click)="assign(task.id)"
-                >
-                  Ata
-                </button>
-                <button type="button" class="ikincil" data-testid="cancel" (click)="cancel(task.id)">
-                  Iptal
-                </button>
-              } @else if (task.status === 'Assigned') {
-                <button type="button" data-testid="start" (click)="start(task.id)">Baslat</button>
-                @if (planlamaYetkisi()) {
-                  <!-- "Tasks.BaslamayanGorev" alarminin cozumu: arac gorevi
-                       almadiysa gorev buradan havuza donuyor. -->
-                  <button type="button" class="ikincil" data-testid="release" (click)="release(task.id)">
-                    Havuza dondur
+              <span class="rozet-durum" [attr.data-durum]="task.status" data-testid="task-status">
+                {{ durumAdi(task.status) }}
+              </span>
+            </td>
+            <td data-testid="task-agv" [class.bos-hucre]="!task.assignedAgvId">{{ agvKodu(task.assignedAgvId) }}</td>
+            <td>
+              <div class="islemler">
+                @if (task.status === 'Pending' && planlamaYetkisi()) {
+                  <select
+                    class="kucuk arac-secici"
+                    data-testid="agv-select"
+                    [value]="secim()[task.id] ?? ''"
+                    (change)="secimYap(task.id, $event)"
+                  >
+                    <option value="">AGV seçin</option>
+                    @for (agv of musaitAgvler(); track agv.id) {
+                      <option [value]="agv.id">{{ agv.code }} (%{{ agv.batteryLevel }})</option>
+                    }
+                  </select>
+                  <button
+                    type="button"
+                    class="kucuk"
+                    data-testid="assign"
+                    [disabled]="!secim()[task.id]"
+                    (click)="assign(task.id)"
+                  >
+                    Ata
                   </button>
+                  <button type="button" class="kucuk tehlike" data-testid="cancel" (click)="cancel(task.id)">
+                    İptal
+                  </button>
+                } @else if (task.status === 'Assigned') {
+                  <button type="button" class="kucuk" data-testid="start" (click)="start(task.id)">Başlat</button>
+                  @if (planlamaYetkisi()) {
+                    <!-- "Tasks.BaslamayanGorev" alarminin cozumu: arac gorevi
+                         almadiysa gorev buradan havuza donuyor. -->
+                    <button type="button" class="kucuk ikincil" data-testid="release" (click)="release(task.id)">
+                      Havuza döndür
+                    </button>
+                  }
+                } @else if (task.status === 'InProgress') {
+                  <button type="button" class="kucuk" data-testid="complete" (click)="complete(task.id)">
+                    Tamamla
+                  </button>
+                  <button type="button" class="kucuk tehlike" data-testid="fail" (click)="fail(task.id)">
+                    Başarısız
+                  </button>
+                } @else {
+                  <span class="islem-yok">—</span>
                 }
-              } @else if (task.status === 'InProgress') {
-                <button type="button" data-testid="complete" (click)="complete(task.id)">
-                  Tamamla
-                </button>
-                <button type="button" class="ikincil" data-testid="fail" (click)="fail(task.id)">
-                  Basarisiz
-                </button>
-              } @else {
-                <span class="not">-</span>
-              }
+              </div>
             </td>
           </tr>
         }
@@ -158,21 +171,21 @@
     </table>
 
     <div class="sayfalama" data-testid="task-pager">
+      <span data-testid="page-info">
+        Sayfa {{ sayfa().page }} / {{ sayfa().totalPages }} · {{ sayfa().totalCount }} görev
+      </span>
       <button
         type="button"
+        class="kucuk ikincil"
         data-testid="prev-page"
         [disabled]="sayfa().page <= 1"
         (click)="sayfayaGit(sayfa().page - 1)"
       >
-        Onceki
+        Önceki
       </button>
-
-      <span data-testid="page-info">
-        Sayfa {{ sayfa().page }} / {{ sayfa().totalPages }} ({{ sayfa().totalCount }} gorev)
-      </span>
-
       <button
         type="button"
+        class="kucuk ikincil"
         data-testid="next-page"
         [disabled]="!sayfa().hasNext"
         (click)="sayfayaGit(sayfa().page + 1)"

@@ -49,12 +49,12 @@ test.describe('Otomatik atama', () => {
     await page.getByTestId('auto-assign').click();
 
     const sonuc = page.getByTestId('dispatch-result');
-    await expect(sonuc).toContainText('gorev atandi');
+    await expect(sonuc).toContainText('görev atandı');
 
     // Sonuc metnindeki ilk atama listede gercekten "Assigned" olmali.
     // Hazirlikta tum acik gorevler kapatildigi icin su an atanmis olan her
     // gorev bu tiklamadan geliyor.
-    const eslesme = /([^\s,:]+) -> (AGV-\d+)/.exec((await sonuc.textContent()) ?? '');
+    const eslesme = /([^\s,:]+) → (AGV-\d+)/.exec((await sonuc.textContent()) ?? '');
     expect(eslesme).not.toBeNull();
     const [, malzeme, agvKodu] = eslesme!;
 

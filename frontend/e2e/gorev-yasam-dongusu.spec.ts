@@ -1,5 +1,10 @@
 import { Locator, Page, expect, test } from '@playwright/test';
-import { agvSecilebilirOlanaKadarBekle, agvSerbestBirak, girisYap } from './yardimcilar';
+import {
+  agvSecilebilirOlanaKadarBekle,
+  agvSerbestBirak,
+  durumuBekle,
+  girisYap,
+} from './yardimcilar';
 
 const AGV01 = '11111111-1111-1111-1111-111111111111';
 
@@ -16,10 +21,10 @@ test.describe('Gorev yasam dongusu', () => {
     const malzeme = await gorevOlustur(page);
     await agvSecilebilirOlanaKadarBekle(page, 'AGV-01', malzeme);
     await ata(satir(page, malzeme), 'AGV-01');
-    await expect(satir(page, malzeme)).toContainText('Assigned');
+    await durumuBekle(satir(page, malzeme), 'Assigned');
 
     await satir(page, malzeme).getByTestId('release').click();
-    await expect(satir(page, malzeme)).toContainText('Pending');
+    await durumuBekle(satir(page, malzeme), 'Pending');
 
     // Olay outbox uzerinden Fleet'e gidip araci serbest birakana kadar.
     await agvSecilebilirOlanaKadarBekle(page, 'AGV-01', malzeme);
@@ -30,11 +35,11 @@ test.describe('Gorev yasam dongusu', () => {
     await agvSecilebilirOlanaKadarBekle(page, 'AGV-01', malzeme);
     await ata(satir(page, malzeme), 'AGV-01');
     await satir(page, malzeme).getByTestId('start').click();
-    await expect(satir(page, malzeme)).toContainText('InProgress');
+    await durumuBekle(satir(page, malzeme), 'InProgress');
 
     page.once('dialog', (d) => d.accept());
     await satir(page, malzeme).getByTestId('fail').click();
-    await expect(satir(page, malzeme)).toContainText('Failed');
+    await durumuBekle(satir(page, malzeme), 'Failed');
 
     // Baska bir bekleyen gorev uzerinden aracin listeye dondugu dogrulaniyor.
     const ikinci = await gorevOlustur(page);
@@ -47,7 +52,7 @@ test.describe('Gorev yasam dongusu', () => {
     page.once('dialog', (d) => d.accept());
     await satir(page, malzeme).getByTestId('cancel').click();
 
-    await expect(satir(page, malzeme)).toContainText('Cancelled');
+    await durumuBekle(satir(page, malzeme), 'Cancelled');
   });
 
   test('operator havuza dondurme ve iptal dugmelerini gormez', async ({ page }) => {

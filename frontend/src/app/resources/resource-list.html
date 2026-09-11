@@ -1,12 +1,12 @@
 <section class="panel">
-  <div class="baslik">
-    <h2>Paylasilan kaynaklar</h2>
-    <button type="button" (click)="refresh()" data-testid="resource-refresh">Yenile</button>
+  <div class="panel-baslik">
+    <h2>Paylaşılan kaynaklar</h2>
+    <button type="button" class="ikincil" (click)="refresh()" data-testid="resource-refresh">Yenile</button>
   </div>
 
   <p class="not">
-    Bir kaynagi ayni anda tek AGV tutabilir. Kilitlerin suresi dolar; takilan bir
-    aracin kilidi arka plandaki servis tarafindan serbest birakilir.
+    Bir kaynağı aynı anda yalnızca bir AGV tutabilir. Kilitlerin süresi dolar; takılan bir
+    aracın kilidi arka plandaki servis tarafından serbest bırakılır.
   </p>
 
   @if (lockError()) {
@@ -14,7 +14,7 @@
   }
 
   @if (loading()) {
-    <p data-testid="resource-loading">Yukleniyor...</p>
+    <p class="bos" data-testid="resource-loading">Yükleniyor…</p>
   } @else if (error()) {
     <p class="hata" data-testid="resource-list-error">{{ error() }}</p>
   } @else {
@@ -22,48 +22,52 @@
       <thead>
         <tr>
           <th>Kaynak</th>
-          <th>Tur</th>
+          <th>Tür</th>
           <th>Durum</th>
-          <th>Islem</th>
+          <th class="islemler-baslik">İşlem</th>
         </tr>
       </thead>
       <tbody>
         @for (resource of resources(); track resource.id) {
           <tr data-testid="resource-row">
-            <td data-testid="resource-code">{{ resource.code }}</td>
-            <td>{{ resource.kind }}</td>
+            <td class="kod" data-testid="resource-code">{{ resource.code }}</td>
+            <td>{{ turAdi(resource.kind) }}</td>
             <td data-testid="resource-holder">
               @if (resource.lockedByAgvId) {
-                <span class="kilitli">{{ agvKodu(resource.lockedByAgvId) }}</span>
+                <span class="rozet-durum" data-durum="InProgress">{{ agvKodu(resource.lockedByAgvId) }}</span>
               } @else {
-                <span class="serbest">Serbest</span>
+                <span class="rozet-durum" data-durum="Available">Serbest</span>
               }
             </td>
             <td>
-              @if (resource.lockedByAgvId) {
-                <button type="button" data-testid="release" (click)="release(resource)">
-                  Birak
-                </button>
-              } @else {
-                <select
-                  data-testid="resource-agv-select"
-                  [value]="secim()[resource.id] ?? ''"
-                  (change)="secimYap(resource.id, $event)"
-                >
-                  <option value="">AGV secin</option>
-                  @for (agv of agvs(); track agv.id) {
-                    <option [value]="agv.id">{{ agv.code }}</option>
-                  }
-                </select>
-                <button
-                  type="button"
-                  data-testid="lock"
-                  [disabled]="!secim()[resource.id]"
-                  (click)="lock(resource.id)"
-                >
-                  Kilitle
-                </button>
-              }
+              <div class="islemler">
+                @if (resource.lockedByAgvId) {
+                  <button type="button" class="kucuk ikincil" data-testid="release" (click)="release(resource)">
+                    Bırak
+                  </button>
+                } @else {
+                  <select
+                    class="kucuk arac-secici"
+                    data-testid="resource-agv-select"
+                    [value]="secim()[resource.id] ?? ''"
+                    (change)="secimYap(resource.id, $event)"
+                  >
+                    <option value="">AGV seçin</option>
+                    @for (agv of agvs(); track agv.id) {
+                      <option [value]="agv.id">{{ agv.code }}</option>
+                    }
+                  </select>
+                  <button
+                    type="button"
+                    class="kucuk"
+                    data-testid="lock"
+                    [disabled]="!secim()[resource.id]"
+                    (click)="lock(resource.id)"
+                  >
+                    Kilitle
+                  </button>
+                }
+              </div>
             </td>
           </tr>
         }

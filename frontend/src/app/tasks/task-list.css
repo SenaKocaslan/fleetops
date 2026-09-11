@@ -1,99 +1,67 @@
-.panel {
-  background: #fff;
-  border: 1px solid #dcdfe4;
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1rem;
+/* Yalnizca bu ekrana ozgu yerlesim. Kontrol stilleri styles.css'te. */
+
+/* Esit sutunlu izgara: secim kutulari ve giris kutulari ayni genislikte ve
+   alt kenarlari ayni cizgide. Miktar ve oncelik dar, malzeme kodu genis. */
+.gorev-formu {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.25fr 0.55fr 0.65fr auto;
+  gap: 0.9rem;
+  align-items: end;
 }
 
-.baslik {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.not {
-  color: #6b7280;
-  font-size: 0.85rem;
-}
-
-form {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.85rem;
-  gap: 0.25rem;
-}
-
-input {
-  padding: 0.4rem 0.5rem;
-  border: 1px solid #cbd2d9;
-  border-radius: 4px;
-}
-
-button {
-  padding: 0.45rem 0.9rem;
-  border: 1px solid #2563eb;
-  background: #2563eb;
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-table {
+.gorev-formu select,
+.gorev-formu input {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 0.75rem;
 }
 
-th, td {
-  text-align: left;
-  padding: 0.5rem;
-  border-bottom: 1px solid #eef0f3;
+.form-hatasi {
+  margin: 1rem 0 0;
 }
 
-.durum {
-  background: #eef2ff;
-  border-radius: 999px;
-  padding: 0.1rem 0.6rem;
-  font-size: 0.8rem;
+.arama {
+  width: 14rem;
 }
 
-.hata {
-  color: #b91c1c;
+.durum-secici {
+  width: 11rem;
 }
 
-.sayfalama {
-  align-items: center;
+.malzeme {
+  font-weight: 500;
+}
+
+/* Islem hucresi: her satirda ayni hizada, secim kutusu sabit genislikte. */
+.islemler-baslik {
+  width: 20rem;
+}
+
+.islemler {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.arac-secici {
+  width: 9.5rem;
+}
+
+.islem-yok {
+  color: #c0c4cc;
 }
 
 .dagitim {
-  margin: 0.5rem 0;
-  padding: 0.5rem 0.75rem;
-  border-left: 3px solid #2f7d4f;
-  background: rgba(47, 125, 79, 0.08);
-  font-size: 0.9rem;
+  margin: 0 0 1rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--kose);
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 0.88rem;
 }
 
-/* Asil islemin yaninda duran, geri alinmasi zor islemler: goz onde ama
-   birincil dugmeyle karismiyor. */
-button.ikincil {
-  margin-left: 0.35rem;
-  background: transparent;
-  border: 1px solid currentColor;
-  opacity: 0.85;
+/* Dar ekranda form iki sutuna iner. */
+@media (max-width: 900px) {
+  .gorev-formu {
+    grid-template-columns: 1fr 1fr;
+  }
 }

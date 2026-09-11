@@ -2,6 +2,7 @@ import { Component, computed, effect, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './auth/auth.service';
 import { AlarmService } from './alarms/alarm.service';
+import { rol } from './etiketler';
 
 @Component({
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
@@ -17,6 +18,7 @@ export class App {
   protected readonly girisYapildi = this.auth.girisYapildi;
   protected readonly oturum = this.auth.oturum;
   protected readonly kritikAlarm = computed(() => this.alarmService.son().criticalCount);
+  protected readonly rolAdi = computed(() => rol(this.oturum()?.role));
 
   constructor() {
     // Alarm rozeti giris yapilmadan cekilemez (401 olurdu). Oturum acilinca

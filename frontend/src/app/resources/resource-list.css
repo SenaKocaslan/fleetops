@@ -1,19 +1,17 @@
-table {
-  width: 100%;
-  border-collapse: collapse;
+.kod {
+  font-weight: 600;
 }
 
-th,
-td {
-  padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid #e3e3e3;
-  text-align: left;
+.islemler-baslik {
+  width: 16rem;
 }
 
-.serbest {
-  color: #2c7a2c;
+.islemler {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-.kilitli {
-  color: #a15c00;
+.arac-secici {
+  width: 9.5rem;
 }

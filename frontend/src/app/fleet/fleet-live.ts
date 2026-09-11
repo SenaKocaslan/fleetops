@@ -1,6 +1,7 @@
 import { Component, OnDestroy, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FleetLiveService } from './fleet-live.service';
+import { aracDurumu } from '../etiketler';
 
 @Component({
   selector: 'app-fleet-live',
@@ -14,6 +15,8 @@ export class FleetLive implements OnDestroy {
   protected readonly agvs = this.live.agvs;
   protected readonly connected = this.live.connected;
   protected readonly error = this.live.error;
+
+  protected readonly durumAdi = aracDurumu;
 
   protected readonly musaitSayisi = computed(
     () => this.agvs().filter((a) => a.gorevAlabilir).length,

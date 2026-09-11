@@ -20,7 +20,7 @@ export class FleetLiveService {
     // acilista tam liste gonderen bir mekanizmasi yok.
     this.agvService.list().subscribe({
       next: (liste) => this.agvs.set(liste),
-      error: () => this.error.set('Filo listesi alinamadi.'),
+      error: () => this.error.set('Filo listesi alınamadı.'),
     });
 
     if (this.connection) {
@@ -51,7 +51,7 @@ export class FleetLiveService {
       this.connected.set(true);
     } catch {
       this.connected.set(false);
-      this.error.set('Canli baglanti kurulamadi.');
+      this.error.set('Canlı bağlantı kurulamadı.');
     }
   }
 

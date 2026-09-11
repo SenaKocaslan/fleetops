@@ -3,6 +3,7 @@ import { AgvService } from '../fleet/agv.service';
 import { AgvSummary } from '../fleet/agv.model';
 import { ResourceService } from './resource.service';
 import { ResourceSummary } from './resource.model';
+import { kaynakTuru } from '../etiketler';
 
 @Component({
   selector: 'app-resource-list',
@@ -34,6 +35,8 @@ export class ResourceList {
     });
   }
 
+  protected readonly turAdi = kaynakTuru;
+
   protected agvKodu(id: string | null): string {
     return id ? (this.agvKodlari()[id] ?? id) : '-';
   }
@@ -47,7 +50,7 @@ export class ResourceList {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Kaynak listesi alinamadi.');
+        this.error.set('Kaynak listesi alınamadı.');
         this.loading.set(false);
       },
     });
@@ -79,14 +82,14 @@ export class ResourceList {
     this.lockError.set(null);
     this.service.release(resource.id, resource.lockedByAgvId).subscribe({
       next: () => this.refresh(),
-      error: (yanit) => this.hatayiGoster(yanit, 'Kilit birakilamadi.'),
+      error: (yanit) => this.hatayiGoster(yanit, 'Kilit bırakılamadı.'),
     });
   }
 
   private hatayiGoster(yanit: { status?: number; error?: { message?: string } }, varsayilan: string): void {
     this.lockError.set(
       yanit?.status === 409
-        ? (yanit?.error?.message ?? 'Kaynak su anda baskasi tarafindan kilitli.')
+        ? (yanit?.error?.message ?? 'Kaynak şu anda başka bir araç tarafından kilitli.')
         : (yanit?.error?.message ?? varsayilan),
     );
     this.refresh();

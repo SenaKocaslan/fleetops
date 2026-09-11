@@ -1,48 +1,45 @@
-<section>
-  <div class="baslik">
+<section class="panel">
+  <div class="panel-baslik">
     <h2>Alarmlar</h2>
-    <button type="button" (click)="yenile()" data-testid="alarm-refresh">Yenile</button>
+    <button type="button" class="ikincil" (click)="yenile()" data-testid="alarm-refresh">Yenile</button>
   </div>
 
   @if (alarmlar().items.length === 0) {
-    <p data-testid="alarm-bos">Aktif alarm yok.</p>
+    <p class="bos" data-testid="alarm-bos">Aktif alarm yok.</p>
   } @else {
     <table data-testid="alarm-tablosu">
       <thead>
         <tr>
-          <th>Siddet</th>
-          <th>Kod</th>
           <th>Konu</th>
-          <th>Aciklama</th>
-          <th>Tespit</th>
+          <th>Açıklama</th>
+          <th class="zaman-baslik">Tespit</th>
         </tr>
       </thead>
       <tbody>
         <!-- Alarmlar TURE GORE gruplu: ayni turden onlarca satir (olculdu:
              51'in 51'i ayni turdendi) digerlerini gorunmez kiliyordu. Her
-             turden birkac ornek, geri kalani sayi olarak.
+             turden birkac ornek, geri kalani sayi olarak. Kod yalnizca grup
+             basliginda; satirlarda tekrar etmiyor.
              track $index: alarmlarin dogal bir benzersiz anahtari yok. -->
         @for (grup of alarmlar().groups; track grup.code + grup.severity) {
           <tr class="grup" data-testid="alarm-grup">
-            <td colspan="5">
-              <span class="siddet" [class]="grup.severity.toLowerCase()">{{ grup.severity }}</span>
-              <strong>{{ grup.code }}</strong>
-              <span data-testid="alarm-grup-adet">{{ grup.count }} alarm</span>
+            <td colspan="3">
+              <span class="siddet" [attr.data-siddet]="grup.severity">{{ siddetAdi(grup.severity) }}</span>
+              <strong>{{ alarmAdi(grup.code) }}</strong>
+              <span class="adet" data-testid="alarm-grup-adet">{{ grup.count }} alarm</span>
+              <span class="kod">{{ grup.code }}</span>
             </td>
           </tr>
           @for (alarm of ornekler(grup); track $index) {
-            <tr data-testid="alarm-row">
-              <td></td>
-              <td>{{ alarm.code }}</td>
-              <td>{{ alarm.subject }}</td>
+            <tr data-testid="alarm-row" [attr.data-kod]="alarm.code">
+              <td class="konu">{{ alarm.subject }}</td>
               <td>{{ alarm.message }}</td>
-              <td>{{ alarm.detectedAtUtc | date: 'HH:mm:ss' }}</td>
+              <td class="zaman">{{ alarm.detectedAtUtc | date: 'HH:mm:ss' }}</td>
             </tr>
           }
           @if (grup.count > grup.shown) {
             <tr class="devami" data-testid="alarm-devami">
-              <td></td>
-              <td colspan="4">+{{ grup.count - grup.shown }} benzer alarm daha</td>
+              <td colspan="3">+{{ grup.count - grup.shown }} benzer alarm daha</td>
             </tr>
           }
         }

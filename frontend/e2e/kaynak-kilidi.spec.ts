@@ -24,7 +24,7 @@ test.describe('Kaynak kilitleri', () => {
     await page.goto('/');
     await page.getByTestId('nav-resources').click();
 
-    await expect(page.getByRole('heading', { name: 'Paylasilan kaynaklar' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Paylaşılan kaynaklar' })).toBeVisible();
     await expect(page.getByTestId('resource-table')).toBeVisible();
     await expect(page.getByTestId('resource-list-error')).toHaveCount(0);
   });

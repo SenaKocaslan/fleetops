@@ -18,15 +18,15 @@ test.describe('Canli filo', () => {
   test('filo sayfasi acilir ve hub baglanir', async ({ page }) => {
     await page.goto('/filo');
 
-    await expect(page.getByRole('heading', { name: 'Canli filo durumu' })).toBeVisible();
-    await expect(page.getByTestId('hub-durumu')).toHaveText('Canli');
+    await expect(page.getByRole('heading', { name: 'Canlı filo durumu' })).toBeVisible();
+    await expect(page.getByTestId('hub-durumu')).toHaveText('Canlı');
     await expect(page.getByTestId('fleet-hata')).toHaveCount(0);
     await expect(page.getByTestId('agv-AGV-01')).toBeVisible();
   });
 
   test('telemetri sayfa yenilenmeden ekrana yansir', async ({ page }) => {
     await page.goto('/filo');
-    await expect(page.getByTestId('hub-durumu')).toHaveText('Canli');
+    await expect(page.getByTestId('hub-durumu')).toHaveText('Canlı');
 
     // Simulator da yaziyor; carismasin diye bilerek simulatorun uretmeyecegi
     // bir deger seciliyor (bosta duran arac icin batarya sabit kalir).
@@ -37,7 +37,7 @@ test.describe('Canli filo', () => {
     expect(yanit.status()).toBe(204);
 
     // page.reload() YOK: deger sunucu itmesiyle gelmeli.
-    await expect(page.getByTestId('batarya-AGV-01')).toHaveText('43%');
+    await expect(page.getByTestId('batarya-AGV-01')).toHaveText('%43');
     await expect(page.getByTestId('gorulme-AGV-01')).not.toHaveText('-');
   });
 
@@ -61,8 +61,8 @@ test.describe('Canli filo', () => {
     await secim.selectOption(deger!);
 
     await page.goto('/filo');
-    await expect(page.getByTestId('hub-durumu')).toHaveText('Canli');
-    await expect(page.getByTestId('agv-AGV-01')).toContainText('Available');
+    await expect(page.getByTestId('hub-durumu')).toHaveText('Canlı');
+    await expect(page.getByTestId('durum-AGV-01')).toHaveAttribute('data-durum', 'Available');
 
     // Atama baska bir sekmede yapiliyormus gibi: istek dogrudan API'ye gidiyor,
     // filo sayfasi yalnizca hub'dan haber almali.
@@ -78,7 +78,9 @@ test.describe('Canli filo', () => {
     });
 
     // Outbox dagitimi eventual: atama -> outbox -> Fleet handler -> hub.
-    await expect(page.getByTestId('agv-AGV-01')).toContainText('Busy', { timeout: 30000 });
+    await expect(page.getByTestId('durum-AGV-01')).toHaveAttribute('data-durum', 'Busy', {
+      timeout: 30000,
+    });
 
     // Temizlik: gorev tamamlanmazsa AGV kalici olarak Busy kalir ve sonraki
     // kosularin altini oyar.

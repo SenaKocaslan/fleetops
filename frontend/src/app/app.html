@@ -1,19 +1,23 @@
 <header class="ust">
-  <h1>FleetOps</h1>
-  <span>AGV filo ve gorev yonetimi</span>
+  <div class="marka">
+    <span class="logo">FleetOps</span>
+    <span class="alt-baslik">AGV filo ve görev yönetimi</span>
+  </div>
 
   @if (girisYapildi()) {
-    <span class="kullanici" data-testid="oturum-bilgisi">
-      {{ oturum()?.userName }} ({{ oturum()?.role }})
-    </span>
-    <button type="button" class="cikis" (click)="cikis()" data-testid="cikis">Cikis</button>
+    <div class="oturum">
+      <span class="kullanici" data-testid="oturum-bilgisi">
+        {{ oturum()?.userName }} <span class="rol">· {{ rolAdi() }}</span>
+      </span>
+      <button type="button" class="cikis kucuk" (click)="cikis()" data-testid="cikis">Çıkış</button>
+    </div>
   }
 </header>
 
 @if (girisYapildi()) {
   <nav class="gezinme">
     <a routerLink="/" routerLinkActive="etkin" [routerLinkActiveOptions]="{ exact: true }" data-testid="nav-tasks">
-      Gorevler
+      Görevler
     </a>
     <a routerLink="/kaynaklar" routerLinkActive="etkin" data-testid="nav-resources">Kaynaklar</a>
     <a routerLink="/stok" routerLinkActive="etkin" data-testid="nav-stock">Stok</a>

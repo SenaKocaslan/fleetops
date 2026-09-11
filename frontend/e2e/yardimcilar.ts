@@ -1,4 +1,4 @@
-import { APIRequestContext, Page, expect } from '@playwright/test';
+import { APIRequestContext, Locator, Page, expect } from '@playwright/test';
 
 export const API = 'http://localhost:5199/api';
 
@@ -43,7 +43,7 @@ export async function gorevTamamla(page: Page, malzeme: string) {
 
   await satir().getByTestId('start').click();
   await satir().getByTestId('complete').click();
-  await expect(satir()).toContainText('Completed');
+  await durumuBekle(satir(), 'Completed');
 }
 
 // Her senaryo gercek giris akisindan geciyor; token elle uretilmiyor ki
@@ -143,4 +143,10 @@ export async function enAzGorevOlustur(
       },
     });
   }
+}
+
+// Durum ekranda Turkce ("Atandi") gosteriliyor; test gorunen metne degil
+// ham degere (data-durum) bakiyor. Metin degisse de test kirilmasin diye.
+export async function durumuBekle(satir: Locator, durum: string, secenek?: { timeout?: number }) {
+  await expect(satir.getByTestId('task-status')).toHaveAttribute('data-durum', durum, secenek);
 }

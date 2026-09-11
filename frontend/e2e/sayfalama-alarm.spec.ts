@@ -36,9 +36,15 @@ test.describe('Sayfalama', () => {
     await page.goto('/');
     await page.getByTestId('task-status-filter').selectOption('Completed');
 
-    const durumlar = await page.getByTestId('task-status').allTextContents();
+    // Filtre uygulanana kadar liste bir onceki halini gosterebilir.
+    await expect(page.getByTestId('task-status').first()).toHaveAttribute('data-durum', 'Completed');
+
+    // Gorunen metin Turkce ("Tamamlandi"); ham deger data-durum'da.
+    const durumlar = await page
+      .getByTestId('task-status')
+      .evaluateAll((el) => el.map((e) => e.getAttribute('data-durum')));
     expect(durumlar.length).toBeGreaterThan(0);
-    expect(durumlar.every((d) => d.trim() === 'Completed')).toBe(true);
+    expect(durumlar.every((d) => d === 'Completed')).toBe(true);
   });
 
   test('ilk sayfada onceki butonu kapali', async ({ page }) => {
@@ -78,8 +84,9 @@ test.describe('Alarmlar', () => {
     await page.goto('/alarmlar');
     await page.getByTestId('alarm-refresh').click();
 
-    const satir = page.getByTestId('alarm-row').filter({ hasText: 'AGV-02' });
-    await expect(satir.first()).toContainText('Fleet.KritikBatarya');
+    // Kod satirda yazmiyor (grup basliginda); satir data-kod tasiyor.
+    const satir = page.locator('[data-testid="alarm-row"][data-kod="Fleet.KritikBatarya"]');
+    await expect(satir.filter({ hasText: 'AGV-02' })).toHaveCount(1);
 
     // Alarmlar ture gore gruplu; siddet grup basliginda.
     const grup = page.getByTestId('alarm-grup').filter({ hasText: 'Fleet.KritikBatarya' });
@@ -101,7 +108,7 @@ test.describe('Alarmlar', () => {
     await page.getByTestId('alarm-refresh').click();
 
     await expect(
-      page.getByTestId('alarm-row').filter({ hasText: 'Fleet.KritikBatarya' }).filter({ hasText: 'AGV-02' }),
+      page.locator('[data-testid="alarm-row"][data-kod="Fleet.KritikBatarya"]').filter({ hasText: 'AGV-02' }),
     ).toHaveCount(0);
   });
 });

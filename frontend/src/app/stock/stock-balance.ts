@@ -30,7 +30,7 @@ export class StockBalance {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Stok bakiyesi alinamadi.');
+        this.error.set('Stok bakiyesi alınamadı.');
         this.loading.set(false);
       },
     });

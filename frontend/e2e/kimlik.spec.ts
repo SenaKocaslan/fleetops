@@ -17,21 +17,21 @@ test.describe('Kimlik ve roller', () => {
     await page.getByTestId('login-password').fill('yanlis');
     await page.getByTestId('login-submit').click();
 
-    await expect(page.getByTestId('login-hata')).toContainText('hatali');
+    await expect(page.getByTestId('login-hata')).toContainText('hatalı');
     await expect(page).toHaveURL(/\/giris$/);
   });
 
   test('supervisor girisi gorev acma formunu gosterir', async ({ page }) => {
     await girisYap(page, 'supervisor');
 
-    await expect(page.getByTestId('oturum-bilgisi')).toContainText('Supervisor');
+    await expect(page.getByTestId('oturum-bilgisi')).toContainText('Süpervizör');
     await expect(page.getByTestId('task-form')).toBeVisible();
   });
 
   test('operator gorev acma formunu gormez', async ({ page }) => {
     await girisYap(page, 'operator');
 
-    await expect(page.getByTestId('oturum-bilgisi')).toContainText('Operator');
+    await expect(page.getByTestId('oturum-bilgisi')).toContainText('Operatör');
     await expect(page.getByTestId('task-form')).toHaveCount(0);
     await expect(page.getByTestId('agv-select')).toHaveCount(0);
     // Okuma yetkisi var: liste gorunmeye devam etmeli.

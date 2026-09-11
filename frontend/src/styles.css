@@ -1,9 +1,280 @@
+/* Ortak tasarim dili. Bilesenler kendi dugme/giris stillerini tanimlamiyor;
+   boylece secim kutusu, giris kutusu ve dugme her yerde ayni yukseklikte ve
+   ayni hizada duruyor. */
+
 :root {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color: #111827;
+  --zemin: #f4f5f7;
+  --yuzey: #ffffff;
+  --metin: #111827;
+  --soluk: #6b7280;
+  --kenar: #d9dde3;
+  --kenar-acik: #edf0f3;
+  --birincil: #2563eb;
+  --birincil-koyu: #1d4ed8;
+  --tehlike: #b91c1c;
+  --basari: #15803d;
+  --uyari: #b45309;
+  --kose: 6px;
+  --kontrol: 2.25rem;
+  --kontrol-kucuk: 1.95rem;
+
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--metin);
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   margin: 0;
+  background: var(--zemin);
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+/* ---- Kart ve baslik satiri ---- */
+
+.panel {
+  background: var(--yuzey);
+  border: 1px solid var(--kenar);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.panel-baslik {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+/* Baslik solda, araclar sagda toplanir. */
+.panel-baslik h2 {
+  margin-right: auto;
+}
+
+.not {
+  margin: -0.4rem 0 1rem;
+  color: var(--soluk);
+  font-size: 0.85rem;
+}
+
+/* ---- Form kontrolleri: hepsi ayni yukseklik ---- */
+
+input,
+select,
+button {
+  box-sizing: border-box;
+  height: var(--kontrol);
+  border-radius: var(--kose);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+input,
+select {
+  min-width: 0;
+  padding: 0 0.7rem;
+  /* Etiketin (label.alan) kalin yazisini devralmasin. */
+  font-weight: 400;
+  border: 1px solid var(--kenar);
+  background-color: #fff;
+  color: var(--metin);
+}
+
+input:focus,
+select:focus {
+  outline: 3px solid rgba(37, 99, 235, 0.18);
+  border-color: var(--birincil);
+}
+
+/* Tarayicinin kendi secim kutusu her tarayicida farkli yukseklikte ciziliyor;
+   giris kutusuyla ayni boyda durmasi icin gorunum sifirlanip ok eklenir. */
+select {
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236b7280' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  cursor: pointer;
+}
+
+label.alan {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--soluk);
+}
+
+button {
+  padding: 0 1rem;
+  border: 1px solid var(--birincil);
+  background: var(--birincil);
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+button:hover:not([disabled]) {
+  background: var(--birincil-koyu);
+  border-color: var(--birincil-koyu);
+}
+
+button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Beyaz zemin uzerinde okunur: onceki surumde metin rengi beyazdan
+   degismedigi icin bu dugmeler ekranda hic gorunmuyordu. */
+button.ikincil {
+  background: #fff;
+  border-color: var(--kenar);
+  color: var(--metin);
+}
+
+button.ikincil:hover:not([disabled]) {
   background: #f3f4f6;
+  border-color: var(--kenar);
+}
+
+button.tehlike {
+  background: #fff;
+  border-color: #f1c4c4;
+  color: var(--tehlike);
+}
+
+button.tehlike:hover:not([disabled]) {
+  background: #fef2f2;
+  border-color: #eaa5a5;
+}
+
+.kucuk,
+button.kucuk {
+  height: var(--kontrol-kucuk);
+  font-size: 0.82rem;
+}
+
+button.kucuk {
+  padding: 0 0.75rem;
+}
+
+/* ---- Tablo ---- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid var(--kenar);
+  color: var(--soluk);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid var(--kenar-acik);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.bos-hucre {
+  color: #c0c4cc;
+}
+
+tbody tr:hover td {
+  background: #fafbfc;
+}
+
+td.sayi,
+th.sayi {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Durum rozetleri: renk ham durumdan, metin Turkce etiketten ---- */
+
+.rozet-durum {
+  display: inline-block;
+  padding: 0.12rem 0.6rem;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rozet-durum[data-durum="Assigned"],
+.rozet-durum[data-durum="Busy"] {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.rozet-durum[data-durum="InProgress"],
+.rozet-durum[data-durum="Charging"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.rozet-durum[data-durum="Completed"],
+.rozet-durum[data-durum="Available"] {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.rozet-durum[data-durum="Failed"] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.rozet-durum[data-durum="Cancelled"],
+.rozet-durum[data-durum="OutOfService"] {
+  background: #f3f4f6;
+  color: var(--soluk);
+}
+
+/* ---- Iletiler ---- */
+
+.hata {
+  margin: 0 0 1rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid #fecaca;
+  border-radius: var(--kose);
+  background: #fef2f2;
+  color: var(--tehlike);
+  font-size: 0.88rem;
+}
+
+.bos {
+  margin: 0;
+  padding: 1.5rem 0;
+  color: var(--soluk);
+  text-align: center;
+}
+
+.sayfalama {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  color: var(--soluk);
+  font-size: 0.85rem;
 }

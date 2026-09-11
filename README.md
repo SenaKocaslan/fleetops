@@ -176,7 +176,7 @@ yollar, parametreler, istek govdeleri ve yetki bilgisi eksiksiz.
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 119 birim + 163 integration
+cd backend  && dotnet test                 # 119 birim + 166 integration
 cd frontend && npm test                    # 31 birim (Vitest)
 cd frontend && npm run e2e                 # 35 uctan uca (Playwright)
 cd frontend && npm run e2e:tip             # e2e dosyalarinin tip denetimi

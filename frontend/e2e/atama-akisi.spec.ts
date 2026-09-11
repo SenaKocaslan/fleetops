@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
 import {
-  API,
   agvSecilebilirOlanaKadarBekle,
   agvSerbestBirak,
+  API,
+  durumuBekle,
   girisYap,
   gorevTamamla,
   yetkiliBaslik,
@@ -48,7 +49,7 @@ test.describe('Gorev atama', () => {
     await satir.getByTestId('assign').click();
 
     const atanmis = page.getByTestId('task-row').filter({ hasText: malzeme });
-    await expect(atanmis).toContainText('Assigned');
+    await durumuBekle(atanmis, 'Assigned');
     await expect(atanmis.getByTestId('task-agv')).toHaveText('AGV-01');
 
     await gorevTamamla(page, malzeme);
@@ -96,7 +97,7 @@ test.describe('Gorev atama', () => {
     await satir.getByTestId('assign').click();
 
     const atanmis = page.getByTestId('task-row').filter({ hasText: malzeme });
-    await expect(atanmis).toContainText('Assigned');
+    await durumuBekle(atanmis, 'Assigned');
     await expect(atanmis.getByTestId('assign')).toHaveCount(0);
 
     await gorevTamamla(page, malzeme);

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { agvSecilebilirOlanaKadarBekle, agvSerbestBirak, girisYap } from './yardimcilar';
+import { agvSecilebilirOlanaKadarBekle, agvSerbestBirak, durumuBekle, girisYap } from './yardimcilar';
 
 test.describe('Stok hareketi', () => {
   test.beforeEach(async ({ page }) => {
@@ -31,9 +31,7 @@ test.describe('Stok hareketi', () => {
     await page.getByTestId('task-row').filter({ hasText: malzeme }).getByTestId('start').click();
     await page.getByTestId('task-row').filter({ hasText: malzeme }).getByTestId('complete').click();
 
-    await expect(
-      page.getByTestId('task-row').filter({ hasText: malzeme }),
-    ).toContainText('Completed');
+    await durumuBekle(page.getByTestId('task-row').filter({ hasText: malzeme }), 'Completed');
 
     await page.getByTestId('nav-stock').click();
 

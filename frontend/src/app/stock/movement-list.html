@@ -1,29 +1,27 @@
 <app-stock-balance />
 
 <section class="panel">
-  <div class="baslik">
+  <div class="panel-baslik">
     <h2>Stok hareketleri</h2>
-    <button type="button" (click)="refresh()" data-testid="movement-refresh">Yenile</button>
+    <button type="button" class="ikincil" (click)="refresh()" data-testid="movement-refresh">Yenile</button>
   </div>
 
   <p class="not">
-    Bu kayitlar elle olusturulmaz. Bir gorev tamamlandiginda Tasks modulu bir olay
-    yayinlar, olay outbox uzerinden Stock moduluna teslim edilir ve hareket burada
-    olusur.
+    Bu kayıtlar elle oluşturulmaz; bir görev tamamlandığında otomatik olarak oluşur.
   </p>
 
   @if (loading()) {
-    <p data-testid="movement-loading">Yukleniyor...</p>
+    <p class="bos" data-testid="movement-loading">Yükleniyor…</p>
   } @else if (error()) {
     <p class="hata" data-testid="movement-list-error">{{ error() }}</p>
   } @else if (movements().length === 0) {
-    <p data-testid="movement-empty">Henuz stok hareketi yok.</p>
+    <p class="bos" data-testid="movement-empty">Henüz stok hareketi yok.</p>
   } @else {
     <table data-testid="movement-table">
       <thead>
         <tr>
           <th>Malzeme</th>
-          <th>Miktar</th>
+          <th class="sayi">Miktar</th>
           <th>Nereden</th>
           <th>Nereye</th>
           <th>Zaman</th>
@@ -32,25 +30,25 @@
       <tbody>
         @for (m of movements(); track m.id) {
           <tr data-testid="movement-row">
-            <td data-testid="movement-material">{{ m.materialCode }}</td>
-            <td>{{ m.quantity }}</td>
+            <td class="malzeme" data-testid="movement-material">{{ m.materialCode }}</td>
+            <td class="sayi">{{ m.quantity }}</td>
             <td>{{ m.fromLocationCode }}</td>
             <td>{{ m.toLocationCode }}</td>
-            <td>{{ m.movedAtUtc | date: 'short' }}</td>
+            <td class="zaman">{{ m.movedAtUtc | date: 'dd.MM.yyyy HH:mm' }}</td>
           </tr>
         }
       </tbody>
     </table>
 
     <div class="sayfalama" data-testid="movement-pager">
-      <button type="button" data-testid="movement-prev"
-              [disabled]="sayfa().page <= 1" (click)="sayfayaGit(sayfa().page - 1)">
-        Onceki
-      </button>
       <span data-testid="movement-page-info">
-        Sayfa {{ sayfa().page }} / {{ sayfa().totalPages }} ({{ sayfa().totalCount }} hareket)
+        Sayfa {{ sayfa().page }} / {{ sayfa().totalPages }} · {{ sayfa().totalCount }} hareket
       </span>
-      <button type="button" data-testid="movement-next"
+      <button type="button" class="kucuk ikincil" data-testid="movement-prev"
+              [disabled]="sayfa().page <= 1" (click)="sayfayaGit(sayfa().page - 1)">
+        Önceki
+      </button>
+      <button type="button" class="kucuk ikincil" data-testid="movement-next"
               [disabled]="!sayfa().hasNext" (click)="sayfayaGit(sayfa().page + 1)">
         Sonraki
       </button>

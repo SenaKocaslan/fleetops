@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { girisYap } from './yardimcilar';
+import { durumuBekle, girisYap } from './yardimcilar';
 
 test.describe('Gorev havuzu', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,7 +9,7 @@ test.describe('Gorev havuzu', () => {
   test('sayfa acilir ve gorev havuzu gorunur', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('heading', { name: 'FleetOps' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Görev havuzu' })).toBeVisible();
     await expect(page.getByTestId('task-form')).toBeVisible();
 
     await expect(
@@ -29,7 +29,7 @@ test.describe('Gorev havuzu', () => {
 
     const satir = page.getByTestId('task-row').filter({ hasText: malzeme });
     await expect(satir).toBeVisible();
-    await expect(satir).toContainText('Pending');
+    await durumuBekle(satir, 'Pending');
   });
 
   test('sunucu tarafi hatasi ekranda gosterilir', async ({ page }) => {
@@ -37,7 +37,7 @@ test.describe('Gorev havuzu', () => {
     await page.getByTestId('material-code').fill('   ');
     await page.getByTestId('submit').click();
 
-    await expect(page.getByTestId('error')).toContainText('Malzeme kodu bos olamaz');
+    await expect(page.getByTestId('error')).toContainText('Malzeme kodu boş olamaz');
   });
 
   test('istemci gecersiz miktarda gonderime izin vermez', async ({ page }) => {

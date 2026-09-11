@@ -1,22 +1,19 @@
-<section>
-  <div class="baslik">
-    <h2>Canli filo durumu</h2>
-    <span
-      class="baglanti"
-      [class.acik]="connected()"
-      data-testid="hub-durumu">
-      {{ connected() ? 'Canli' : 'Baglanti yok' }}
+<section class="panel">
+  <div class="panel-baslik">
+    <h2>Canlı filo durumu</h2>
+    <span class="baglanti" [class.acik]="connected()" data-testid="hub-durumu">
+      {{ connected() ? 'Canlı' : 'Bağlantı yok' }}
     </span>
   </div>
+
+  <p class="not" data-testid="musait-sayisi">Görev alabilecek araç: {{ musaitSayisi() }}</p>
 
   @if (error(); as hata) {
     <p class="hata" data-testid="fleet-hata">{{ hata }}</p>
   }
 
-  <p data-testid="musait-sayisi">Gorev alabilecek arac: {{ musaitSayisi() }}</p>
-
   @if (agvs().length === 0) {
-    <p data-testid="fleet-bos">Kayitli AGV yok.</p>
+    <p class="bos" data-testid="fleet-bos">Kayıtlı AGV yok.</p>
   } @else {
     <table data-testid="fleet-tablosu">
       <thead>
@@ -24,20 +21,27 @@
           <th>Kod</th>
           <th>Durum</th>
           <th>Batarya</th>
-          <th>Gorev alabilir</th>
-          <th>Son gorulme</th>
+          <th>Görev alabilir</th>
+          <th>Son görülme</th>
         </tr>
       </thead>
       <tbody>
         @for (agv of agvs(); track agv.id) {
           <tr [attr.data-testid]="'agv-' + agv.code">
-            <td>{{ agv.code }}</td>
-            <td>{{ agv.status }}</td>
-            <td [class]="bataryaSinifi(agv.batteryLevel)" [attr.data-testid]="'batarya-' + agv.code">
-              {{ agv.batteryLevel }}%
+            <td class="kod">{{ agv.code }}</td>
+            <td>
+              <span class="rozet-durum" [attr.data-durum]="agv.status" [attr.data-testid]="'durum-' + agv.code">
+                {{ durumAdi(agv.status) }}
+              </span>
             </td>
-            <td>{{ agv.gorevAlabilir ? 'Evet' : 'Hayir' }}</td>
-            <td [attr.data-testid]="'gorulme-' + agv.code">
+            <td>
+              <div class="batarya" [class]="bataryaSinifi(agv.batteryLevel)">
+                <span class="cubuk"><span class="dolgu" [style.width.%]="agv.batteryLevel"></span></span>
+                <span class="yuzde" [attr.data-testid]="'batarya-' + agv.code">%{{ agv.batteryLevel }}</span>
+              </div>
+            </td>
+            <td>{{ agv.gorevAlabilir ? 'Evet' : 'Hayır' }}</td>
+            <td [attr.data-testid]="'gorulme-' + agv.code" [class.bos-hucre]="!agv.lastSeenAtUtc">
               {{ agv.lastSeenAtUtc ? (agv.lastSeenAtUtc | date: 'HH:mm:ss') : '-' }}
             </td>
           </tr>

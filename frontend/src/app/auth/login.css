@@ -1,20 +1,43 @@
-.giris {
-  max-width: 320px;
+/* Ust cubugun altinda kalan alanin tam ortasi. */
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 3.25rem - 3rem);
+}
+
+.giris-kart {
+  width: 100%;
+  max-width: 360px;
+  margin: 0;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
+}
+
+h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.aciklama {
+  margin: 0 0 1.5rem;
+  color: var(--soluk);
+  font-size: 0.9rem;
 }
 
 form {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
-label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9rem;
-  gap: 0.25rem;
+input,
+button {
+  width: 100%;
 }
 
 .hata {
-  color: #b00020;
+  margin: 0;
 }

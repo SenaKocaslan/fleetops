@@ -32,7 +32,7 @@ export class MovementList {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Stok hareketleri alinamadi.');
+        this.error.set('Stok hareketleri alınamadı.');
         this.loading.set(false);
       },
     });

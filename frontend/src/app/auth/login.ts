@@ -3,6 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
+// 429: kullanici adi basina hatali deneme siniri doldu (sunucuda) ya da IP
+// basina sinir (nginx). Onceden "sunucuya ulasilamiyor" gosteriliyordu;
+// kilitlenen kullanici yanlis bir sey dusunurdu.
+const GIRIS_HATALARI: Record<number, string> = {
+  401: 'Kullanıcı adı veya parola hatalı.',
+  429: 'Çok fazla hatalı deneme yapıldı. Birkaç dakika sonra tekrar deneyin.',
+};
+
 @Component({
   selector: 'app-login',
   imports: [FormsModule],
@@ -29,11 +37,7 @@ export class Login {
       },
       error: (yanit: { status: number }) => {
         this.gonderiliyor.set(false);
-        this.hata.set(
-          yanit.status === 401
-            ? 'Kullanici adi veya parola hatali.'
-            : 'Giris yapilamadi, sunucuya ulasilamiyor.',
-        );
+        this.hata.set(GIRIS_HATALARI[yanit.status] ?? 'Giriş yapılamadı, sunucuya ulaşılamıyor.');
       },
     });
   }

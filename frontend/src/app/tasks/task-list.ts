@@ -10,6 +10,7 @@ import { OtomatikAtamaOzeti } from './dispatch.model';
 import { TaskSummary } from './task.model';
 import { BOS_SAYFA, PagedResult } from '../sayfalama.model';
 import { AuthService } from '../auth/auth.service';
+import { gorevDurumu } from '../etiketler';
 
 @Component({
   selector: 'app-task-list',
@@ -56,11 +57,13 @@ export class TaskList {
   // bu secici "yalnizca sunlari goster" demek isteyenler icin.
   protected readonly durumSecimi = signal('');
   protected readonly durumlar = [
-    { deger: '', etiket: 'Tum durumlar' },
+    { deger: '', etiket: 'Tüm durumlar' },
     { deger: 'Pending', etiket: 'Bekleyen' },
-    { deger: 'Assigned', etiket: 'Atanmis' },
-    { deger: 'InProgress', etiket: 'Yurutuluyor' },
+    { deger: 'Assigned', etiket: 'Atanmış' },
+    { deger: 'InProgress', etiket: 'Yürütülen' },
     { deger: 'Completed', etiket: 'Tamamlanan' },
+    { deger: 'Failed', etiket: 'Başarısız' },
+    { deger: 'Cancelled', etiket: 'İptal edilen' },
   ];
   protected quantity = 1;
   protected priority = 1;
@@ -98,13 +101,13 @@ export class TaskList {
 
   // Geri alinamayan iki islem icin onay: yanlis tiklama gorevi bitirir.
   protected fail(taskId: string): void {
-    if (confirm('Gorev basarisiz olarak kapatilacak. Emin misiniz?')) {
+    if (confirm('Görev başarısız olarak kapatılacak. Emin misiniz?')) {
       this.durumDegistir(this.service.fail(taskId));
     }
   }
 
   protected cancel(taskId: string): void {
-    if (confirm('Gorev iptal edilecek. Emin misiniz?')) {
+    if (confirm('Görev iptal edilecek. Emin misiniz?')) {
       this.durumDegistir(this.service.cancel(taskId));
     }
   }
@@ -114,14 +117,14 @@ export class TaskList {
     istek.subscribe({
       next: () => this.refresh(),
       error: (yanit) => {
-        this.assignError.set(yanit?.error?.message ?? 'Gorev durumu degistirilemedi.');
+        this.assignError.set(yanit?.error?.message ?? 'Görev durumu değiştirilemedi.');
         this.refresh();
       },
     });
   }
 
   protected agvKodu(id: string | null): string {
-    return id ? (this.agvKodlari()[id] ?? id) : '-';
+    return id ? (this.agvKodlari()[id] ?? id) : '—';
   }
 
   protected secimYap(taskId: string, olay: Event): void {
@@ -141,8 +144,8 @@ export class TaskList {
       error: (yanit) => {
         this.assignError.set(
           yanit?.status === 409
-            ? 'Gorev bu sirada baska bir istek tarafindan atandi. Listeyi yenileyip tekrar deneyin.'
-            : (yanit?.error?.message ?? 'Atama yapilamadi.'),
+            ? 'Görev bu sırada başka bir istek tarafından atandı. Listeyi yenileyip tekrar deneyin.'
+            : (yanit?.error?.message ?? 'Atama yapılamadı.'),
         );
         this.refresh();
       },
@@ -176,13 +179,19 @@ export class TaskList {
       },
       error: (yanit) => {
         this.dagitimCalisiyor.set(false);
-        this.assignError.set(yanit?.error?.message ?? 'Otomatik atama yapilamadi.');
+        this.assignError.set(yanit?.error?.message ?? 'Otomatik atama yapılamadı.');
       },
     });
   }
 
+  protected readonly durumAdi = gorevDurumu;
+
+  protected stratejiAdi(kod: string): string {
+    return kod === 'EnYuksekBatarya' ? 'en yüksek batarya' : kod;
+  }
+
   protected dagitimMetni(ozet: OtomatikAtamaOzeti): string {
-    return ozet.atananlar.map((a) => `${a.materialCode} -> ${a.agvCode}`).join(', ');
+    return ozet.atananlar.map((a) => `${a.materialCode} → ${a.agvCode}`).join(', ');
   }
 
   protected refresh(): void {
@@ -196,7 +205,7 @@ export class TaskList {
           this.loading.set(false);
         },
         error: () => {
-          this.error.set('Gorev listesi alinamadi. API calisiyor mu?');
+          this.error.set('Görev listesi alınamadı. Sunucu çalışıyor mu?');
           this.loading.set(false);
         },
       });
@@ -249,7 +258,7 @@ export class TaskList {
           this.sayfayaGit(1);
         },
         error: (yanit) => {
-          this.error.set(yanit?.error?.message ?? 'Gorev olusturulamadi.');
+          this.error.set(yanit?.error?.message ?? 'Görev oluşturulamadı.');
         },
       });
   }

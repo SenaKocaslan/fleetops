@@ -19,6 +19,8 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('FleetOps');
+    // Logo baslik (h1) degil: her sayfanin kendi basligi var, bir sayfada iki
+    // h1 olmasin.
+    expect(compiled.querySelector('.logo')?.textContent).toContain('FleetOps');
   });
 });
