@@ -229,7 +229,8 @@ jobs:
           docker ps --filter name=sahte-api --filter status=running --format '{{.Names}}' | grep -q sahte-api
           curl -s -o /dev/null http://localhost:8080/api/agvs
           docker compose stop api
-          sleep 12
+          # nginx DNS onbellegi (resolver valid=2s) dolsun.
+          sleep 4
           # Eski ayarda istek olu adrese gidip zaman asimina ugrar (000);
           # "|| true" olmasa bash -e adimi burada keser ve api hic geri baslamaz.
           kod=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 http://localhost:8080/api/sahte-kontrol || true)
@@ -239,7 +240,7 @@ jobs:
           docker compose up -d --wait
           # Bozdugu durumu geri getirdigini DOGRULAMADAN bitmesin: sonraki
           # adimlar nginx uzerinden API'ye ulasilabildigini varsayiyor.
-          # nginx DNS'i en fazla 10 sn onbellekte tutuyor (resolver valid).
+          # nginx DNS'i en fazla 2 sn onbellekte tutuyor (resolver valid).
           for i in $(seq 1 30); do
             [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/agvs)" = "401" ] && break
             sleep 1
