@@ -176,8 +176,8 @@ yollar, parametreler, istek govdeleri ve yetki bilgisi eksiksiz.
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 119 birim + 161 integration
-cd frontend && npm test                    # 30 birim (Vitest)
+cd backend  && dotnet test                 # 119 birim + 163 integration
+cd frontend && npm test                    # 31 birim (Vitest)
 cd frontend && npm run e2e                 # 35 uctan uca (Playwright)
 cd frontend && npm run e2e:tip             # e2e dosyalarinin tip denetimi
 ```
@@ -196,6 +196,18 @@ yeniden dogrulaniyor.
 
 E2E kosmadan once `docker compose stop api` yapin: konteynerdeki simulator
 ayni veritabanina telemetri yazar ve testlerin altindan AGV durumunu kaydirir.
+
+## Alarmlar
+
+Her modul kendi alarmlarini uretir (`IAlarmSource`); birlestirme composition
+root'ta. Alarmlar tabloya yazilmaz, mevcut veriden hesaplanir.
+
+**Ture gore gruplu.** Olculdu: canli sistemde 51 alarm satirinin 51'i ayni
+turdendi ("uzun sure bekleyen gorev") ve operator ayni seyi soyleyen 51
+satira bakiyordu. Her turden en fazla 5 ornek doner, geri kalani sayi olarak
+(`groups[].count`). Tur icindeki sira kaynaktan geldigi gibi korunur (ornegin
+en uzun bekleyen gorev once). Kritik alarm rozeti kesilmeden, gercek sayi
+uzerinden hesaplanir.
 
 ## Stok bakiyesi
 

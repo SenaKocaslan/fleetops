@@ -36,3 +36,17 @@ td {
   background: #e3e9f5;
   color: #223b6b;
 }
+
+tr.grup td {
+  background: rgba(0, 0, 0, 0.04);
+  padding-top: 0.6rem;
+}
+
+tr.grup strong {
+  margin: 0 0.5rem;
+}
+
+tr.devami td {
+  font-style: italic;
+  opacity: 0.75;
+}

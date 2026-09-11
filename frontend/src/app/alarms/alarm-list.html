@@ -18,18 +18,33 @@
         </tr>
       </thead>
       <tbody>
-        <!-- track $index: alarmlarin dogal bir benzersiz anahtari yok
-             (ayni kod + ayni ozne iki kez cikabilir) ve yinelenen anahtar
-             Angular'da calisma ani hatasi. Liste her tazelemede bastan
-             cizildigi icin kimlik takibinin kazanci da yok. -->
-        @for (alarm of alarmlar().items; track $index) {
-          <tr data-testid="alarm-row">
-            <td><span class="siddet" [class]="alarm.severity.toLowerCase()">{{ alarm.severity }}</span></td>
-            <td>{{ alarm.code }}</td>
-            <td>{{ alarm.subject }}</td>
-            <td>{{ alarm.message }}</td>
-            <td>{{ alarm.detectedAtUtc | date: 'HH:mm:ss' }}</td>
+        <!-- Alarmlar TURE GORE gruplu: ayni turden onlarca satir (olculdu:
+             51'in 51'i ayni turdendi) digerlerini gorunmez kiliyordu. Her
+             turden birkac ornek, geri kalani sayi olarak.
+             track $index: alarmlarin dogal bir benzersiz anahtari yok. -->
+        @for (grup of alarmlar().groups; track grup.code + grup.severity) {
+          <tr class="grup" data-testid="alarm-grup">
+            <td colspan="5">
+              <span class="siddet" [class]="grup.severity.toLowerCase()">{{ grup.severity }}</span>
+              <strong>{{ grup.code }}</strong>
+              <span data-testid="alarm-grup-adet">{{ grup.count }} alarm</span>
+            </td>
           </tr>
+          @for (alarm of ornekler(grup); track $index) {
+            <tr data-testid="alarm-row">
+              <td></td>
+              <td>{{ alarm.code }}</td>
+              <td>{{ alarm.subject }}</td>
+              <td>{{ alarm.message }}</td>
+              <td>{{ alarm.detectedAtUtc | date: 'HH:mm:ss' }}</td>
+            </tr>
+          }
+          @if (grup.count > grup.shown) {
+            <tr class="devami" data-testid="alarm-devami">
+              <td></td>
+              <td colspan="4">+{{ grup.count - grup.shown }} benzer alarm daha</td>
+            </tr>
+          }
         }
       </tbody>
     </table>

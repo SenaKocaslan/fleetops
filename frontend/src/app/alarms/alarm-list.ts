@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { AlarmService } from './alarm.service';
+import { Alarm, AlarmGrubu } from './alarm.model';
 
 @Component({
   selector: 'app-alarm-list',
@@ -19,5 +20,9 @@ export class AlarmList {
 
   protected yenile(): void {
     this.service.yenile();
+  }
+
+  protected ornekler(grup: AlarmGrubu): Alarm[] {
+    return this.alarmlar().items.filter((a) => a.code === grup.code && a.severity === grup.severity);
   }
 }

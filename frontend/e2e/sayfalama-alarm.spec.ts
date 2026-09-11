@@ -80,7 +80,11 @@ test.describe('Alarmlar', () => {
 
     const satir = page.getByTestId('alarm-row').filter({ hasText: 'AGV-02' });
     await expect(satir.first()).toContainText('Fleet.KritikBatarya');
-    await expect(satir.first()).toContainText('Kritik');
+
+    // Alarmlar ture gore gruplu; siddet grup basliginda.
+    const grup = page.getByTestId('alarm-grup').filter({ hasText: 'Fleet.KritikBatarya' });
+    await expect(grup).toContainText('Kritik');
+    await expect(grup.getByTestId('alarm-grup-adet')).toContainText('alarm');
 
     await page.goto('/');
     await expect(page.getByTestId('alarm-rozeti')).toBeVisible();
