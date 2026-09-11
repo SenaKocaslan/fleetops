@@ -213,4 +213,30 @@ public class TransportTaskTests
         Assert.DoesNotContain(TransportTaskStatus.Assigned, TransportTask.BitmisDurumlar);
         Assert.DoesNotContain(TransportTaskStatus.InProgress, TransportTask.BitmisDurumlar);
     }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    [InlineData(11)]
+    [InlineData(1000)]
+    public void Aralik_disindaki_oncelik_reddedilir(int oncelik)
+    {
+        var sonuc = TransportTask.Create(
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "MLZ-1", 1, oncelik, DateTime.UtcNow);
+
+        Assert.True(sonuc.IsFailure);
+        Assert.Equal(TaskErrors.OncelikAraligiDisi, sonuc.Error);
+    }
+
+    [Theory]
+    [InlineData(TransportTask.AsgariOncelik)]
+    [InlineData(TransportTask.AzamiOncelik)]
+    public void Sinirdaki_oncelik_kabul_edilir(int oncelik)
+    {
+        // Kontrol testi: sinirlar dahil mi haric mi sorusu en sik hata yeri.
+        var sonuc = TransportTask.Create(
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "MLZ-1", 1, oncelik, DateTime.UtcNow);
+
+        Assert.True(sonuc.IsSuccess);
+    }
 }

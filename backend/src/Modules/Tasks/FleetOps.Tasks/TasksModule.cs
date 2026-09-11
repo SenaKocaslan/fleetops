@@ -53,6 +53,7 @@ public sealed class TasksModule : IModule
         services.Configure<OutboxOptions>(configuration.GetSection(OutboxOptions.Bolum));
         services.AddSingleton<IIntegrationEventTypeRegistry, IntegrationEventTypeRegistry>();
         services.AddHostedService<OutboxDispatcher>();
+        services.AddHostedService<OutboxTemizleyici>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)

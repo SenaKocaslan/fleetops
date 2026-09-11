@@ -31,6 +31,7 @@ public sealed class FleetOpsApiFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseSetting("ResourceLock:ReaperInterval", "01:00:00");
 
         builder.UseSetting("Outbox:PollInterval", "01:00:00");
+        builder.UseSetting("Outbox:CleanupInterval", "01:00:00");
 
         // Sarj yonlendirici testin ortasinda arac durumu degistirirse
         // testler flaky olur; tur testten dogrudan cagriliyor.

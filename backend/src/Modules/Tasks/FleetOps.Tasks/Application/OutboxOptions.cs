@@ -12,4 +12,11 @@ public sealed class OutboxOptions
     // gecici bir kesinti kalici kayba donusur; yuksek olursa bozuk mesaj
     // kuyrugu uzun sure mesgul eder.
     public int MaxAttempts { get; set; } = 5;
+
+    // Islenmis mesaj teslim edildikten sonra hicbir ise yaramiyor; ne gecmis
+    // kaydi ne de tanilama verisi. Bu sure kadar tutuluyor ki bir sorun
+    // bildirildiginde "olay gercekten gitti mi" sorusuna bakilabilsin.
+    public TimeSpan Retention { get; set; } = TimeSpan.FromDays(7);
+
+    public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromHours(1);
 }

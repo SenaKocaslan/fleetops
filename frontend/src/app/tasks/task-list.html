@@ -28,7 +28,7 @@
     </label>
     <label>
       Oncelik
-      <input name="priority" type="number" [(ngModel)]="priority" data-testid="priority" />
+      <input name="priority" type="number" min="1" max="10" [(ngModel)]="priority" data-testid="priority" />
     </label>
     <button type="submit" [disabled]="form.invalid" data-testid="submit">Olustur</button>
   </form>

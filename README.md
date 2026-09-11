@@ -119,6 +119,11 @@ Servisler kosula bagli sirayla kalkar:
 db (healthy)  ->  migrate (exit 0)  ->  api (healthy)  ->  web
 ```
 
+**Islenmis outbox mesajlari 7 gun sonra silinir** (`OutboxTemizleyici`).
+Teslim edildikten sonra ise yaramiyorlar; bu sure yalnizca "olay gercekten
+gitti mi" sorusuna bakabilmek icin. **Olu mektuplara dokunulmaz:** onlar
+insan mudahalesi bekliyor, silinirlerse alarm da kaybolur.
+
 **`/health` veritabanina bakar.** Veritabanina ulasilamazsa 503 doner;
 Docker HEALTHCHECK, compose'daki baslatma sirasi ve CI bu cevaba guveniyor.
 Veritabani geri geldiginde API yeniden baslatilmadan kendiliginden 200'e
@@ -149,9 +154,10 @@ npm ci && npm start                        # http://localhost:4200
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 109 birim + 137 integration
+cd backend  && dotnet test                 # 115 birim + 139 integration
 cd frontend && npm test                    # 28 birim (Vitest)
 cd frontend && npm run e2e                 # 31 uctan uca (Playwright)
+cd frontend && npm run e2e:tip             # e2e dosyalarinin tip denetimi
 ```
 
 Integration testler Testcontainers ile **gercek PostgreSQL 17** ayaga kaldirir;
@@ -192,6 +198,9 @@ verilmez**. Mesgul arac kilit ALABILIR: kilit zaten gorev yurutulurken
 alinir.
 
 ## Otomatik atama
+
+Gorev onceligi 1-10 araligindadir (buyuk sayi daha oncelikli); sinir olmadiginda
+0 ve negatif degerler sessizce kaybolan gorevler uretiyordu.
 
 Havuzdaki bekleyen gorevler, oncelik sirasina gore musait araclara dagitilir
 (`POST /api/dispatch/auto-assign`, yalnizca Supervisor). Arac secim kurali

@@ -22,6 +22,15 @@ public sealed class TransportTask : AggregateRoot
     public static readonly TransportTaskStatus[] BitmisDurumlar =
         [.. IzinliGecisler.Where(g => g.Value.Length == 0).Select(g => g.Key).Order()];
 
+    // Buyuk sayi daha oncelikli. Alt sinir olmadiginda 0 ve negatif degerler
+    // kabul ediliyordu; oyle bir gorev listenin dibine duser, otomatik atama
+    // onu en son alir, yani sessizce gorunmez olur. Ust sinir olmadiginda da
+    // "siranin onune gecmek" icin 1000 yazmak mumkundu -- olculdu: bu
+    // projenin kendi testlerinde 99, 900 ve 1000 degerleri tam bu sebeple
+    // birikmisti. Gercek kullanimdaki degerler 1, 3, 5 ve 9.
+    public const int AsgariOncelik = 1;
+    public const int AzamiOncelik = 10;
+
     private readonly List<TaskAssignment> _assignments = [];
 
     private TransportTask(
@@ -94,6 +103,11 @@ public sealed class TransportTask : AggregateRoot
         if (quantity <= 0)
         {
             return Result.Failure<TransportTask>(TaskErrors.MiktarPozitifOlmali);
+        }
+
+        if (priority is < AsgariOncelik or > AzamiOncelik)
+        {
+            return Result.Failure<TransportTask>(TaskErrors.OncelikAraligiDisi);
         }
 
         return Result.Success(new TransportTask(

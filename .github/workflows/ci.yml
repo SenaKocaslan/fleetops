@@ -12,6 +12,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Her iste timeout-minutes var. Olculdu (2026-09-11): dagitim isi imaj
+# derleme adiminda 10 dakikayi gecti ve takildi; zaman asimi olmadan GitHub
+# bir isi 6 saate kadar kosturur. Sureler olagan surelerin (20-130 sn) kat
+# kat ustunde, yalnizca takilmayi kesmek icin.
+
 env:
   # Compose dosyasi bu degiskeni ZORUNLU tutuyor (varsayilani bilerek yok).
   # Buradaki deger yalnizca CI icin uretilmis, hicbir yerde kullanilmiyor.
@@ -21,6 +26,7 @@ jobs:
   backend:
     name: Backend testleri
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -50,6 +56,7 @@ jobs:
   frontend:
     name: Arayuz birim testleri
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -69,6 +76,13 @@ jobs:
         working-directory: frontend
         run: npm test
 
+      # Playwright testleri tip denetimi yapmadan derliyor; eksik argumanla
+      # cagrilan bir yardimci hazirligi sessizce iptal edebiliyor ve test yine
+      # geciyor (olculdu 2026-09-11).
+      - name: E2E tip denetimi
+        working-directory: frontend
+        run: npm run e2e:tip
+
       - name: Uretim derlemesi
         working-directory: frontend
         run: npm run build
@@ -76,6 +90,7 @@ jobs:
   e2e:
     name: Uctan uca testler
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -132,6 +147,7 @@ jobs:
   docker:
     name: Dagitim yigini
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 

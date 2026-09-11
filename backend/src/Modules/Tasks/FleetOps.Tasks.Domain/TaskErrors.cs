@@ -10,6 +10,10 @@ public static class TaskErrors
     public static readonly Error MiktarPozitifOlmali =
         new("Task.MiktarPozitifOlmali", "Miktar sifirdan buyuk olmalidir.");
 
+    public static readonly Error OncelikAraligiDisi =
+        new("Task.OncelikAraligiDisi",
+            $"Oncelik {TransportTask.AsgariOncelik} ile {TransportTask.AzamiOncelik} arasinda olmalidir.");
+
     public static readonly Error AyniLokasyon =
         new("Task.AyniLokasyon", "Kaynak ve hedef lokasyon ayni olamaz.");
 

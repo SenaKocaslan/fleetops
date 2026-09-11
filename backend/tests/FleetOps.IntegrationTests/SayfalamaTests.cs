@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using FleetOps.IntegrationTests.Altyapi;
 using FleetOps.SharedKernel.Domain;
 using FleetOps.Tasks.Application;
+using FleetOps.Tasks.Domain;
 
 namespace FleetOps.IntegrationTests;
 
@@ -204,7 +205,7 @@ public class SayfalamaTests(FleetOpsApiFactory fabrika)
         var etiket = $"SIRA-{Guid.NewGuid().ToString()[..8]}";
 
         // Tamamlanmis ama YUKSEK oncelikli
-        var tamamlanan = await GorevOlusturAsync(istemci, $"{etiket}-TAM", oncelik: 900);
+        var tamamlanan = await GorevOlusturAsync(istemci, $"{etiket}-TAM", oncelik: TransportTask.AzamiOncelik);
         await istemci.PostAsJsonAsync($"/api/tasks/{tamamlanan}/assign",
             new { agvId = Guid.Parse("11111111-1111-1111-1111-111111111111") });
         await istemci.PostAsync($"/api/tasks/{tamamlanan}/start", null);

@@ -1,0 +1,15 @@
+{
+  // Playwright testleri tip denetimi YAPMADAN derliyor. Olculdu
+  // (2026-09-11): bir yardimci eksik argumanla cagriliyordu, hazirlik hic
+  // calismiyordu ve test yine geciyordu. Bu dosya o denetimi ayrica yapar.
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": ["e2e/**/*.ts"]
+}
