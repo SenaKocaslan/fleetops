@@ -31,7 +31,7 @@ internal sealed class FiloAlarmKaynagi(
                     "Fleet.KritikBatarya",
                     AlarmSeverity.Kritik,
                     arac.Code,
-                    $"Batarya %{arac.BatteryLevel}. Arac sarja alinmali.",
+                    $"Batarya %{arac.BatteryLevel}. Araç şarja alınmalı.",
                     simdi));
             }
             else if (arac.BatteryLevel <= _ayarlar.DusukBataryaEsigi)
@@ -40,7 +40,7 @@ internal sealed class FiloAlarmKaynagi(
                     "Fleet.DusukBatarya",
                     AlarmSeverity.Uyari,
                     arac.Code,
-                    $"Batarya %{arac.BatteryLevel}, esik %{_ayarlar.DusukBataryaEsigi}.",
+                    $"Batarya %{arac.BatteryLevel}, eşik %{_ayarlar.DusukBataryaEsigi}.",
                     simdi));
             }
 
@@ -53,7 +53,7 @@ internal sealed class FiloAlarmKaynagi(
                     "Fleet.TelemetriKesildi",
                     AlarmSeverity.Kritik,
                     arac.Code,
-                    $"Son telemetri {(int)(simdi - sonGorulme).TotalSeconds} saniye once.",
+                    $"Son telemetri {(int)(simdi - sonGorulme).TotalSeconds} saniye önce.",
                     simdi));
             }
         }

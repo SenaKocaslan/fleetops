@@ -123,8 +123,8 @@ internal sealed class StokAlarmKaynagi(StockDbContext db) : IAlarmSource
                 "Stock.EksiBakiye",
                 AlarmSeverity.Uyari,
                 $"{b.LocationCode} / {b.MaterialCode}",
-                $"Kayitlara gore bakiye {b.Quantity}. Rafa sistem disinda malzeme gelmis "
-                    + "ya da kaydi olmayan bir cikis yapilmis olabilir.",
+                $"Kayıtlara göre bakiye {b.Quantity}. Rafa sistem dışından malzeme gelmiş "
+                    + "ya da kaydı olmayan bir çıkış yapılmış olabilir.",
                 simdi))
             .ToList();
     }

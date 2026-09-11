@@ -80,6 +80,29 @@ public class AlarmGruplamaTests(FleetOpsApiFactory fabrika)
         }
     }
 
+    [Theory]
+    [InlineData(20, "20 dakikadır")]
+    [InlineData(125, "2 saattir")]
+    [InlineData(3 * 24 * 60 + 10, "3 gündür")]
+    public async Task Bekleme_suresi_okunur_birimle_yazilir(int dakika, string beklenen)
+    {
+        // "4533 dakikadir" dogru ama okunmuyordu (canli ekranda goruldu).
+        var etiket = $"SRE-{Guid.NewGuid():N}"[..12];
+        var id = await GorevOlusturAsync(etiket);
+        await GeriyeTarihleAsync(id, TimeSpan.FromMinutes(dakika));
+
+        try
+        {
+            var alarm = Assert.Single(
+                (await AlarmlarAsync()).Items, a => a.Code == BeklemeKodu && a.Subject == etiket);
+            Assert.Contains(beklenen, alarm.Message);
+        }
+        finally
+        {
+            await EtiketliGorevleriSilAsync(etiket);
+        }
+    }
+
     private async Task<AlarmYaniti> AlarmlarAsync() =>
         (await (await fabrika.IstemciAsync()).GetFromJsonAsync<AlarmYaniti>("/api/alarms"))!;
 

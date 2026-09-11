@@ -33,7 +33,7 @@ internal sealed class GorevAlarmKaynagi(
                 "Tasks.UzunSureBekleyenGorev",
                 AlarmSeverity.Uyari,
                 gorev.MaterialCode,
-                $"Gorev {(int)(simdi - gorev.CreatedAtUtc).TotalMinutes} dakikadir atanmadi.",
+                $"Görev {SureMetni(simdi - gorev.CreatedAtUtc)} atanmadı.",
                 simdi));
         }
 
@@ -60,15 +60,15 @@ internal sealed class GorevAlarmKaynagi(
 
         foreach (var gorev in baslamayanlar)
         {
-            var dakika = gorev.AtandiAtUtc is { } t ? (int)(simdi - t).TotalMinutes : 0;
+            var bekleme = gorev.AtandiAtUtc is { } t ? simdi - t : TimeSpan.Zero;
 
             alarmlar.Add(new AlarmSummary(
                 "Tasks.BaslamayanGorev",
                 AlarmSeverity.Kritik,
                 gorev.MaterialCode,
-                $"Gorev {dakika} dakikadir atanmis ama baslamadi. "
-                    + $"Atanan AGV: {gorev.AgvId}. Arac gorevi almamis olabilir; "
-                    + "gorev havuza dondurulebilir.",
+                $"Görev {SureMetni(bekleme)} atanmış ama başlamadı. "
+                    + $"Atanan AGV: {gorev.AgvId}. Araç görevi almamış olabilir; "
+                    + "görev havuza döndürülebilir.",
                 simdi));
         }
 
@@ -88,7 +88,7 @@ internal sealed class GorevAlarmKaynagi(
                 "Tasks.TakiliKilit",
                 AlarmSeverity.Kritik,
                 kilit.ResourceId.ToString(),
-                $"Kilit {kilit.ExpiresAtUtc:HH:mm:ss} itibariyla dolmus ama hala aktif. "
+                $"Kilit {kilit.ExpiresAtUtc:HH:mm:ss} itibarıyla dolmuş ama hâlâ aktif. "
                     + $"Tutan AGV: {kilit.AgvId}.",
                 simdi));
         }
@@ -112,11 +112,21 @@ internal sealed class GorevAlarmKaynagi(
                 // Ozne mesajin kendisi, turu degil: ayni turden iki olu
                 // mektup varsa ikisi de ayri ayri ele alinmali.
                 mesaj.Id.ToString(),
-                $"{mesaj.Type} olayi {mesaj.AttemptCount} denemeden sonra teslim "
-                    + $"edilemedi ve kuyruktan cikarildi. Son hata: {mesaj.Error}",
+                $"{mesaj.Type} olayı {mesaj.AttemptCount} denemeden sonra teslim "
+                    + $"edilemedi ve kuyruktan çıkarıldı. Son hata: {mesaj.Error}",
                 simdi));
         }
 
         return alarmlar;
     }
+
+    // "4533 dakikadir" dogru ama okunmuyor. Sure okunur birime cevriliyor.
+    // Ekler sabit kelimelere bagli oldugu icin elle yazildi (dakika-dir,
+    // saat-tir, gun-dur).
+    internal static string SureMetni(TimeSpan sure) => sure switch
+    {
+        { TotalMinutes: < 60 } => $"{(int)sure.TotalMinutes} dakikadır",
+        { TotalHours: < 24 } => $"{(int)sure.TotalHours} saattir",
+        _ => $"{(int)sure.TotalDays} gündür",
+    };
 }
