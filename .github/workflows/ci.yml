@@ -147,14 +147,20 @@ jobs:
   docker:
     name: Dagitim yigini
     runs-on: ubuntu-latest
-    # Olculdu: imaj derleme bir kosuda 968 sn surdu (olagani ~40 sn). Sinir
-    # gorulen en kotu surenin rahatca ustunde; amac takilmayi kesmek.
-    timeout-minutes: 30
+    # Olculdu: imaj derleme 968, 483 ve 1318 sn surdu (olagani ~40 sn).
+    # 30 dk'lik sinira 8 dk pay kalmisti. Amac takilmayi kesmek, yavas ama
+    # saglam kosuyu dusurmek degil.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
-      - name: Imajlari derle
-        run: docker compose build
+      # Iki ayri adim: derleme bir kosuda 968, digerinde 1318 sn surdu
+      # (olagani ~40 sn). Tek adimda hangi imajin yavasladigi gorunmuyordu.
+      - name: API imajini derle
+        run: docker compose build api
+
+      - name: Arayuz imajini derle
+        run: docker compose build web
 
       # Imajlarin derlenmesi yetmez: asil iddia "bos bir veritabaninda
       # tek komutla ayaga kalkar". Zincir (db -> migrate -> api -> web)
@@ -231,6 +237,13 @@ jobs:
           docker rm -f sahte-api
           docker compose start api
           docker compose up -d --wait
+          # Bozdugu durumu geri getirdigini DOGRULAMADAN bitmesin: sonraki
+          # adimlar nginx uzerinden API'ye ulasilabildigini varsayiyor.
+          # nginx DNS'i en fazla 10 sn onbellekte tutuyor (resolver valid).
+          for i in $(seq 1 30); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/agvs)" = "401" ] && break
+            sleep 1
+          done
           test "$kod" = "404"
 
       # IP basina giris sinirlamasi nginx'te. Her deneme FARKLI kullanici
@@ -238,6 +251,13 @@ jobs:
       # girmesin; olculen sey nginx olsun.
       - name: Giris denemeleri nginx'te sinirlaniyor mu
         run: |
+          # On kosul: API nginx uzerinden erisilebilir olmali. Onceki adimlara
+          # guvenmek yerine burada dogrulaniyor; /api/agvs giris kotasini
+          # tuketmez (sinir yalnizca /api/auth/login'de).
+          for i in $(seq 1 30); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/agvs)" = "401" ] && break
+            sleep 1
+          done
           kodlar=""
           for i in $(seq 1 15); do
             kodlar="$kodlar $(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' -d "{\"userName\":\"ci-$i\",\"password\":\"x\"}")"
