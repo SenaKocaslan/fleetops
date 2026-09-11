@@ -62,4 +62,57 @@ public class GorevDomainEventTests
 
         Assert.Empty(gorev.DomainEvents);
     }
+
+    [Fact]
+    public void Havuza_dondurme_aracin_kimligiyle_atama_bitti_olayini_yayar()
+    {
+        var gorev = Gorev();
+        var agvId = Guid.NewGuid();
+        gorev.Assign(agvId, Simdi);
+
+        gorev.Release(Simdi.AddMinutes(3));
+
+        // Kimlik atama KAPANMADAN once okunmali; sonra okunsaydi bos gelirdi
+        // ve Fleet hangi araci serbest birakacagini bilemezdi.
+        var olay = Assert.Single(gorev.DomainEvents.OfType<TaskAssignmentEndedDomainEvent>());
+        Assert.Equal(agvId, olay.AgvId);
+        Assert.Equal(AtamaBitisSebebi.HavuzaDondu, olay.Sebep);
+        Assert.Null(gorev.AktifAtama);
+        Assert.Equal(TransportTaskStatus.Pending, gorev.Status);
+    }
+
+    [Fact]
+    public void Basarisizlik_aracin_kimligiyle_atama_bitti_olayini_yayar()
+    {
+        var gorev = Gorev();
+        var agvId = Guid.NewGuid();
+        gorev.Assign(agvId, Simdi);
+        gorev.Start();
+
+        gorev.Fail(Simdi.AddMinutes(8));
+
+        var olay = Assert.Single(gorev.DomainEvents.OfType<TaskAssignmentEndedDomainEvent>());
+        Assert.Equal(agvId, olay.AgvId);
+        Assert.Equal(AtamaBitisSebebi.Basarisiz, olay.Sebep);
+    }
+
+    [Fact]
+    public void Iptal_olay_yaymaz_cunku_serbest_birakilacak_arac_yok()
+    {
+        var gorev = Gorev();
+
+        Assert.True(gorev.Cancel().IsSuccess);
+
+        Assert.Empty(gorev.DomainEvents.OfType<TaskAssignmentEndedDomainEvent>());
+    }
+
+    [Fact]
+    public void Atanmis_gorev_dogrudan_iptal_edilemez()
+    {
+        // Once havuza donmeli: aksi halde arac hic serbest birakilmazdi.
+        var gorev = Gorev();
+        gorev.Assign(Guid.NewGuid(), Simdi);
+
+        Assert.True(gorev.Cancel().IsFailure);
+    }
 }

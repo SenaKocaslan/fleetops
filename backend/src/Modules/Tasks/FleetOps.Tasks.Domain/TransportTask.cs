@@ -141,7 +141,7 @@ public sealed class TransportTask : AggregateRoot
             return gecis;
         }
 
-        AktifAtama?.Kapat(nowUtc);
+        AtamayiBitir(nowUtc, AtamaBitisSebebi.HavuzaDondu);
         Status = TransportTaskStatus.Pending;
         return Result.Success();
     }
@@ -186,9 +186,22 @@ public sealed class TransportTask : AggregateRoot
             return gecis;
         }
 
-        AktifAtama?.Kapat(nowUtc);
+        AtamayiBitir(nowUtc, AtamaBitisSebebi.Basarisiz);
         Status = TransportTaskStatus.Failed;
         return Result.Success();
+    }
+
+    // Arac kimligi atama KAPANMADAN once okunmali; sonra okunursa bos gelir.
+    private void AtamayiBitir(DateTime nowUtc, string sebep)
+    {
+        if (AktifAtama is not { } atama)
+        {
+            return;
+        }
+
+        var agvId = atama.AgvId;
+        atama.Kapat(nowUtc);
+        Raise(new TaskAssignmentEndedDomainEvent(Id, agvId, sebep, nowUtc));
     }
 
     public Result Cancel()

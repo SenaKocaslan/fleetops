@@ -112,4 +112,16 @@ describe('TaskService', () => {
 
     istek.flush({ items: [], page: 1, pageSize: 20, totalCount: 0, totalPages: 0, hasNext: false });
   });
+
+  it('havuza dondurme, basarisiz ve iptal dogru adreslere POST eder', () => {
+    service.release('g1').subscribe();
+    service.fail('g2').subscribe();
+    service.cancel('g3').subscribe();
+
+    for (const [id, islem] of [['g1', 'release'], ['g2', 'fail'], ['g3', 'cancel']]) {
+      const istek = http.expectOne(`${environment.apiUrl}/tasks/${id}/${islem}`);
+      expect(istek.request.method).toBe('POST');
+      istek.flush(null);
+    }
+  });
 });

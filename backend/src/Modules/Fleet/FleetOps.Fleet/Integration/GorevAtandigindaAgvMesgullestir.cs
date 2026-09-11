@@ -31,7 +31,7 @@ internal sealed class GorevAtandigindaAgvMesgullestir(
             reddedildi = sonuc.IsFailure;
 
             return sonuc.IsSuccess;
-        }, cancellationToken);
+        }, cancellationToken, olay.Id);
 
         if (!bulundu)
         {

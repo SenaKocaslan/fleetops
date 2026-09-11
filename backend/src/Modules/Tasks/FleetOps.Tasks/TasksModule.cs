@@ -36,6 +36,9 @@ public sealed class TasksModule : IModule
         services.AddScoped<ICommandHandler<AssignTaskCommand>, AssignTaskCommandHandler>();
         services.AddScoped<ICommandHandler<StartTaskCommand>, StartTaskCommandHandler>();
         services.AddScoped<ICommandHandler<CompleteTaskCommand>, CompleteTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<ReleaseTaskCommand>, ReleaseTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<FailTaskCommand>, FailTaskCommandHandler>();
+        services.AddScoped<ICommandHandler<CancelTaskCommand>, CancelTaskCommandHandler>();
 
         services.Configure<ResourceLockOptions>(
             configuration.GetSection(ResourceLockOptions.Bolum));
@@ -117,6 +120,35 @@ public sealed class TasksModule : IModule
             var sonuc = await handler.HandleAsync(new CompleteTaskCommand(id), ct);
             return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
         }).RequireAuthorization(Politikalar.GorevYurutme);
+
+        // Havuza dondurmek ve iptal bir PLANLAMA karari (supervizor);
+        // basarisiz bildirmek ise yurutmenin parcasi (operator de yapabilir).
+        grup.MapPost("/{id:guid}/release", async (
+            Guid id,
+            ICommandHandler<ReleaseTaskCommand> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new ReleaseTaskCommand(id), ct);
+            return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
+        }).RequireAuthorization(Politikalar.GorevPlanlama);
+
+        grup.MapPost("/{id:guid}/fail", async (
+            Guid id,
+            ICommandHandler<FailTaskCommand> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new FailTaskCommand(id), ct);
+            return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
+        }).RequireAuthorization(Politikalar.GorevYurutme);
+
+        grup.MapPost("/{id:guid}/cancel", async (
+            Guid id,
+            ICommandHandler<CancelTaskCommand> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(new CancelTaskCommand(id), ct);
+            return sonuc.IsSuccess ? Results.NoContent() : HataYaniti(sonuc.Error);
+        }).RequireAuthorization(Politikalar.GorevPlanlama);
 
         var kaynaklar = endpoints.MapGroup("/api/resources").WithTags("Resources")
             .RequireAuthorization(Politikalar.Okuma);

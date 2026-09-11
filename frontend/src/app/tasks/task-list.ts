@@ -92,6 +92,23 @@ export class TaskList {
     this.durumDegistir(this.service.complete(taskId));
   }
 
+  protected release(taskId: string): void {
+    this.durumDegistir(this.service.release(taskId));
+  }
+
+  // Geri alinamayan iki islem icin onay: yanlis tiklama gorevi bitirir.
+  protected fail(taskId: string): void {
+    if (confirm('Gorev basarisiz olarak kapatilacak. Emin misiniz?')) {
+      this.durumDegistir(this.service.fail(taskId));
+    }
+  }
+
+  protected cancel(taskId: string): void {
+    if (confirm('Gorev iptal edilecek. Emin misiniz?')) {
+      this.durumDegistir(this.service.cancel(taskId));
+    }
+  }
+
   private durumDegistir(istek: import('rxjs').Observable<void>): void {
     this.assignError.set(null);
     istek.subscribe({

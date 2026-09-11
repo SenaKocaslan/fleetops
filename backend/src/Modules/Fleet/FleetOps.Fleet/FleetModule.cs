@@ -51,6 +51,7 @@ public sealed class FleetModule : IModule
 
         services.AddScoped<IIntegrationEventHandler, GorevAtandigindaAgvMesgullestir>();
         services.AddScoped<IIntegrationEventHandler, GorevTamamlandigindaAgvSerbestBirak>();
+        services.AddScoped<IIntegrationEventHandler, GorevAtamasiBittigindeAgvSerbestBirak>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)

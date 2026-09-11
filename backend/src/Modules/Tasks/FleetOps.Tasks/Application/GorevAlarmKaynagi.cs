@@ -67,7 +67,8 @@ internal sealed class GorevAlarmKaynagi(
                 AlarmSeverity.Kritik,
                 gorev.MaterialCode,
                 $"Gorev {dakika} dakikadir atanmis ama baslamadi. "
-                    + $"Atanan AGV: {gorev.AgvId}. Arac gorevi almamis olabilir.",
+                    + $"Atanan AGV: {gorev.AgvId}. Arac gorevi almamis olabilir; "
+                    + "gorev havuza dondurulebilir.",
                 simdi));
         }
 

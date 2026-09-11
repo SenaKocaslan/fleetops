@@ -88,3 +88,12 @@ th, td {
   background: rgba(47, 125, 79, 0.08);
   font-size: 0.9rem;
 }
+
+/* Asil islemin yaninda duran, geri alinmasi zor islemler: goz onde ama
+   birincil dugmeyle karismiyor. */
+button.ikincil {
+  margin-left: 0.35rem;
+  background: transparent;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+}

@@ -176,9 +176,9 @@ yollar, parametreler, istek govdeleri ve yetki bilgisi eksiksiz.
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 115 birim + 148 integration
-cd frontend && npm test                    # 28 birim (Vitest)
-cd frontend && npm run e2e                 # 31 uctan uca (Playwright)
+cd backend  && dotnet test                 # 119 birim + 156 integration
+cd frontend && npm test                    # 29 birim (Vitest)
+cd frontend && npm run e2e                 # 35 uctan uca (Playwright)
 cd frontend && npm run e2e:tip             # e2e dosyalarinin tip denetimi
 ```
 
@@ -196,6 +196,28 @@ yeniden dogrulaniyor.
 
 E2E kosmadan once `docker compose stop api` yapin: konteynerdeki simulator
 ayni veritabanina telemetri yazar ve testlerin altindan AGV durumunu kaydirir.
+
+## Gorev yasam dongusu
+
+| Islem | Gecis | Kim | Arac |
+|---|---|---|---|
+| Havuza dondur | Assigned -> Pending | Supervisor | serbest kalir |
+| Basarisiz | InProgress -> Failed | Operator, Supervisor | serbest kalir |
+| Iptal | Pending -> Cancelled | Supervisor | (atanmamis) |
+
+Atanmis gorev dogrudan iptal edilemez; once havuza donmeli. "Havuza dondur",
+"atandi ama baslamadi" alarminin cozumu.
+
+Havuza dondurme ve basarisizlik `TaskAssignmentEnded` olayini yayinlar; Fleet
+bu olayla araci serbest birakir. Onceden bu iki gecis hic olay
+yayinlamiyordu: uc noktalari eklenseydi bile arac Fleet'te sonsuza kadar
+Busy kalir ve filodan sessizce duserdi.
+
+**Fleet'in olay tuketicileri idempotent.** Teslimat en az bir kez; ayni olay
+iki kez gelebilir. Olculdu: onceki gorevin tekrar gelen bitis olayi, araci
+yeni gorevinin ortasinda serbest birakiyordu. Stock'taki kalip Fleet'e de
+uygulandi: olay kimligi `fleet.processed_integration_event` tablosunun
+birincil anahtari, durum degisikligiyle ayni transaction'da yaziliyor.
 
 ## Otomatik sarj
 

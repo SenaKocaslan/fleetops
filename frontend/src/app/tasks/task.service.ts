@@ -46,4 +46,16 @@ export class TaskService {
   complete(taskId: string): Observable<void> {
     return this.http.post<void>(`${this.url}/${taskId}/complete`, {});
   }
+
+  release(taskId: string): Observable<void> {
+    return this.http.post<void>(`${this.url}/${taskId}/release`, {});
+  }
+
+  fail(taskId: string): Observable<void> {
+    return this.http.post<void>(`${this.url}/${taskId}/fail`, {});
+  }
+
+  cancel(taskId: string): Observable<void> {
+    return this.http.post<void>(`${this.url}/${taskId}/cancel`, {});
+  }
 }

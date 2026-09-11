@@ -6,19 +6,20 @@ using FleetOps.SharedKernel.IntegrationEvents;
 
 namespace FleetOps.Fleet.Integration;
 
-internal sealed class GorevTamamlandigindaAgvSerbestBirak(
+// Gorev havuza donduruldu ya da basarisiz oldu: arac artik o gorevde degil.
+// Tamamlanma olayindaki tuketiciyle ayni is, farkli olay; ikisi de olay
+// kimligiyle bir kez isleniyor.
+internal sealed class GorevAtamasiBittigindeAgvSerbestBirak(
     FleetDbContext db,
     IFleetNotifier notifier)
-    : IntegrationEventHandler<TaskCompletedIntegrationEvent>
+    : IntegrationEventHandler<TaskAssignmentEndedIntegrationEvent>
 {
     protected override Task HandleAsync(
-        TaskCompletedIntegrationEvent olay,
+        TaskAssignmentEndedIntegrationEvent olay,
         CancellationToken cancellationToken) =>
         AgvGuncelleyici.GuncelleAsync(
             db, notifier, olay.AgvId, SerbestBirak, cancellationToken, olay.Id);
 
-    // Mesgul degilse yazacak bir sey yok; gereksiz UPDATE telemetriyle
-    // catisma ihtimalini artirirdi.
     private static bool SerbestBirak(Agv agv)
     {
         if (agv.Status != AgvStatus.Busy)

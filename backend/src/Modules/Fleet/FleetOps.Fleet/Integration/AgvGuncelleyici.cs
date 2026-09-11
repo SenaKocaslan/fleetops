@@ -1,5 +1,6 @@
 using FleetOps.Fleet.Application;
 using FleetOps.Fleet.Domain;
+using FleetOps.Fleet.Infrastructure;
 using FleetOps.Fleet.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,23 +18,55 @@ public static class AgvGuncelleyici
 {
     private const int AzamiDeneme = 3;
 
+    // olayId verilirse (integration event tuketicileri) olay BIR KEZ islenir.
+    // Olculdu (2026-09-11): teslimat en az bir kez; onceki gorevin tekrar gelen
+    // bitis olayi araci yeni gorevinin ortasinda serbest birakti. Ayni sekilde
+    // tekrar gelen bir atama olayi, gorevi bitmis araci yeniden mesgul yapip
+    // orada takili birakirdi. Stock modulundeki kalibin aynisi: "islendi"
+    // isareti durum degisikligiyle AYNI SaveChanges'te yaziliyor.
     public static async Task<bool> GuncelleAsync(
         FleetDbContext db,
         IFleetNotifier notifier,
         Guid agvId,
         Func<Agv, bool> degisiklik,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Guid? olayId = null)
     {
+        if (olayId is { } id)
+        {
+            // Optimizasyon, kuralin kendisi degil: asil bekci birincil anahtar.
+            if (await db.ProcessedEvents.AnyAsync(e => e.Id == id, cancellationToken))
+            {
+                return true;
+            }
+
+            // Dongunun DISINDA bir kez: xmin catismasinda yeniden denenirken
+            // ikinci kez eklenirse ayni anahtarli iki nesne izlenirdi.
+            db.ProcessedEvents.Add(new ProcessedIntegrationEvent(id, DateTime.UtcNow));
+        }
+
         for (var deneme = 1; ; deneme++)
         {
             var agv = await db.Agvs.FirstOrDefaultAsync(a => a.Id == agvId, cancellationToken);
 
             if (agv is null)
             {
+                // Olay islendi sayilir: bu arac icin yapilacak bir sey yok.
+                if (olayId is not null)
+                {
+                    await db.SaveChangesAsync(cancellationToken);
+                }
+
                 return false;
             }
 
-            if (!degisiklik(agv))
+            var degisti = degisiklik(agv);
+
+            // Degisiklik olmasa da olay isaretlenmeli. Ornek: arac sarjdayken
+            // gelen atama olayi bir sey degistirmez; isaretlenmezse arac sonra
+            // musait oldugunda tekrar teslim edilen ayni olay onu, belki coktan
+            // havuza donmus bir gorev icin mesgul yapardi.
+            if (!degisti && olayId is null)
             {
                 return true;
             }
@@ -41,7 +74,12 @@ public static class AgvGuncelleyici
             try
             {
                 await db.SaveChangesAsync(cancellationToken);
-                await notifier.AgvDegistiAsync(AgvSummary.Olustur(agv), cancellationToken);
+
+                if (degisti)
+                {
+                    await notifier.AgvDegistiAsync(AgvSummary.Olustur(agv), cancellationToken);
+                }
+
                 return true;
             }
             catch (DbUpdateConcurrencyException) when (deneme < AzamiDeneme)

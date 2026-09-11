@@ -22,6 +22,9 @@ internal static class IntegrationEventFactory
             e.FromLocationId,
             e.ToLocationId),
 
+        TaskAssignmentEndedDomainEvent e => new TaskAssignmentEndedIntegrationEvent(
+            Guid.NewGuid(), e.OccurredAtUtc, e.TaskId, e.AgvId, e.Sebep),
+
         _ => null,
     };
 }

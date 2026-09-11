@@ -129,11 +129,24 @@
                 >
                   Ata
                 </button>
+                <button type="button" class="ikincil" data-testid="cancel" (click)="cancel(task.id)">
+                  Iptal
+                </button>
               } @else if (task.status === 'Assigned') {
                 <button type="button" data-testid="start" (click)="start(task.id)">Baslat</button>
+                @if (planlamaYetkisi()) {
+                  <!-- "Tasks.BaslamayanGorev" alarminin cozumu: arac gorevi
+                       almadiysa gorev buradan havuza donuyor. -->
+                  <button type="button" class="ikincil" data-testid="release" (click)="release(task.id)">
+                    Havuza dondur
+                  </button>
+                }
               } @else if (task.status === 'InProgress') {
                 <button type="button" data-testid="complete" (click)="complete(task.id)">
                   Tamamla
+                </button>
+                <button type="button" class="ikincil" data-testid="fail" (click)="fail(task.id)">
+                  Basarisiz
                 </button>
               } @else {
                 <span class="not">-</span>

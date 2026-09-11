@@ -54,3 +54,24 @@ internal sealed class CompleteTaskCommandHandler(TasksDbContext db)
     public Task<Result> HandleAsync(CompleteTaskCommand command, CancellationToken cancellationToken) =>
         GecisUygulaAsync(command.TaskId, gorev => gorev.Complete(DateTime.UtcNow), cancellationToken);
 }
+
+internal sealed class ReleaseTaskCommandHandler(TasksDbContext db)
+    : TaskGecisHandler(db), ICommandHandler<ReleaseTaskCommand>
+{
+    public Task<Result> HandleAsync(ReleaseTaskCommand command, CancellationToken cancellationToken) =>
+        GecisUygulaAsync(command.TaskId, gorev => gorev.Release(DateTime.UtcNow), cancellationToken);
+}
+
+internal sealed class FailTaskCommandHandler(TasksDbContext db)
+    : TaskGecisHandler(db), ICommandHandler<FailTaskCommand>
+{
+    public Task<Result> HandleAsync(FailTaskCommand command, CancellationToken cancellationToken) =>
+        GecisUygulaAsync(command.TaskId, gorev => gorev.Fail(DateTime.UtcNow), cancellationToken);
+}
+
+internal sealed class CancelTaskCommandHandler(TasksDbContext db)
+    : TaskGecisHandler(db), ICommandHandler<CancelTaskCommand>
+{
+    public Task<Result> HandleAsync(CancelTaskCommand command, CancellationToken cancellationToken) =>
+        GecisUygulaAsync(command.TaskId, gorev => gorev.Cancel(), cancellationToken);
+}

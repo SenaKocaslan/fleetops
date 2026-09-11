@@ -56,7 +56,12 @@ export async function girisYap(page: Page, kim: keyof typeof KULLANICILAR = 'sup
   await page.getByTestId('login-password').fill(kullanici.password);
   await page.getByTestId('login-submit').click();
 
-  await expect(page.getByTestId('oturum-bilgisi')).toBeVisible();
+  // "Gorunur" yetmez: baska bir kullaniciyla zaten oturum aciksa oturum
+  // bilgisi en bastan gorunur ve fonksiyon yeni giris bitmeden donerdi.
+  // Arkasindan gelen page.goto da yarim kalan giris istegini iptal ederdi
+  // (olculdu 2026-09-11: operator olarak "girildi" ama oturum supervisor'da
+  // kaldi). Beklenen kullanici adinin gorunmesi bekleniyor.
+  await expect(page.getByTestId('oturum-bilgisi')).toContainText(kullanici.userName);
 }
 
 // page.request tarayicidan bagimsiz; interceptor devrede degil, token elle
