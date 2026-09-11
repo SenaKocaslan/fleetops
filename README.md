@@ -176,8 +176,8 @@ yollar, parametreler, istek govdeleri ve yetki bilgisi eksiksiz.
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 119 birim + 156 integration
-cd frontend && npm test                    # 29 birim (Vitest)
+cd backend  && dotnet test                 # 119 birim + 161 integration
+cd frontend && npm test                    # 30 birim (Vitest)
 cd frontend && npm run e2e                 # 35 uctan uca (Playwright)
 cd frontend && npm run e2e:tip             # e2e dosyalarinin tip denetimi
 ```
@@ -196,6 +196,22 @@ yeniden dogrulaniyor.
 
 E2E kosmadan once `docker compose stop api` yapin: konteynerdeki simulator
 ayni veritabanina telemetri yazar ve testlerin altindan AGV durumunu kaydirir.
+
+## Stok bakiyesi
+
+Raf bazinda anlik stok, hareketlerden hesaplanir (`GET /api/stock/balances`);
+ayri bir bakiye tablosu tutulmaz, ayni bilgi iki yerde durup ayrismasin diye.
+Sorgu tamamen veritabaninda calisir: giris ve cikislar `UNION ALL`, sonra
+`GROUP BY` ve `HAVING <> 0`.
+
+**Yalnizca Depo bolgesi.** Sistem depo ICI tasimayi izliyor; tedarikciden
+kabul alanina gelen ve sevkiyattan musteriye giden malzeme sisteme girmiyor.
+Bu iki bolge bir sinir ve oradaki bakiye hareketlerden hesaplanamaz. Olculdu:
+KABUL-01 -182 cikiyordu.
+
+Rafta **eksi bakiye** kayit ile gercegin ayristigini gosterir (rafa sistem
+disinda malzeme gelmis ya da kaydi olmayan bir cikis yapilmis) ve
+`Stock.EksiBakiye` alarmi uretir.
 
 ## Gorev yasam dongusu
 

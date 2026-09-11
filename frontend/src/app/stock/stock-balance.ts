@@ -1,21 +1,19 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { StockService } from './stock.service';
-import { StockMovementSummary } from './stock.model';
+import { StockBalanceSummary } from './stock.model';
 import { BOS_SAYFA, PagedResult } from '../sayfalama.model';
-import { StockBalance } from './stock-balance';
 
 @Component({
-  selector: 'app-movement-list',
-  imports: [DatePipe, StockBalance],
-  templateUrl: './movement-list.html',
+  selector: 'app-stock-balance',
+  templateUrl: './stock-balance.html',
   styleUrl: './movement-list.css',
 })
-export class MovementList {
+export class StockBalance {
   private readonly service = inject(StockService);
 
-  protected readonly sayfa = signal<PagedResult<StockMovementSummary>>(BOS_SAYFA);
-  protected readonly movements = computed(() => this.sayfa().items);
+  protected readonly sayfa = signal<PagedResult<StockBalanceSummary>>(BOS_SAYFA);
+  protected readonly bakiyeler = computed(() => this.sayfa().items);
+  protected readonly arama = signal('');
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -26,16 +24,22 @@ export class MovementList {
   protected refresh(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.service.movements(this.sayfa().page, this.sayfa().pageSize).subscribe({
+    this.service.balances(this.sayfa().page, this.sayfa().pageSize, this.arama()).subscribe({
       next: (kayitlar) => {
         this.sayfa.set(kayitlar);
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Stok hareketleri alinamadi.');
+        this.error.set('Stok bakiyesi alinamadi.');
         this.loading.set(false);
       },
     });
+  }
+
+  protected aramaDegisti(olay: Event): void {
+    this.arama.set((olay.target as HTMLInputElement).value);
+    this.sayfa.update((s) => ({ ...s, page: 1 }));
+    this.refresh();
   }
 
   protected sayfayaGit(page: number): void {

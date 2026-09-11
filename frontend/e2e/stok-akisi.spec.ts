@@ -46,6 +46,14 @@ test.describe('Stok hareketi', () => {
 
     const hareket = page.getByTestId('movement-row').filter({ hasText: malzeme });
     await expect(hareket).toContainText('6');
+
+    // Ayni hareket raf durumuna da yansimali: formun varsayilani KABUL-01 ->
+    // RAF-A1. Kabul sinir bolgesi oldugu icin listede yalnizca raf gorunur.
+    await page.getByTestId('balance-search').fill(malzeme);
+    const bakiye = page.getByTestId('balance-row').filter({ hasText: malzeme });
+    await expect(bakiye).toHaveCount(1);
+    await expect(bakiye).toContainText('RAF-A1');
+    await expect(bakiye.getByTestId('balance-quantity')).toHaveText('6');
   });
 
   test('stok sayfasi acilir', async ({ page }) => {

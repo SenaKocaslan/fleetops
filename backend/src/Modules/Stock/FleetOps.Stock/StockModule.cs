@@ -32,6 +32,9 @@ public sealed class StockModule : IModule
         services.AddScoped<IQueryHandler<ListLocationsQuery, IReadOnlyList<LocationSummary>>, ListLocationsQueryHandler>();
         services.AddScoped<IQueryHandler<ListStockMovementsQuery, PagedResult<StockMovementSummary>>, ListStockMovementsQueryHandler>();
 
+        services.AddScoped<IQueryHandler<ListStockBalancesQuery, PagedResult<StockBalanceSummary>>, ListStockBalancesQueryHandler>();
+        services.AddScoped<IAlarmSource, StokAlarmKaynagi>();
+
         services.AddScoped<IIntegrationEventHandler, GorevTamamlandigindaStokHareketiOlustur>();
     }
 
@@ -53,6 +56,19 @@ public sealed class StockModule : IModule
         {
             var sonuc = await handler.HandleAsync(
                 new ListStockMovementsQuery(new PageRequest(page, pageSize)), ct);
+
+            return Results.Ok(sonuc.Value);
+        }).WithTags("Stock").RequireAuthorization(Politikalar.Okuma);
+
+        endpoints.MapGet("/api/stock/balances", async (
+            int? page,
+            int? pageSize,
+            string? materialCode,
+            IQueryHandler<ListStockBalancesQuery, PagedResult<StockBalanceSummary>> handler,
+            CancellationToken ct) =>
+        {
+            var sonuc = await handler.HandleAsync(
+                new ListStockBalancesQuery(new PageRequest(page, pageSize), materialCode), ct);
 
             return Results.Ok(sonuc.Value);
         }).WithTags("Stock").RequireAuthorization(Politikalar.Okuma);

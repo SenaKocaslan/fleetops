@@ -1,0 +1,60 @@
+<section class="panel">
+  <div class="baslik">
+    <h2>Raf durumu</h2>
+    <input
+      type="search"
+      placeholder="Malzeme kodu ara"
+      [value]="arama()"
+      (input)="aramaDegisti($event)"
+      data-testid="balance-search"
+    />
+    <button type="button" (click)="refresh()" data-testid="balance-refresh">Yenile</button>
+  </div>
+
+  <p class="not">
+    Yalnizca depo raflari. Kabul ve sevkiyat alanlari sistemin sinirinda: oraya
+    disaridan ne geldigi ve oradan disariya ne gittigi kayitli olmadigi icin
+    bakiyeleri hareketlerden hesaplanamaz.
+  </p>
+
+  @if (loading()) {
+    <p data-testid="balance-loading">Yukleniyor...</p>
+  } @else if (error()) {
+    <p class="hata" data-testid="balance-error">{{ error() }}</p>
+  } @else if (bakiyeler().length === 0) {
+    <p data-testid="balance-empty">Raflarda kayitli malzeme yok.</p>
+  } @else {
+    <table data-testid="balance-table">
+      <thead>
+        <tr>
+          <th>Raf</th>
+          <th>Malzeme</th>
+          <th>Miktar</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of bakiyeler(); track b.locationId + b.materialCode) {
+          <tr data-testid="balance-row">
+            <td>{{ b.locationCode }}</td>
+            <td data-testid="balance-material">{{ b.materialCode }}</td>
+            <!-- Eksi bakiye kayit ile gercegin ayristigini gosterir; alarm
+                 ekraninda da "Stock.EksiBakiye" olarak gorunur. -->
+            <td [class.eksi]="b.quantity < 0" data-testid="balance-quantity">{{ b.quantity }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="sayfalama" data-testid="balance-pager">
+      <button type="button" [disabled]="sayfa().page <= 1" (click)="sayfayaGit(sayfa().page - 1)">
+        Onceki
+      </button>
+      <span>
+        Sayfa {{ sayfa().page }} / {{ sayfa().totalPages }} ({{ sayfa().totalCount }} kalem)
+      </span>
+      <button type="button" [disabled]="!sayfa().hasNext" (click)="sayfayaGit(sayfa().page + 1)">
+        Sonraki
+      </button>
+    </div>
+  }
+</section>

@@ -13,3 +13,10 @@ export interface StockMovementSummary {
   sourceTaskId: string;
   movedAtUtc: string;
 }
+
+export interface StockBalanceSummary {
+  locationId: string;
+  locationCode: string;
+  materialCode: string;
+  quantity: number;
+}
