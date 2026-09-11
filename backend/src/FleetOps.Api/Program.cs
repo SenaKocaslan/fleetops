@@ -26,6 +26,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddFleetOpsAuth(builder.Configuration);
 builder.Services.AddDispatch();
+builder.Services.AddFleetOpsOpenApi();
 
 // Zaman asimi Docker HEALTHCHECK'in 3 saniyesiyle ayni: ulasilamayan bir
 // sunucuda baglanti denemesi varsayilan olarak 15 saniye bekler.
@@ -54,6 +55,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
+
+// Yalnizca gelistirmede. API haritasini uretimde herkese acmak gereksiz bir
+// bilgi sizintisi; ihtiyac duyan gelistirici yerelde calistirip alir.
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
 app.MapAuthEndpoints();
 app.MapAlarmEndpoints();
 app.MapDispatchEndpoints();

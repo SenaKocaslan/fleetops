@@ -151,10 +151,32 @@ cd ../frontend
 npm ci && npm start                        # http://localhost:4200
 ```
 
+## API dokumani
+
+OpenAPI 3.1 dokumani **yalnizca gelistirme ortaminda** yayinlanir:
+
+```bash
+dotnet run --project backend/src/FleetOps.Api
+curl http://localhost:5199/openapi/v1.json
+```
+
+Uretimde (Docker yigini) kapali: API haritasini herkese acmak gereksiz bir
+bilgi sizintisi olurdu. Dokuman Postman/Insomnia gibi araclara dogrudan
+yuklenebilir.
+
+Her uc noktada token gerekip gerekmedigi ve **hangi rolun cagirabildigi**
+yazili. Roller elle yazilmiyor, politikalarin gercek tanimindan okunuyor;
+`AuthKurulumu`'nda bir rol degisirse dokuman da degisir. Bir test, her
+`/api` uc noktasinin dokumanda bulundugunu gercek uc nokta listesiyle
+karsilastirarak dogruluyor.
+
+Yanit govdeleri dokumanda tipli degil (uc noktalar `IResult` donuyor);
+yollar, parametreler, istek govdeleri ve yetki bilgisi eksiksiz.
+
 ## Test
 
 ```bash
-cd backend  && dotnet test                 # 115 birim + 139 integration
+cd backend  && dotnet test                 # 115 birim + 142 integration
 cd frontend && npm test                    # 28 birim (Vitest)
 cd frontend && npm run e2e                 # 31 uctan uca (Playwright)
 cd frontend && npm run e2e:tip             # e2e dosyalarinin tip denetimi
